@@ -15,36 +15,36 @@
         </div>
       </div>
       <div class="row justify-content-center">
-        <button class="w-100" @click="startProcess">Start</button>
+        <button class="btn btn-primary w-100" @click="startProcess">Start</button>
       </div>
     </div>
-    <div class="container-xxl mb-5 mt-5" v-else>
-      <div id="carouselExampleIndicators" class="carousel carousel-dark slide w-100" data-bs-ride="carousel">
+    <div class="container-xxl mb-5 mt-5 align-content-center" v-else>
+      <button class="btn btn-primary" style="width: 95% !important" @click="exportMEI">Export MEI</button>
+
+      <div id="carouselForms" class="container-xxl carousel carousel-dark slide w-100" data-bs-ride="carousel" data-bs-interval="false"> <!--data-bs-interval="false"-->
+
         <div class="carousel-indicators">
-          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"
+          <button type="button" data-bs-target="#carouselForms" data-bs-slide-to="0" class="active"
             aria-current="true" aria-label="Slide 1"></button>
-          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"
-            aria-label="Slide 2"></button>
-          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2"
-            aria-label="Slide 3"></button>
+          <button v-for="item in [...Array(6).keys()]" type="button" data-bs-target="#carouselForms" :data-bs-slide-to="item+1" aria-label="Slide {{item+2}}"></button>
         </div>
 
         <div class="carousel-inner">
           <TitleStmtForm class="carousel-item active" :MEIData="xmlDoc"/>
-          <div class="carousel-item">
-            <img src="..." class="d-block w-100" alt="...">
-          </div>
-          <div class="carousel-item">
-            <img src="..." class="d-block w-100" alt="...">
-          </div>
+          <PublisherForm class="carousel-item" :MEIData="xmlDoc"/>
+          <SourceStmtForm class="carousel-item" :MEIData="xmlDoc"/>
+          <WorklistForm class="carousel-item" :MEIData="xmlDoc"/>
+          <AmbitusForm class="carousel-item" :MEIData="xmlDoc"/>
+          <RhythmPatternForm class="carousel-item" :MEIData="xmlDoc"/>
+          <PhraseForm class="carousel-item" :MEIData="xmlDoc"/>
         </div>
 
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselForms"
           data-bs-slide="prev">
           <span class="carousel-control-prev-icon" aria-hidden="true"></span>
           <span class="visually-hidden">Previous</span>
         </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselForms"
           data-bs-slide="next">
           <span class="carousel-control-next-icon" aria-hidden="true"></span>
           <span class="visually-hidden">Next</span>
@@ -65,10 +65,22 @@ import { VerovioToolkit } from 'verovio/esm';
 import * as music21 from 'music21j';
 
 import TitleStmtForm from './TitleStmtForm.vue';
+import SourceStmtForm from './SourceStmtForm.vue';
+import PublisherForm from './PublisherForm.vue';
+import WorklistForm from './WorklistForm.vue';
+import AmbitusForm from './AmbitusForm.vue';
+import RhythmPatternForm from './RhythmPatternForm.vue';
+import PhraseForm from './PhraseForm.vue';
 
 export default {
   components: {
-    TitleStmtForm
+    TitleStmtForm,
+    SourceStmtForm,
+    PublisherForm,
+    WorklistForm,
+    AmbitusForm,
+    RhythmPatternForm,
+    PhraseForm
   },
   setup() {
     // Reactive references
@@ -81,7 +93,7 @@ export default {
     const xmlDoc = ref('');
 
     onMounted(() => {
-      console.log(`the component is now mounted.`);
+      
       startVerovio();
     });
 
@@ -145,6 +157,10 @@ export default {
       xmlDoc.value = (new DOMParser()).parseFromString(MEIData.value, "text/xml");
     };
 
+    const exportMEI = () => {
+
+    };
+
     // Return reactive references and methods
     return {
       xmlDoc,
@@ -157,6 +173,7 @@ export default {
       startVerovio,
       startProcess,
       handleFiles,
+      exportMEI,
     };
   },
 
@@ -176,5 +193,9 @@ textarea {
 
 button {
   margin: 5px;
+}
+
+.carousel-control-next, .carousel-control-prev {
+  margin: 5px -20px;
 }
 </style>

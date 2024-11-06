@@ -1,7 +1,7 @@
 <template>
     <div class="card" style="width: 50em;">
         <h4 class="card-header">
-            Title Statement Form
+           Ambitus Form
         </h4>
         <div class="card-body container">
             <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
@@ -38,7 +38,7 @@ export default {
         ]);
 
         onMounted(() => {
-
+            
             //console.log(props.MEIData);
             getInfoFromMEI();
         });
@@ -57,21 +57,22 @@ export default {
                         }; node = nodeT;
                     } else if (item.name == 'subtitle') {
                         let nodeT = getXpathNode(props.MEIData, titleStmtData.value[1].tag);
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'title');
+                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei','title');
                         node.setAttribute('type', 'subtitle');
                         nodeT.insertAdjacentElement("afterend", node);
                     } else if (item.name == 'geogName') {
                         console.log(props.MEIData);
                         let nodeR = getXpathNode(props.MEIData, titleStmtData.value[8].tag);
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'geogName');
+                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei','geogName');
                         nodeR.append(node);
                     } else {
                         let nodeR = getXpathNode(props.MEIData, './/mei:titleStmt//mei:respStmt');
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'persName');
-                        node.setAttribute('role', item.name);
+                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei','persName');
+                        node.setAttribute('role', item.name );
                         nodeR.append(node);
                     }
-                };
+                }
+
                 if (node) {
                     if (item.name == 'id') {
                         node.setAttribute('xml:id', item.value)
@@ -81,11 +82,11 @@ export default {
                         node.append(tempChildren);
                     } else {
                         node.textContent = item.value;
-                    };
-                };
-            };
+                    }
+                }
+            }
 
-            //console.log(props.MEIData)
+            console.log(props.MEIData)
         };
 
         const getXpathNode = (nodeP, xpath) => {
