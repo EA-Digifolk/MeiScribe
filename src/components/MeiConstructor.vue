@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="container-xxl w-100">
     <h1>MEI Constructor</h1>
 
     <div class="container-xxl mb-5 mt-5" v-if="MEIData === ''">

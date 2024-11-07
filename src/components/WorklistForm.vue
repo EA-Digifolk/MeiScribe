@@ -1,19 +1,24 @@
 <template>
-    <div class="card" style="width: 50em;">
-        <h4 class="card-header">
-            Worklist Form
-        </h4>
+    <div class="card w-100">
+        <div class="card-header">
+            <h4 class="w-100">Worklist Form</h4> <button href="#" class="btn-save-mei btn btn-primary ml-1"
+                @click="saveToMEI">Apply To MEI</button>
+        </div>
         <div class="card-body container">
-            <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
-                <li class="row mb-1" v-for="item in titleStmtData">
-                    <div class="col col-sm-2 card-text" style="text-align: right">
-                        <p class="card-text">{{ item.on_display }}</p>
-                    </div>
-                    <div class="col col-sm-10 card-text"> <input class="w-100 p-1" type="text" v-model="item.value"
-                            :placeholder="item.default" /> </div>
-                </li>
+            <div>
+                <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
+                    <li class="row mb-1" v-for="item in worklistData">
+                        <div class="col col-sm-2 card-text" style="text-align: right">
+                            <p class="card-text">{{ item.on_display }}</p>
+                        </div>
+                        <div class="col col-sm-10 card-text"> <input class="w-100 p-1" type="text" v-model="item.value"
+                                :placeholder="item.default" /> </div>
+                    </li>
+                </div>
+                <div>
+                    SCORE
+                </div>
             </div>
-            <button href="#" class="row btn btn-primary" @click="saveToMEI">Apply To MEI</button>
         </div>
     </div>
 </template>
@@ -25,50 +30,72 @@ import { onMounted } from 'vue';
 export default {
     props: ['MEIData'],
     setup(props) {
-        const titleStmtData = ref([
-            { name: 'id', tag: './/mei:titleStmt//mei:title[@type="main"]', value: '', on_display: 'ID', default: 'CO-YEAR-RE-SUB-NUM' },
+
+        /*
+        - title (string): title of song
+        - author (string): author/informant of song
+        - lyrics (string): complete lyrics of song
+        - key (string): key of song (e.g., C, E Flat)
+        - mode (string): mode of song (e.g., Major, Minor)
+        - meter (string): meter of song [enum: Binary, Ternary, Free, Polyrhythmic]
+        - tempo (string): tempo indication of song (e.g., Allegro)
+        - language (string): language of lyrics
+        - notes (string): optional annotations
+        - genre (string): genre of song (e.g., Children Song, Work Song, Dance, Lullaby)
+        - country (string): country from where the song came
+        - region (string): region of the country from where the song came
+        - district (string): district of the region from where the song came
+        - city (string): city of the district from where the song came
+        */
+        const worklistData = ref([
             { name: 'title', tag: './/mei:titleStmt//mei:title', value: '', on_display: 'Title', default: '' },
-            { name: 'subtitle', tag: './/mei:titleStmt//mei:title[@type="subtitle"]', value: '', on_display: 'Subtitle', default: '' },
-            { name: 'composer', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="composer"]', value: '', on_display: 'Composer', default: '' },
-            { name: 'compiler', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="compiler"]', value: '', on_display: 'Compiler', default: '' },
-            { name: 'informer', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="informer"]', value: '', on_display: 'Informer', default: '' },
-            { name: 'encoder', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="encoder"]', value: '', on_display: 'Encoder', default: '' },
-            { name: 'editor', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="editor"]', value: '', on_display: 'Editor', default: '' },
-            { name: 'geogName', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="informer"]//mei:geogName', value: '', on_display: 'Geography', default: '' },
+            { name: 'author', tag: './/mei:titleStmt//mei:title[@type="subtitle"]', value: '', on_display: 'Author', default: '' },
+            { name: 'lyrics', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="composer"]', value: '', on_display: 'Lyrics', default: '' },
+            { name: 'key', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="compiler"]', value: '', on_display: 'Key', default: '' },
+            { name: 'mode', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="informer"]', value: '', on_display: 'Mode', default: '' },
+            { name: 'meter', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="encoder"]', value: '', on_display: 'Meter', default: '' },
+            { name: 'tempo', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="editor"]', value: '', on_display: 'Tempo', default: '' },
+            { name: 'language', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="informer"]//mei:geogName', value: '', on_display: 'Language', default: '' },
+            { name: 'notes', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="informer"]', value: '', on_display: 'Notes', default: '' },
+            { name: 'genre', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="encoder"]', value: '', on_display: 'Genre', default: '' },
+            { name: 'country', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="editor"]', value: '', on_display: 'Region', default: '' },
+            { name: 'region', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="editor"]', value: '', on_display: 'Region', default: '' },
+            { name: 'district', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="editor"]', value: '', on_display: 'District', default: '' },
+            { name: 'city', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="editor"]', value: '', on_display: 'City', default: '' },
         ]);
 
         onMounted(() => {
-            
+
             //console.log(props.MEIData);
             getInfoFromMEI();
         });
 
         const saveToMEI = () => {
-            for (let i in titleStmtData.value) {
-                let item = titleStmtData.value[i];
+            for (let i in worklistData.value) {
+                let item = worklistData.value[i];
                 let node = getXpathNode(props.MEIData, item.tag);
 
                 if (!node) {
                     console.log('No node with tag: ' + item.tag);
                     if (item.name == 'id') {
-                        let nodeT = getXpathNode(props.MEIData, titleStmtData.value[1].tag);
+                        let nodeT = getXpathNode(props.MEIData, worklistData.value[1].tag);
                         if (!nodeT.hasAttribute('type')) {
                             nodeT.setAttribute('type', "main");
                         }; node = nodeT;
                     } else if (item.name == 'subtitle') {
-                        let nodeT = getXpathNode(props.MEIData, titleStmtData.value[1].tag);
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei','title');
+                        let nodeT = getXpathNode(props.MEIData, worklistData.value[1].tag);
+                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'title');
                         node.setAttribute('type', 'subtitle');
                         nodeT.insertAdjacentElement("afterend", node);
                     } else if (item.name == 'geogName') {
                         console.log(props.MEIData);
-                        let nodeR = getXpathNode(props.MEIData, titleStmtData.value[8].tag);
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei','geogName');
+                        let nodeR = getXpathNode(props.MEIData, worklistData.value[8].tag);
+                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'geogName');
                         nodeR.append(node);
                     } else {
                         let nodeR = getXpathNode(props.MEIData, './/mei:titleStmt//mei:respStmt');
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei','persName');
-                        node.setAttribute('role', item.name );
+                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'persName');
+                        node.setAttribute('role', item.name);
                         nodeR.append(node);
                     }
                 }
@@ -96,8 +123,8 @@ export default {
 
         const getInfoFromMEI = () => {
 
-            for (let i in titleStmtData.value) {
-                let item = titleStmtData.value[i];
+            for (let i in worklistData.value) {
+                let item = worklistData.value[i];
                 let node = getXpathNode(props.MEIData, item.tag);
                 if (node) {
                     if (item.name == 'id') {
@@ -110,7 +137,7 @@ export default {
         };
 
         return {
-            titleStmtData,
+            worklistData,
             getXpathNode,
             getInfoFromMEI,
             saveToMEI,

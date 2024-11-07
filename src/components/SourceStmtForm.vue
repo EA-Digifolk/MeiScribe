@@ -1,8 +1,9 @@
 <template>
-    <div class="card" style="width: 50em;">
-        <h4 class="card-header">
-            Source Statement Form
-        </h4>
+    <div class="card w-100">
+        <div class="card-header">
+            <h4 class="w-100">Source Statement Form</h4> <button href="#" class="btn-save-mei btn btn-primary ml-1"
+                @click="saveToMEI">Apply To MEI</button>
+        </div>
         <div class="card-body container">
             <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
                 <li class="row mb-1" v-for="item in sourceStmtData">
@@ -13,7 +14,6 @@
                             v-model="item.value" :placeholder="item.default" /> </div>
                 </li>
             </div>
-            <button href="#" class="row btn btn-primary" @click="saveToMEI">Apply To MEI</button>
         </div>
     </div>
 </template>
