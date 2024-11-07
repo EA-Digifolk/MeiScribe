@@ -29,11 +29,12 @@ export default {
         const sourceStmtData = ref([
             { name: 'id', tag: './/mei:source', value: '', on_display: 'ID', default: 'CO-YEAR-RE-SUB', type: 'text' },
             { name: 'title', tag: './/mei:source//mei:title', value: '', on_display: 'Title', default: '', type: 'text' },
-            { name: 'subtitle', tag: './/mei:source//title[@type="subordinate"]', value: '', on_display: 'Subtitle', default: '', type: 'text' },
+            { name: 'subtitle', tag: './/mei:source//mei:title[@type="subordinate"]', value: '', on_display: 'Subtitle', default: '', type: 'text' },
             { name: 'compiler', tag: './/mei:source//mei:respStmt//mei:persName[@role="compiler"]', value: '', on_display: 'Compiler', default: '', type: 'text' },
+            { name: 'collaborator', tag: './/mei:source//mei:respStmt//mei:persName[@role="collaborator"]', value: '', on_display: 'Collaborator', default: '', type: 'text' },
             { name: 'bibliography', tag: './/mei:source//mei:respStmt//mei:persName[@role="bibliography"]', value: '', on_display: 'Bibliography', default: '', type: 'text' },
             { name: 'introduction', tag: './/mei:source//mei:respStmt//mei:persName[@role="introduction"]', value: '', on_display: 'Introduction', default: '', type: 'text' },
-            { name: 'edition', tag: './/mei:source//mei:respStmt//mei:persName[@role="edition"]', value: '', on_display: 'Edition', default: '', type: 'text' },
+            { name: 'edition', tag: './/mei:source//mei:imprint//mei:respStmt//mei:persName[@role="edition"]', value: '', on_display: 'Edition', default: '', type: 'text' },
             { name: 'publisher', tag: './/mei:source//mei:publisher', value: '', on_display: 'Publisher', default: '', type: 'text' },
             { name: 'place', tag: './/mei:source//mei:pubPlace', value: '', on_display: 'Publication Place', default: '', type: 'text' },
             { name: 'date', tag: './/mei:source//mei:date', value: '', on_display: 'Publication Date', default: 2024, type: 'number' },
@@ -45,51 +46,63 @@ export default {
         });
 
         const saveToMEI = () => {
+
+            let imprintNode = getXpathNode(props.MEIData, './/mei:source//mei:imprint');
+            if (!imprintNode) {
+                let node = getXpathNode(props.MEIData, './/mei:fileDesc');
+                
+                const entriesN = ['sourceDesc', 'source', 'biblStruct', 'monogr', 'imprint'];
+                for (let key in entriesN) {
+                    let temp_node = document.createElementNS('http://www.music-encoding.org/ns/mei', entriesN[key]);
+                    node.append(temp_node);
+                    node = temp_node;
+                }
+
+                imprintNode = node;
+            } 
+            
+            
             for (let i in sourceStmtData.value) {
                 let item = sourceStmtData.value[i];
                 let node = getXpathNode(props.MEIData, item.tag);
 
-                //@TODO: HERE
-
                 if (!node) {
-                    console.log('No node with tag: ' + item.tag);
-                    if (item.name == 'id') {
-                        let nodeT = getXpathNode(props.MEIData, sourceStmtData.value[1].tag);
-                        if (!nodeT.hasAttribute('type')) {
-                            nodeT.setAttribute('type', "main");
-                        }; node = nodeT;
-                    } else if (item.name == 'subtitle') {
-                        let nodeT = getXpathNode(props.MEIData, sourceStmtData.value[1].tag);
+                    //console.log('No node with tag: ' + item.tag);
+                    if (item.name === 'subtitle') {
                         let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'title');
-                        node.setAttribute('type', 'subtitle');
-                        nodeT.insertAdjacentElement("afterend", node);
-                    } else if (item.name == 'geogName') {
-                        console.log(props.MEIData);
-                        let nodeR = getXpathNode(props.MEIData, sourceStmtData.value[8].tag);
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'geogName');
-                        nodeR.append(node);
-                    } else {
-                        let nodeR = getXpathNode(props.MEIData, './/mei:titleStmt//mei:respStmt');
+                        node.setAttribute('type', 'subordinate');
+                        imprintNode.append(node);
+                    } else if (['compiler', 'collaborator', 'bibliography', 'introduction', 'edition'].includes(item.name)) {
+                        let nodeR = getXpathNode(props.MEIData, './/mei:source//mei:respStmt');
+                        if (!nodeR) {
+                            nodeR = document.createElementNS('http://www.music-encoding.org/ns/mei', 'respStmt');
+                            imprintNode.append(nodeR);
+                        }
                         let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'persName');
                         node.setAttribute('role', item.name);
                         nodeR.append(node);
+                    } else if (item.name === 'place') {
+                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'pubPlace');
+                        imprintNode.append(node);
+                    } else if (item.name === 'pages') {
+                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'extent');
+                        node.setAttribute('type', 'pages');
+                        imprintNode.append(node);
+                    } else {
+                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', item.name);
+                        imprintNode.append(node);
                     }
                 }
 
                 if (node) {
                     if (item.name == 'id') {
                         node.setAttribute('xml:id', item.value)
-                    } else if (item.name == 'informer') {
-                        let tempChildren = node.children[0]
-                        node.textContent = item.value;
-                        node.append(tempChildren);
                     } else {
                         node.textContent = item.value;
                     }
                 }
-            }
-
-            console.log(props.MEIData)
+            };
+            //console.log(props.MEIData)
         };
 
         const getXpathNode = (nodeP, xpath) => {
@@ -103,8 +116,10 @@ export default {
                 let item = sourceStmtData.value[i];
                 let node = getXpathNode(props.MEIData, item.tag);
                 if (node) {
-                    if (item.name == 'id') {
+                    if (item.name === 'id') {
                         item.value = node.getAttribute('xml:id')
+                    } else if (item.name === 'date' || item.name === 'pages') {
+                        item.value = parseInt(node.textContent);
                     } else {
                         item.value = node.textContent;
                     }

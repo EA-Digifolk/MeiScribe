@@ -49,27 +49,23 @@ export default {
                 let node = getXpathNode(props.MEIData, item.tag);
 
                 if (!node) {
-                    console.log('No node with tag: ' + item.tag);
+                    //console.log('No node with tag: ' + item.tag);
                     if (item.name == 'id') {
                         let nodeT = getXpathNode(props.MEIData, titleStmtData.value[1].tag);
                         if (!nodeT.hasAttribute('type')) {
                             nodeT.setAttribute('type', "main");
                         }; node = nodeT;
                     } else if (item.name == 'subtitle') {
-                        let nodeT = getXpathNode(props.MEIData, titleStmtData.value[1].tag);
                         let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'title');
                         node.setAttribute('type', 'subtitle');
-                        nodeT.insertAdjacentElement("afterend", node);
+                        getXpathNode(props.MEIData, titleStmtData.value[1].tag).insertAdjacentElement("afterend", node);
                     } else if (item.name == 'geogName') {
-                        console.log(props.MEIData);
-                        let nodeR = getXpathNode(props.MEIData, titleStmtData.value[8].tag);
                         let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'geogName');
-                        nodeR.append(node);
+                        getXpathNode(props.MEIData, titleStmtData.value[8].tag).append(node);
                     } else {
-                        let nodeR = getXpathNode(props.MEIData, './/mei:titleStmt//mei:respStmt');
                         let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'persName');
                         node.setAttribute('role', item.name);
-                        nodeR.append(node);
+                        getXpathNode(props.MEIData, './/mei:titleStmt//mei:respStmt').append(node);
                     }
                 };
                 if (node) {

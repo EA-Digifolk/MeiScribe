@@ -32,7 +32,6 @@ export default {
         ]);
 
         onMounted(() => {
-
             //console.log(props.MEIData);
             getInfoFromMEI();
         });
@@ -43,7 +42,7 @@ export default {
                 let node = getXpathNode(props.MEIData, item.tag);
 
                 if (!node) {
-                    console.log('No node with tag: ' + item.tag);
+                    //console.log('No node with tag: ' + item.tag);
                     let nodeP = getXpathNode(props.MEIData, './/mei:pubStmt//');
                     let node = document.createElementNS('http://www.music-encoding.org/ns/mei', item.name);
                     nodeP.append(node);

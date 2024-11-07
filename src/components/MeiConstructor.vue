@@ -21,7 +21,7 @@
     <div class="container-xxl mb-5 mt-5 align-content-center" v-else>
       <button class="btn btn-primary" style="width: 95% !important" @click="exportMEI">Export MEI</button>
 
-      <div id="carouselForms" class="container-xxl carousel carousel-dark slide w-100" data-bs-ride="carousel" data-bs-interval="false"> <!--data-bs-interval="false"-->
+      <div id="carouselForms" class="container-xxl carousel carousel-dark slide w-100" data-bs-interval="false" data-bs-pause="hover"> <!--data-bs-interval="false"  data-bs-ride="carousel" -->
 
         <div class="carousel-indicators">
           <button type="button" data-bs-target="#carouselForms" data-bs-slide-to="0" class="active"
