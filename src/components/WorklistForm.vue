@@ -48,20 +48,20 @@ export default {
         - city (string): city of the district from where the song came
         */
         const worklistData = ref([
-            { name: 'title', tag: './/mei:titleStmt//mei:title', value: '', on_display: 'Title', default: '' },
-            { name: 'author', tag: './/mei:titleStmt//mei:title[@type="subtitle"]', value: '', on_display: 'Author', default: '' },
-            { name: 'lyrics', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="composer"]', value: '', on_display: 'Lyrics', default: '' },
-            { name: 'key', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="compiler"]', value: '', on_display: 'Key', default: '' },
-            { name: 'mode', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="informer"]', value: '', on_display: 'Mode', default: '' },
-            { name: 'meter', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="encoder"]', value: '', on_display: 'Meter', default: '' },
-            { name: 'tempo', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="editor"]', value: '', on_display: 'Tempo', default: '' },
-            { name: 'language', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="informer"]//mei:geogName', value: '', on_display: 'Language', default: '' },
-            { name: 'notes', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="informer"]', value: '', on_display: 'Notes', default: '' },
-            { name: 'genre', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="encoder"]', value: '', on_display: 'Genre', default: '' },
-            { name: 'country', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="editor"]', value: '', on_display: 'Region', default: '' },
-            { name: 'region', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="editor"]', value: '', on_display: 'Region', default: '' },
-            { name: 'district', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="editor"]', value: '', on_display: 'District', default: '' },
-            { name: 'city', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="editor"]', value: '', on_display: 'City', default: '' },
+            { name: 'title', tag: '.', value: '', on_display: 'Title', default: '' },
+            { name: 'author', tag: '', value: '', on_display: 'Author', default: '' },
+            { name: 'lyrics', tag: '', value: '', on_display: 'Lyrics', default: '' },
+            { name: 'key', tag: '', value: '', on_display: 'Key', default: '' },
+            { name: 'mode', tag: '', value: '', on_display: 'Mode', default: '' },
+            { name: 'meter', tag: '', value: '', on_display: 'Meter', default: '' },
+            { name: 'tempo', tag: '', value: '', on_display: 'Tempo', default: '' },
+            { name: 'language', tag: '', value: '', on_display: 'Language', default: '' },
+            { name: 'notes', tag: '', value: '', on_display: 'Notes', default: '' },
+            { name: 'genre', tag: '', value: '', on_display: 'Genre', default: '' },
+            { name: 'country', tag: '', value: '', on_display: 'Region', default: '' },
+            { name: 'region', tag: '', value: '', on_display: 'Region', default: '' },
+            { name: 'district', tag: '', value: '', on_display: 'District', default: '' },
+            { name: 'city', tag: '', value: '', on_display: 'City', default: '' },
         ]);
 
         onMounted(() => {
