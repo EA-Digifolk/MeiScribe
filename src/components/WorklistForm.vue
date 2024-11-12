@@ -7,12 +7,133 @@
         <div class="card-body container">
             <div>
                 <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
-                    <li class="row mb-1" v-for="item in worklistData">
-                        <div class="col col-sm-2 card-text" style="text-align: right">
-                            <p class="card-text">{{ item.on_display }}</p>
+                    <li class="row" :class="{ 'w-100 mb-1': !['mode', 'tempo', 'genre', 'region', 'city'].includes(item.name) }"
+                        v-for="item in worklistData">
+                        <div class="w-100 row" v-if="item.name === 'key'">
+                            <div class="col col-sm-2 card-text" style="text-align: right">
+                                <p class="card-text">{{ item.on_display }}</p>
+                            </div>
+                            <div class="col col-sm-4 card-text">
+                                <select v-if="item.name == 'key'" class="w-100 p-1" type="text" v-model="item.value"
+                                    :placeholder="item.default">
+                                    <option
+                                        v-for="k in ['Cb', 'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'E#', 'Fb', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B', 'B#']"
+                                        :value="k">{{ k }}</option>
+                                </select>
+                            </div>
+                            <div class="col col-sm-1 card-text" style="text-align: right">
+                                <p class="card-text">{{ worklistData[4].on_display }}</p>
+                            </div>
+                            <div class="col col-sm-5 card-text">
+                                <input class="w-100" type="text" list="modesList" v-model="worklistData[4].value"
+                                    :placeholder="worklistData[4].default" />
+                                <datalist id="modesList">
+                                    <option
+                                        v-for="k in ['Major', 'Minor', 'Ionian', 'Dorian', 'Lydian', 'Phrygian', 'Mixolydian', 'Aeolian', 'Locrian']"
+                                        :value="k">{{ k }}</option>
+                                </datalist>
+                            </div>
                         </div>
-                        <div class="col col-sm-10 card-text"> <input class="w-100 p-1" type="text" v-model="item.value"
-                                :placeholder="item.default" /> </div>
+
+                        <div class="w-100 row" v-else-if="item.name === 'meter'">
+                            <div class="col col-sm-2 card-text" style="text-align: right">
+                                <p class="card-text">{{ item.on_display }}</p>
+                            </div>
+                            <div class="col col-sm-4 card-text">
+                                <input class="w-100" type="text" list="meterList" v-model="item.value"
+                                    :placeholder="item.default" />
+                                <datalist id="meterList">
+                                    <option v-for="k in ['Binary', 'Ternary', 'Free', 'Polyrhythmic']" :value="k">{{ k }}</option>
+                                </datalist>
+                            </div>
+                            <div class="col col-sm-1 card-text" style="text-align: right">
+                                <p class="card-text">{{ worklistData[6].on_display }}</p>
+                            </div>
+                            <div class="col col-sm-5 card-text">
+                                <input class="w-100" type="text" v-model="worklistData[6].value"
+                                    :placeholder="worklistData[6].default" />
+                            </div>
+                        </div>
+
+                        <div class="w-100 row" v-else-if="item.name === 'language'">
+                            <div class="col col-sm-2 card-text" style="text-align: right">
+                                <p class="card-text">{{ item.on_display }}</p>
+                            </div>
+                            <div class="col col-sm-4 card-text">
+                                <input class="w-100" type="text" list="langList" v-model="item.value"
+                                    :placeholder="item.default" />
+                                <datalist id="langList">
+                                    <option v-for="k in ['en', 'es', 'pt', 'it', 'cat']" :value="k">{{ k }}</option>
+                                </datalist>
+                            </div>
+                            <div class="col col-sm-1 card-text" style="text-align: right">
+                                <p class="card-text">{{ worklistData[9].on_display }}</p>
+                            </div>
+                            <div class="col col-sm-5 card-text">
+                                <input class="w-100" type="text" list="genreList" v-model="worklistData[9].value"
+                                    :placeholder="worklistData[9].default" />
+                                <datalist id="genreList">
+                                    <option v-for="k in ['Children Song', 'Work Song', 'Dance', 'Lullaby']" :value="k">{{ k }}</option>
+                                </datalist>
+                            </div>
+                        </div>
+
+                        <div class="w-100 row" v-else-if="item.name === 'country'">
+                            <div class="col col-sm-2 card-text" style="text-align: right">
+                                <p class="card-text">{{ item.on_display }}</p>
+                            </div>
+                            <div class="col col-sm-4 card-text">
+                                <input class="w-100" type="text" list="countryList" v-model="item.value"
+                                    :placeholder="item.default" />
+                                <datalist id="countryList">
+                                    <option v-for="k in ['Brazil', 'Colombia', 'Ireland', 'Mexico', 'Portugal', 'Spain',]" :value="k">{{ k }}</option>
+                                </datalist>
+                            </div>
+                            <div class="col col-sm-1 card-text" style="text-align: right">
+                                <p class="card-text">{{ worklistData[11].on_display }}</p>
+                            </div>
+                            <div class="col col-sm-5 card-text">
+                                <input class="w-100" type="text" v-model="worklistData[11].value"
+                                    :placeholder="worklistData[11].default" />
+                            </div>
+                        </div>
+
+                        <div class="w-100 row" v-else-if="item.name === 'district'">
+                            <div class="col col-sm-2 card-text" style="text-align: right">
+                                <p class="card-text">{{ item.on_display }}</p>
+                            </div>
+                            <div class="col col-sm-4 card-text">
+                                <input class="w-100" type="text" v-model="item.value"
+                                    :placeholder="item.default" />
+                            </div>
+                            <div class="col col-sm-1 card-text" style="text-align: right">
+                                <p class="card-text">{{ worklistData[13].on_display }}</p>
+                            </div>
+                            <div class="col col-sm-5 card-text">
+                                <input class="w-100" type="text" v-model="worklistData[13].value"
+                                    :placeholder="worklistData[13].default" />
+                            </div>
+                        </div>
+
+                        <div class="w-0" v-else-if="['mode', 'tempo', 'genre', 'region', 'city'].includes(item.name)"></div>
+
+                        <div class="w-100 row" v-else-if="['notes', 'lyrics'].includes(item.name)">
+                            <div class="col col-sm-2 card-text" style="text-align: right">
+                                <p class="card-text">{{ item.on_display }}</p>
+                            </div>
+                            <div class="col col-sm-10 card-text">
+                                <textarea class="w-100 p-1 mb-0" type="text" v-model="worklistData[13].value" :placeholder="worklistData[13].default"></textarea>
+                            </div> <!--TODO: Check why text area leaving space under-->
+                        </div>
+
+                        <div class="w-100 row" v-else>
+                            <div class="col col-sm-2 card-text" style="text-align: right">
+                                <p class="card-text">{{ item.on_display }}</p>
+                            </div>
+                            <div class="col col-sm-10 card-text">
+                                <input class="w-100 p-1" type="text" v-model="item.value" :placeholder="item.default" />
+                            </div>
+                        </div>
                     </li>
                 </div>
                 <div>
@@ -31,37 +152,21 @@ export default {
     props: ['MEIData'],
     setup(props) {
 
-        /*
-        - title (string): title of song
-        - author (string): author/informant of song
-        - lyrics (string): complete lyrics of song
-        - key (string): key of song (e.g., C, E Flat)
-        - mode (string): mode of song (e.g., Major, Minor)
-        - meter (string): meter of song [enum: Binary, Ternary, Free, Polyrhythmic]
-        - tempo (string): tempo indication of song (e.g., Allegro)
-        - language (string): language of lyrics
-        - notes (string): optional annotations
-        - genre (string): genre of song (e.g., Children Song, Work Song, Dance, Lullaby)
-        - country (string): country from where the song came
-        - region (string): region of the country from where the song came
-        - district (string): district of the region from where the song came
-        - city (string): city of the district from where the song came
-        */
         const worklistData = ref([
-            { name: 'title', tag: '.', value: '', on_display: 'Title', default: '' },
-            { name: 'author', tag: '', value: '', on_display: 'Author', default: '' },
-            { name: 'lyrics', tag: '', value: '', on_display: 'Lyrics', default: '' },
-            { name: 'key', tag: '', value: '', on_display: 'Key', default: '' },
-            { name: 'mode', tag: '', value: '', on_display: 'Mode', default: '' },
-            { name: 'meter', tag: '', value: '', on_display: 'Meter', default: '' },
-            { name: 'tempo', tag: '', value: '', on_display: 'Tempo', default: '' },
-            { name: 'language', tag: '', value: '', on_display: 'Language', default: '' },
-            { name: 'notes', tag: '', value: '', on_display: 'Notes', default: '' },
-            { name: 'genre', tag: '', value: '', on_display: 'Genre', default: '' },
-            { name: 'country', tag: '', value: '', on_display: 'Region', default: '' },
-            { name: 'region', tag: '', value: '', on_display: 'Region', default: '' },
-            { name: 'district', tag: '', value: '', on_display: 'District', default: '' },
-            { name: 'city', tag: '', value: '', on_display: 'City', default: '' },
+            { name: 'title', tag: './/mei:workList//mei:title', value: '', on_display: 'Title', default: '' },
+            { name: 'author', tag: './/mei:workList//mei:author', value: '', on_display: 'Author', default: '' },
+            { name: 'lyrics', tag: './/mei:workList//mei:head', value: '', on_display: 'Lyrics', default: '' },
+            { name: 'key', tag: './/mei:workList//mei:key', value: '', on_display: 'Key', default: '' },
+            { name: 'mode', tag: './/mei:workList//mei:key', value: '', on_display: 'Mode', default: '' },
+            { name: 'meter', tag: './/mei:workList//mei:meter', value: '', on_display: 'Meter', default: '' },
+            { name: 'tempo', tag: './/mei:workList//mei:tempo', value: '', on_display: 'Tempo', default: '' },
+            { name: 'language', tag: './/mei:workList//mei:language', value: '', on_display: 'Language', default: '' },
+            { name: 'notes', tag: './/mei:workList//mei:annot', value: '', on_display: 'Notes', default: '' },
+            { name: 'genre', tag: './/mei:workList//mei:term[@type="genre"]', value: '', on_display: 'Genre', default: '' },
+            { name: 'country', tag: './/mei:workList//mei:term[@type="country"]', value: '', on_display: 'Country', default: '' },
+            { name: 'region', tag: './/mei:workList//mei:term[@type="region"]', value: '', on_display: 'Region', default: '' },
+            { name: 'district', tag: './/mei:workList//mei:term[@type="district"]', value: '', on_display: 'District', default: '' },
+            { name: 'city', tag: './/mei:workList//mei:term[@type="city"]', value: '', on_display: 'City', default: '' },
         ]);
 
         onMounted(() => {
@@ -73,6 +178,8 @@ export default {
         const saveToMEI = () => {
             for (let i in worklistData.value) {
                 let item = worklistData.value[i];
+
+                /*
                 let node = getXpathNode(props.MEIData, item.tag);
 
                 if (!node) {
@@ -110,7 +217,7 @@ export default {
                     } else {
                         node.textContent = item.value;
                     }
-                }
+                }*/
             }
 
             console.log(props.MEIData)
