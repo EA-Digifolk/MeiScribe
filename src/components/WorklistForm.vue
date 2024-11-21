@@ -21,10 +21,10 @@
                                         :value="k">{{ k }}</option>
                                 </select>
                             </div>
-                            <div class="col col-sm-1 card-text" style="text-align: right">
+                            <div class="col col-sm-2 card-text" style="text-align: right">
                                 <p class="card-text">{{ worklistData[4].on_display }}</p>
                             </div>
-                            <div class="col col-sm-5 card-text">
+                            <div class="col col-sm-4 card-text">
                                 <input class="w-100" type="text" list="modesList" v-model="worklistData[4].value"
                                     :placeholder="worklistData[4].default" />
                                 <datalist id="modesList">
@@ -46,10 +46,10 @@
                                     <option v-for="k in ['Binary', 'Ternary', 'Free', 'Polyrhythmic']" :value="k">{{ k }}</option>
                                 </datalist>
                             </div>
-                            <div class="col col-sm-1 card-text" style="text-align: right">
+                            <div class="col col-sm-2 card-text" style="text-align: right">
                                 <p class="card-text">{{ worklistData[6].on_display }}</p>
                             </div>
-                            <div class="col col-sm-5 card-text">
+                            <div class="col col-sm-4 card-text">
                                 <input class="w-100" type="text" v-model="worklistData[6].value"
                                     :placeholder="worklistData[6].default" />
                             </div>
@@ -66,10 +66,10 @@
                                     <option v-for="k in ['en', 'es', 'pt', 'it', 'cat']" :value="k">{{ k }}</option>
                                 </datalist>
                             </div>
-                            <div class="col col-sm-1 card-text" style="text-align: right">
+                            <div class="col col-sm-2 card-text" style="text-align: right">
                                 <p class="card-text">{{ worklistData[9].on_display }}</p>
                             </div>
-                            <div class="col col-sm-5 card-text">
+                            <div class="col col-sm-4 card-text">
                                 <input class="w-100" type="text" list="genreList" v-model="worklistData[9].value"
                                     :placeholder="worklistData[9].default" />
                                 <datalist id="genreList">
@@ -89,10 +89,10 @@
                                     <option v-for="k in ['Brazil', 'Colombia', 'Ireland', 'Mexico', 'Portugal', 'Spain',]" :value="k">{{ k }}</option>
                                 </datalist>
                             </div>
-                            <div class="col col-sm-1 card-text" style="text-align: right">
+                            <div class="col col-sm-2 card-text" style="text-align: right">
                                 <p class="card-text">{{ worklistData[11].on_display }}</p>
                             </div>
-                            <div class="col col-sm-5 card-text">
+                            <div class="col col-sm-4 card-text">
                                 <input class="w-100" type="text" v-model="worklistData[11].value"
                                     :placeholder="worklistData[11].default" />
                             </div>
@@ -106,10 +106,10 @@
                                 <input class="w-100" type="text" v-model="item.value"
                                     :placeholder="item.default" />
                             </div>
-                            <div class="col col-sm-1 card-text" style="text-align: right">
+                            <div class="col col-sm-2 card-text" style="text-align: right">
                                 <p class="card-text">{{ worklistData[13].on_display }}</p>
                             </div>
-                            <div class="col col-sm-5 card-text">
+                            <div class="col col-sm-4 card-text">
                                 <input class="w-100" type="text" v-model="worklistData[13].value"
                                     :placeholder="worklistData[13].default" />
                             </div>
@@ -122,7 +122,7 @@
                                 <p class="card-text">{{ item.on_display }}</p>
                             </div>
                             <div class="col col-sm-10 card-text">
-                                <textarea class="w-100 p-1 mb-0" type="text" v-model="worklistData[13].value" :placeholder="worklistData[13].default"></textarea>
+                                <textarea class="w-100 p-1 mb-0" type="text" v-model="item.value" :placeholder="item.default"></textarea>
                             </div> <!--TODO: Check why text area leaving space under-->
                         </div>
 
@@ -160,7 +160,7 @@ export default {
             { name: 'mode', tag: './/mei:workList//mei:key', value: '', on_display: 'Mode', default: '' },
             { name: 'meter', tag: './/mei:workList//mei:meter', value: '', on_display: 'Meter', default: '' },
             { name: 'tempo', tag: './/mei:workList//mei:tempo', value: '', on_display: 'Tempo', default: '' },
-            { name: 'language', tag: './/mei:workList//mei:language', value: '', on_display: 'Language', default: '' },
+            { name: 'language', tag: './/mei:workList//mei:langUsage//mei:language', value: '', on_display: 'Language', default: '' },
             { name: 'notes', tag: './/mei:workList//mei:annot', value: '', on_display: 'Notes', default: '' },
             { name: 'genre', tag: './/mei:workList//mei:term[@type="genre"]', value: '', on_display: 'Genre', default: '' },
             { name: 'country', tag: './/mei:workList//mei:term[@type="country"]', value: '', on_display: 'Country', default: '' },
@@ -170,78 +170,125 @@ export default {
         ]);
 
         onMounted(() => {
-
             //console.log(props.MEIData);
             getInfoFromMEI();
         });
 
         const saveToMEI = () => {
+
+            let workListNode = getXpathNode(props.MEIData, './/mei:work');
+            if (!workListNode) {
+                let node = getXpathNode(props.MEIData, './/mei:meiHead');
+                
+                const entriesN = ['workList', 'work'];
+                for (let key in entriesN) {
+                    let temp_node = document.createElementNS('http://www.music-encoding.org/ns/mei', entriesN[key]);
+                    node.append(temp_node);
+                    node = temp_node;
+                }
+
+                workListNode = node;
+            } 
+
             for (let i in worklistData.value) {
                 let item = worklistData.value[i];
-
-                /*
+                
                 let node = getXpathNode(props.MEIData, item.tag);
 
                 if (!node) {
                     console.log('No node with tag: ' + item.tag);
-                    if (item.name == 'id') {
-                        let nodeT = getXpathNode(props.MEIData, worklistData.value[1].tag);
-                        if (!nodeT.hasAttribute('type')) {
-                            nodeT.setAttribute('type', "main");
-                        }; node = nodeT;
-                    } else if (item.name == 'subtitle') {
-                        let nodeT = getXpathNode(props.MEIData, worklistData.value[1].tag);
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'title');
-                        node.setAttribute('type', 'subtitle');
-                        nodeT.insertAdjacentElement("afterend", node);
-                    } else if (item.name == 'geogName') {
-                        console.log(props.MEIData);
-                        let nodeR = getXpathNode(props.MEIData, worklistData.value[8].tag);
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'geogName');
-                        nodeR.append(node);
+                    if (item.name == 'lyrics') {
+                        let nodeINC = document.createElementNS('http://www.music-encoding.org/ns/mei', 'incip');
+                        nodeINC.setAttribute('type', 'lyrics');
+                        let nodeIText = document.createElementNS('http://www.music-encoding.org/ns/mei', 'incipText');
+                        nodeINC.append(nodeIText);
+                        nodeIText.append(document.createElementNS('http://www.music-encoding.org/ns/mei', 'head'));
+                        workListNode.append(nodeINC);
+                    } else if (item.name == 'notes') {
+                        let nodeNSt = document.createElementNS('http://www.music-encoding.org/ns/mei', 'notesStmt');
+                        nodeNSt.append(document.createElementNS('http://www.music-encoding.org/ns/mei', 'annot'));
+                        workListNode.append(nodeNSt);
+                    } else if (item.name == 'language') {
+                        let nodeL = document.createElementNS('http://www.music-encoding.org/ns/mei', 'langUsage');
+                        nodeL.append(document.createElementNS('http://www.music-encoding.org/ns/mei', 'language'));
+                        workListNode.append(nodeL);
+                    } else if (['genre', 'country', 'region', 'district', 'city'].includes(item.name)) {
+                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'term');
+                        node.setAttribute('type', item.name)
+                        workListNode.append(node);
                     } else {
-                        let nodeR = getXpathNode(props.MEIData, './/mei:titleStmt//mei:respStmt');
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'persName');
-                        node.setAttribute('role', item.name);
-                        nodeR.append(node);
+                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', item.name);
+                        workListNode.append(node);
                     }
                 }
 
                 if (node) {
                     if (item.name == 'id') {
                         node.setAttribute('xml:id', item.value)
-                    } else if (item.name == 'informer') {
-                        let tempChildren = node.children[0]
-                        node.textContent = item.value;
-                        node.append(tempChildren);
+                    } else if (item.name == 'mode') {
+                        node.setAttribute('mode', item.value)
+                    } else if (item.name == 'language') {
+                        node.setAttribute('xml:lang', item.value)
                     } else {
                         node.textContent = item.value;
                     }
-                }*/
+                }
             }
 
-            console.log(props.MEIData)
+            let nodeMusical = getXpathNode(props.MEIData, './/mei:workList//mei:incip[@type="musical"]');
+            if (!nodeMusical) {
+                nodeMusical = document.createElementNS('http://www.music-encoding.org/ns/mei', 'incip');
+                nodeMusical.setAttribute('type', 'musical');
+                getXpathNode(props.MEIData, worklistData.value[6].tag).insertAdjacentElement("afterend", nodeMusical);
+            } else {
+                while (nodeMusical.firstChild) {
+                    nodeMusical.removeChild(nodeMusical.firstChild);
+                }
+            }
+            
+            let measures = getXpathNode(props.MEIData, './/mei:measure', true);
+            let fM = measures.iterateNext();
+            let sM = measures.iterateNext();
+            nodeMusical.append(getMusicalIncipMeasure(fM));
+            nodeMusical.append(getMusicalIncipMeasure(sM));
+
+            //console.log(getXpathNode(props.MEIData, './/mei:workList'));
         };
 
-        const getXpathNode = (nodeP, xpath) => {
+        const getMusicalIncipMeasure = (meas) => {
+            let docM = document.createElementNS('http://www.music-encoding.org/ns/mei', 'measure');
+            docM.setAttribute('copyof', '#' + meas.getAttribute('xml:id'));
+            return docM;
+        };
+
+        const getXpathNode = (nodeP, xpath, returnAll = false) => {
             const result = nodeP.evaluate(xpath, nodeP, prefix => prefix === 'mei' ? 'http://www.music-encoding.org/ns/mei' : null, XPathResult.ANY_TYPE, null);
+            if (returnAll) 
+                return result;
             return result.iterateNext();
-        }
+        };
 
         const getInfoFromMEI = () => {
-
             for (let i in worklistData.value) {
                 let item = worklistData.value[i];
                 let node = getXpathNode(props.MEIData, item.tag);
                 if (node) {
                     if (item.name == 'id') {
-                        item.value = node.getAttribute('xml:id')
+                        item.value = node.getAttribute('xml:id');
+                    } else if (item.name == 'mode') {
+                        item.value = capitalizeFirstLetter(node.getAttribute('mode'));
+                    } else if (item.name == 'language') {
+                        item.value = node.getAttribute('xml:lang');
                     } else {
-                        item.value = node.textContent;
+                        item.value = capitalizeFirstLetter(node.textContent);
                     }
                 }
             }
         };
+
+        const capitalizeFirstLetter = (string) => {
+            return string && (string[0].toUpperCase() + string.slice(1));
+        }   
 
         return {
             worklistData,

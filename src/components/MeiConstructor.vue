@@ -196,6 +196,9 @@ button {
 }
 
 .carousel-control-next, .carousel-control-prev {
-  margin: 5px -20px;
+  height: 80% !important;
+  margin-top: 10%;
+  width: 8% !important;
 }
+
 </style>
