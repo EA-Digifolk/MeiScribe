@@ -7,7 +7,7 @@
             <button class="" :disabled="pageToRender === numPages" @click="nextPage">Next</button>
         </div>
         <div class="score-div">
-            <img id="score-div-img"/>
+            <img :id="id + '-score-div-img'"/>
         </div>
     </div>
 </template>
@@ -16,7 +16,7 @@
 import { onMounted, watch, ref } from 'vue';
 
 export default {
-    props: ['vT'],
+    props: ['id', 'vT'],
     setup(props) {
         const pageToRender = ref(1);
         const numPages = ref(1);
@@ -57,7 +57,7 @@ export default {
             let svg = props.vT.renderToSVG(pageToRender.value);
             let blob = new Blob([svg], { type: 'image/svg+xml' });
             let url = URL.createObjectURL(blob);
-            let image = document.getElementById('score-div-img');
+            let image = document.getElementById(props.id + '-score-div-img');
             image.src = url;
             image.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
         };

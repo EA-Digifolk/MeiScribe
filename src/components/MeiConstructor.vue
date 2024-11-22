@@ -129,12 +129,13 @@ export default {
         message.value = '';
       } else if (fileName.value.endsWith('.mid')) {
         message.value = 'MIDI is not allowed for now';
-        console.log(fileData.value);
-        console.log(music21.converter.parseData(fileData.value));
-        message.value = '';
+        // console.log(fileData.value);
+        // console.log(music21.converter.parseData(fileData.value));
+        // message.value = '';
       } else if (fileName.value.endsWith('.mei')) {
         message.value = 'Loading MEI';
         MEIData.value = fileData.value;
+        verovioToolkit.value.loadData(fileData.value);
         message.value = '';
       } else {
         message.value = 'File type of ' + file.name + ' is not allowed at the moment!';

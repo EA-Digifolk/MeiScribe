@@ -1,8 +1,8 @@
 <template>
     <div class="card w-100">
         <div class="card-header">
-            <h4 class="w-100">Worklist Form</h4> <button href="#" class="btn-save-mei btn btn-primary ml-1"
-                @click="saveToMEI">Apply To MEI</button>
+            <h4 class="w-100">Worklist Form</h4>
+            <button href="#" class="btn-save-mei btn btn-primary ml-1" @click="saveToMEI">Apply To MEI</button>
         </div>
         <div class="card-body container">
             <div>
@@ -142,9 +142,10 @@
                         </div>
                     </li>
                 </div>
-            </div>  
+            </div>
         </div>
-        <MusicalScore :vT="vT" />
+        <button class="btn-show-score btn btn-primary mb-3" @click="showScore = !showScore">Show Score</button>
+        <MusicalScore id="WorkListForm" :vT="vT" v-if="showScore" />
     </div>
 </template>
 
@@ -175,6 +176,7 @@ export default {
             { name: 'district', tag: './/mei:workList//mei:term[@type="district"]', value: '', on_display: 'District', default: '' },
             { name: 'city', tag: './/mei:workList//mei:term[@type="city"]', value: '', on_display: 'City', default: '' },
         ]);
+        const showScore = ref(false);
 
         onMounted(() => {
             //console.log(props.MEIData);
@@ -301,6 +303,7 @@ export default {
 
         return {
             worklistData,
+            showScore,
             getXpathNode,
             getInfoFromMEI,
             saveToMEI,
