@@ -33,10 +33,10 @@
           <TitleStmtForm class="carousel-item active" :MEIData="xmlDoc"/>
           <PublisherForm class="carousel-item" :MEIData="xmlDoc"/>
           <SourceStmtForm class="carousel-item" :MEIData="xmlDoc"/>
-          <WorklistForm class="carousel-item" :MEIData="xmlDoc"/>
-          <AmbitusForm class="carousel-item" :MEIData="xmlDoc"/>
-          <RhythmPatternForm class="carousel-item" :MEIData="xmlDoc"/>
-          <PhraseForm class="carousel-item" :MEIData="xmlDoc"/>
+          <WorklistForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit"/>
+          <AmbitusForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit"/>
+          <RhythmPatternForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit"/>
+          <PhraseForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit"/>
         </div>
 
         <button class="carousel-control-prev" type="button" data-bs-target="#carouselForms"

@@ -7,7 +7,8 @@
         <div class="card-body container">
             <div>
                 <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
-                    <li class="row" :class="{ 'w-100 mb-1': !['mode', 'tempo', 'genre', 'region', 'city'].includes(item.name) }"
+                    <li class="row"
+                        :class="{ 'w-100 mb-1': !['mode', 'tempo', 'genre', 'region', 'city'].includes(item.name) }"
                         v-for="item in worklistData">
                         <div class="w-100 row" v-if="item.name === 'key'">
                             <div class="col col-sm-2 card-text" style="text-align: right">
@@ -43,7 +44,8 @@
                                 <input class="w-100" type="text" list="meterList" v-model="item.value"
                                     :placeholder="item.default" />
                                 <datalist id="meterList">
-                                    <option v-for="k in ['Binary', 'Ternary', 'Free', 'Polyrhythmic']" :value="k">{{ k }}</option>
+                                    <option v-for="k in ['Binary', 'Ternary', 'Free', 'Polyrhythmic']" :value="k">{{ k
+                                        }}</option>
                                 </datalist>
                             </div>
                             <div class="col col-sm-2 card-text" style="text-align: right">
@@ -73,7 +75,8 @@
                                 <input class="w-100" type="text" list="genreList" v-model="worklistData[9].value"
                                     :placeholder="worklistData[9].default" />
                                 <datalist id="genreList">
-                                    <option v-for="k in ['Children Song', 'Work Song', 'Dance', 'Lullaby']" :value="k">{{ k }}</option>
+                                    <option v-for="k in ['Children Song', 'Work Song', 'Dance', 'Lullaby']" :value="k">
+                                        {{ k }}</option>
                                 </datalist>
                             </div>
                         </div>
@@ -86,7 +89,9 @@
                                 <input class="w-100" type="text" list="countryList" v-model="item.value"
                                     :placeholder="item.default" />
                                 <datalist id="countryList">
-                                    <option v-for="k in ['Brazil', 'Colombia', 'Ireland', 'Mexico', 'Portugal', 'Spain',]" :value="k">{{ k }}</option>
+                                    <option
+                                        v-for="k in ['Brazil', 'Colombia', 'Ireland', 'Mexico', 'Portugal', 'Spain',]"
+                                        :value="k">{{ k }}</option>
                                 </datalist>
                             </div>
                             <div class="col col-sm-2 card-text" style="text-align: right">
@@ -103,8 +108,7 @@
                                 <p class="card-text">{{ item.on_display }}</p>
                             </div>
                             <div class="col col-sm-4 card-text">
-                                <input class="w-100" type="text" v-model="item.value"
-                                    :placeholder="item.default" />
+                                <input class="w-100" type="text" v-model="item.value" :placeholder="item.default" />
                             </div>
                             <div class="col col-sm-2 card-text" style="text-align: right">
                                 <p class="card-text">{{ worklistData[13].on_display }}</p>
@@ -115,14 +119,16 @@
                             </div>
                         </div>
 
-                        <div class="w-0" v-else-if="['mode', 'tempo', 'genre', 'region', 'city'].includes(item.name)"></div>
+                        <div class="w-0" v-else-if="['mode', 'tempo', 'genre', 'region', 'city'].includes(item.name)">
+                        </div>
 
                         <div class="w-100 row" v-else-if="['notes', 'lyrics'].includes(item.name)">
                             <div class="col col-sm-2 card-text" style="text-align: right">
                                 <p class="card-text">{{ item.on_display }}</p>
                             </div>
                             <div class="col col-sm-10 card-text">
-                                <textarea class="w-100 p-1 mb-0" type="text" v-model="item.value" :placeholder="item.default"></textarea>
+                                <textarea class="w-100 p-1 mb-0" type="text" v-model="item.value"
+                                    :placeholder="item.default"></textarea>
                             </div> <!--TODO: Check why text area leaving space under-->
                         </div>
 
@@ -136,20 +142,21 @@
                         </div>
                     </li>
                 </div>
-                <div>
-                    SCORE
-                </div>
-            </div>
+            </div>  
         </div>
+        <MusicalScore :vT="vT" />
     </div>
 </template>
 
 <script>
-import { ref } from 'vue';
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
+import MusicalScore from './MusicalScore.vue';
 
 export default {
-    props: ['MEIData'],
+    components: {
+        MusicalScore
+    },
+    props: ['MEIData', 'vT'],
     setup(props) {
 
         const worklistData = ref([
@@ -179,7 +186,7 @@ export default {
             let workListNode = getXpathNode(props.MEIData, './/mei:work');
             if (!workListNode) {
                 let node = getXpathNode(props.MEIData, './/mei:meiHead');
-                
+
                 const entriesN = ['workList', 'work'];
                 for (let key in entriesN) {
                     let temp_node = document.createElementNS('http://www.music-encoding.org/ns/mei', entriesN[key]);
@@ -188,11 +195,11 @@ export default {
                 }
 
                 workListNode = node;
-            } 
+            }
 
             for (let i in worklistData.value) {
                 let item = worklistData.value[i];
-                
+
                 let node = getXpathNode(props.MEIData, item.tag);
 
                 if (!node) {
@@ -245,7 +252,7 @@ export default {
                     nodeMusical.removeChild(nodeMusical.firstChild);
                 }
             }
-            
+
             let measures = getXpathNode(props.MEIData, './/mei:measure', true);
             let fM = measures.iterateNext();
             let sM = measures.iterateNext();
@@ -263,7 +270,7 @@ export default {
 
         const getXpathNode = (nodeP, xpath, returnAll = false) => {
             const result = nodeP.evaluate(xpath, nodeP, prefix => prefix === 'mei' ? 'http://www.music-encoding.org/ns/mei' : null, XPathResult.ANY_TYPE, null);
-            if (returnAll) 
+            if (returnAll)
                 return result;
             return result.iterateNext();
         };
@@ -283,12 +290,14 @@ export default {
                         item.value = capitalizeFirstLetter(node.textContent);
                     }
                 }
-            }
+            };
         };
+
+
 
         const capitalizeFirstLetter = (string) => {
             return string && (string[0].toUpperCase() + string.slice(1));
-        }   
+        }
 
         return {
             worklistData,
