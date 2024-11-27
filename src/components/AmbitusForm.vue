@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import { onMounted, onUpdated, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import MusicalScore from './MusicalScore.vue';
 import * as music21 from 'music21j';
 
