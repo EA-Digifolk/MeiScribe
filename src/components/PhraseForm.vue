@@ -6,37 +6,52 @@
         </div>
         <div class="card-body container">
             <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
-                <li class="row mb-1" v-for="item in phraseSegmentData">
-                    <div class="col col-sm-2 card-text" style="text-align: right">
-                        <p class="card-text">{{ item.on_display }}</p>
-                    </div>
-                    <div class="col col-sm-10 card-text"> <input class="w-100 p-1" type="text" v-model="item.value"
-                            :placeholder="item.default" /> </div>
-                </li>
+                <button class="mb-3" @click="addPhrase">Add</button>
+                <div v-for="item in phraseSegmentData[0].value" class="row phrase-sel">
+                    <div class="col col-xs-1">N</div>
+                    <input class="col col-xs-1" type="number" :value="item.n"></input>
+                    <div class="col col-xs-2">Start ID</div>
+                    <input :id="'start-id-' + item.n" class="col col-xs-2" type="search" list="noteIDS" :value="item.startid"></input> <!--@change="paintNoteSVG"-->
+                    <div class="col col-xs-1">End ID</div>
+                    <input :id="'end-id-' + item.n" class="col col-xs-2" type="search" list="noteIDS" :value="item.endid"></input>
+                    <div class="col col-xs-1">Type</div>
+                    <input class="col col-xs-2" type="search" list="typePhrases" :value="item.type"></input>
+                    <a @click="deletePhrase(item.n)" class="col col-xs-1 btn btn-danger btn-sm del-btn" type="button"><svg-icon :path="thrashIcon" size="20" viewbox="0 0 30 28" style="color: white"></svg-icon></a>
+                    <datalist id="noteIDS"><option v-for="itemX in noteIDs" :value="itemX" ></option></datalist>
+                    <datalist id="typePhrases"><option v-for="itemX in ['A', 'A1', 'A2', 'B', 'B1', 'B2', 'C', 'CODA', 'INTRO']" :value="itemX"></option></datalist>
+                </div>
             </div>
         </div>
+        <MusicalScore id="phraseForm" :vT="vT"/>
     </div>
 </template>
 
 <script>
-import { ref } from 'vue';
-import { onMounted } from 'vue';
+import { onMounted, ref,  } from 'vue';
+import MusicalScore from './PhraseSelectorMusicalScore.vue';
+import SvgIcon from "vue3-icon";
+
+const thrashIcon = "M 10 2 L 9 3 L 5 3 C 4.4 3 4 3.4 4 4 C 4 4.6 4.4 5 5 5 L 7 5 L 17 5 L 19 5 C 19.6 5 20 4.6 20 4 C 20 3.4 19.6 3 19 3 L 15 3 L 14 2 L 10 2 z M 5 7 L 5 20 C 5 21.1 5.9 22 7 22 L 17 22 C 18.1 22 19 21.1 19 20 L 19 7 L 5 7 z M 9 9 C 9.6 9 10 9.4 10 10 L 10 19 C 10 19.6 9.6 20 9 20 C 8.4 20 8 19.6 8 19 L 8 10 C 8 9.4 8.4 9 9 9 z M 15 9 C 15.6 9 16 9.4 16 10 L 16 19 C 16 19.6 15.6 20 15 20 C 14.4 20 14 19.6 14 19 L 14 10 C 14 9.4 14.4 9 15 9 z";
 
 export default {
-    props: ['MEIData'],
+    components: {
+		SvgIcon,
+        thrashIcon,
+        MusicalScore
+	},
+    props: ['MEIData', 'vT'],
     setup(props) {
         const phraseSegmentData = ref([
             { name: 'phrases', tag: './/mei:music//mei:section//mei:supplied[@type="phrases"]', value: [], on_display: 'Phrases' },
         ]);
+        const noteIDs = ref([]);
 
         onMounted(() => {
-            
-            //console.log(props.MEIData);
             getInfoFromMEI();
         });
 
         const saveToMEI = () => {
-            
+
         };
 
         const getXpathNode = (nodeP, xpath) => {
@@ -49,42 +64,79 @@ export default {
             for (let i in phraseSegmentData.value) {
                 let item = phraseSegmentData.value[i];
                 let node = getXpathNode(props.MEIData, item.tag);
-                
+
                 if (node) {
                     for (let i in node.children) {
                         let phraseN = node.children[i];
                         console.log(phraseN.tagName);
                         if (phraseN.tagName == 'phrase') {
-                            item.value.push({'n': phraseN.getAttribute('n'), 'startid': phraseN.getAttribute('startid'), 'endid': phraseN.getAttribute('endid'), 'type': phraseN.getAttribute('type')})
+                            item.value.push({ 'n': phraseN.getAttribute('n'), 'startid': phraseN.getAttribute('startid').replace('#', ''), 'endid': phraseN.getAttribute('endid').replace('#', ''), 'type': phraseN.getAttribute('type') })
                         }
                     }
+                } else {
+                    addPhrase();
                 }
             }
+            noteIDs.value = props.vT.getDescriptiveFeatures()['pitchesIds'].flat().flat();
+            console.log(noteIDs);
+        };
+
+        const deletePhrase = (n) => {
+            phraseSegmentData.value[0].value = phraseSegmentData.value[0].value.filter(function(el) { return el.n != n; }); 
+        };
+
+        const addPhrase = () => {
+            console.log(phraseSegmentData.value[0].value);
+            let lastPhrase = phraseSegmentData.value[0].value[phraseSegmentData.value[0].value.length-1];
+            if (lastPhrase == null) {
+                lastPhrase = {'n': 0};
+            }
+            phraseSegmentData.value[0].value.push({ 'n': lastPhrase['n']+1, 'startid': '', 'endid': '', 'type': '' })
+        };
+
+        const paintNoteSVG = (event) => {
+            console.log(event, event.target.id);
+            
+            let notesOnSVG = document.getElementsByClassName('note');
+            Array.from(notesOnSVG).forEach((e, i) => {
+                if (e.id === event.target.value && !e.classList.contains('bounding-box')) {
+                    e.classList.add("select-start");
+                } else {
+                    e.classList.remove("select-start");
+                }
+            });
+
+
+            
         };
 
         return {
             phraseSegmentData,
+            thrashIcon,
+            SvgIcon,
+            noteIDs,
             getXpathNode,
             getInfoFromMEI,
             saveToMEI,
+            deletePhrase,
+            addPhrase,
+            paintNoteSVG
         };
     },
 };
 </script>
 
 <style scoped>
-.logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
+.phrase-sel {
+    align-items: center;
+    font-size: small;
+    margin-bottom: .1em;
+    border: 1px solid grey;
 }
 
-.logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-}
-
-.logo.vue:hover {
-    filter: drop-shadow(0 0 2em #42b883aa);
+.del-btn {
+    margin: .1em .5em .1em 1.5em;
+    padding: .1em;
+    /*max-width: 5% !important;*/
 }
 </style>
