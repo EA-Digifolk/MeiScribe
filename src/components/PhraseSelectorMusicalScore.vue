@@ -98,6 +98,11 @@ export default {
 
 g.note.select-start {
     color: red !important;
-    fill:red!important;
+    fill: red!important;
+}
+
+g.note.select-end {
+    color: green !important;
+    fill: green!important;
 }
 </style>

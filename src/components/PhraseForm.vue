@@ -11,9 +11,9 @@
                     <div class="col col-xs-1">N</div>
                     <input class="col col-xs-1" type="number" :value="item.n"></input>
                     <div class="col col-xs-2">Start ID</div>
-                    <input :id="'start-id-' + item.n" class="col col-xs-2" type="search" list="noteIDS" :value="item.startid"></input> <!--@change="paintNoteSVG"-->
+                    <input :id="'start-id-' + item.n" class="col col-xs-2" type="search" list="noteIDS" :value="item.startid" @change="paintNoteSVG"></input>
                     <div class="col col-xs-1">End ID</div>
-                    <input :id="'end-id-' + item.n" class="col col-xs-2" type="search" list="noteIDS" :value="item.endid"></input>
+                    <input :id="'end-id-' + item.n" class="col col-xs-2" type="search" list="noteIDS" :value="item.endid" @change="paintNoteSVG"></input>
                     <div class="col col-xs-1">Type</div>
                     <input class="col col-xs-2" type="search" list="typePhrases" :value="item.type"></input>
                     <a @click="deletePhrase(item.n)" class="col col-xs-1 btn btn-danger btn-sm del-btn" type="button"><svg-icon :path="thrashIcon" size="20" viewbox="0 0 30 28" style="color: white"></svg-icon></a>
@@ -78,7 +78,6 @@ export default {
                 }
             }
             noteIDs.value = props.vT.getDescriptiveFeatures()['pitchesIds'].flat().flat();
-            console.log(noteIDs);
         };
 
         const deletePhrase = (n) => {
@@ -86,7 +85,6 @@ export default {
         };
 
         const addPhrase = () => {
-            console.log(phraseSegmentData.value[0].value);
             let lastPhrase = phraseSegmentData.value[0].value[phraseSegmentData.value[0].value.length-1];
             if (lastPhrase == null) {
                 lastPhrase = {'n': 0};
@@ -95,19 +93,24 @@ export default {
         };
 
         const paintNoteSVG = (event) => {
-            console.log(event, event.target.id);
-            
+            let svgClass = event.target.id.includes('start') ? "select-start" : "select-end";
             let notesOnSVG = document.getElementsByClassName('note');
             Array.from(notesOnSVG).forEach((e, i) => {
                 if (e.id === event.target.value && !e.classList.contains('bounding-box')) {
-                    e.classList.add("select-start");
+                    e.classList.add(svgClass);
                 } else {
-                    e.classList.remove("select-start");
+                    e.classList.remove(svgClass);
                 }
             });
-
-
-            
+            chooseNote(event);
+        };
+        
+        const chooseNote = (event) => {
+            if (event.target.id.includes('start')) {
+                phraseSegmentData.value[0].value.filter(function(el) { return el.n == event.target.id.replace('start-id-',''); })[0].startid = event.target.value;
+            } else {
+                phraseSegmentData.value[0].value.filter(function(el) { return el.n == event.target.id.replace('end-id-',''); })[0].endid = event.target.value;
+            }
         };
 
         return {
@@ -138,5 +141,9 @@ export default {
     margin: .1em .5em .1em 1.5em;
     padding: .1em;
     /*max-width: 5% !important;*/
+}
+
+option:hover{
+  background-color: red;
 }
 </style>
