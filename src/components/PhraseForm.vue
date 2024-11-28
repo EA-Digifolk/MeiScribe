@@ -6,16 +6,16 @@
         </div>
         <div class="card-body container">
             <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
-                <button class="mb-3" @click="addPhrase">Add</button>
+                <div class="w-100" @click="cleanPaintSVG"><button class="mb-3" @click="addPhrase">Add</button></div>
                 <div v-for="item in phraseSegmentData[0].value" class="row phrase-sel">
                     <div class="col col-xs-1">N</div>
-                    <input class="col col-xs-1" type="number" :value="item.n"></input>
+                    <input :id="'note-' + item.n" class="col col-xs-1" type="number" :value="item.n" @change="chooseN"></input>
                     <div class="col col-xs-2">Start ID</div>
-                    <input :id="'start-id-' + item.n" class="col col-xs-2" type="search" list="noteIDS" :value="item.startid" @change="paintNoteSVG"></input>
+                    <input :id="'start-id-' + item.n" class="col col-xs-2" type="search" list="noteIDS" :value="item.startid" @click="paintNoteSVG" @change="chooseNote"></input>
                     <div class="col col-xs-1">End ID</div>
-                    <input :id="'end-id-' + item.n" class="col col-xs-2" type="search" list="noteIDS" :value="item.endid" @change="paintNoteSVG"></input>
+                    <input :id="'end-id-' + item.n" class="col col-xs-2" type="search" list="noteIDS" :value="item.endid" @click="paintNoteSVG" @change="chooseNote"></input>
                     <div class="col col-xs-1">Type</div>
-                    <input class="col col-xs-2" type="search" list="typePhrases" :value="item.type"></input>
+                    <input :id="'type-' + item.n" class="col col-xs-2" type="search" list="typePhrases" :value="item.type" @change="chooseType"></input>
                     <a @click="deletePhrase(item.n)" class="col col-xs-1 btn btn-danger btn-sm del-btn" type="button"><svg-icon :path="thrashIcon" size="20" viewbox="0 0 30 28" style="color: white"></svg-icon></a>
                     <datalist id="noteIDS"><option v-for="itemX in noteIDs" :value="itemX" ></option></datalist>
                     <datalist id="typePhrases"><option v-for="itemX in ['A', 'A1', 'A2', 'B', 'B1', 'B2', 'C', 'CODA', 'INTRO']" :value="itemX"></option></datalist>
@@ -68,7 +68,6 @@ export default {
                 if (node) {
                     for (let i in node.children) {
                         let phraseN = node.children[i];
-                        console.log(phraseN.tagName);
                         if (phraseN.tagName == 'phrase') {
                             item.value.push({ 'n': phraseN.getAttribute('n'), 'startid': phraseN.getAttribute('startid').replace('#', ''), 'endid': phraseN.getAttribute('endid').replace('#', ''), 'type': phraseN.getAttribute('type') })
                         }
@@ -89,7 +88,7 @@ export default {
             if (lastPhrase == null) {
                 lastPhrase = {'n': 0};
             }
-            phraseSegmentData.value[0].value.push({ 'n': lastPhrase['n']+1, 'startid': '', 'endid': '', 'type': '' })
+            phraseSegmentData.value[0].value.push({ 'n': parseInt(lastPhrase['n'])+1, 'startid': '', 'endid': '', 'type': '' })
         };
 
         const paintNoteSVG = (event) => {
@@ -102,15 +101,32 @@ export default {
                     e.classList.remove(svgClass);
                 }
             });
-            chooseNote(event);
         };
+
+        const cleanPaintSVG = () => {
+            let notesOnSVG = document.getElementsByClassName('note');
+            Array.from(notesOnSVG).forEach((e, _) => {
+                e.classList.remove("select-start");
+                e.classList.remove("select-end");
+            });
+        }
         
         const chooseNote = (event) => {
             if (event.target.id.includes('start')) {
                 phraseSegmentData.value[0].value.filter(function(el) { return el.n == event.target.id.replace('start-id-',''); })[0].startid = event.target.value;
             } else {
                 phraseSegmentData.value[0].value.filter(function(el) { return el.n == event.target.id.replace('end-id-',''); })[0].endid = event.target.value;
-            }
+            };
+
+            paintNoteSVG(event);
+        };
+
+        const chooseN = (event) => {
+            phraseSegmentData.value[0].value.filter(function(el) { return el.n == event.target.id.replace('note-',''); })[0].n = parseInt(event.target.value);
+        };
+
+        const chooseType = (event) => {
+            phraseSegmentData.value[0].value.filter(function(el) { return el.n == event.target.id.replace('type-',''); })[0].type = event.target.value;
         };
 
         return {
@@ -123,7 +139,11 @@ export default {
             saveToMEI,
             deletePhrase,
             addPhrase,
-            paintNoteSVG
+            paintNoteSVG,
+            cleanPaintSVG,
+            chooseNote,
+            chooseN,
+            chooseType
         };
     },
 };

@@ -1,9 +1,11 @@
 <template>
     <div class="card-body container score-div-cont">
         <div class="score-page-arrows">
+            <div id="ScoreSelectedID"></div>
             <button class="" :disabled="pageToRender === 1" @click="prevPage">Previous</button>
-            <div class=""> Page <input :disabled="numPages === 1" class="go-page-input" type="number" v-model="pageToRender.value"
-                    :placeholder="pageToRender" :min="1" :max="numPages" /> / {{ numPages }}</div>
+            <div class=""> Page <input :disabled="numPages === 1" class="go-page-input" type="number"
+                    v-model="pageToRender.value" :placeholder="pageToRender" :min="1" :max="numPages" /> / {{ numPages
+                }}</div>
             <button class="" :disabled="pageToRender === numPages" @click="nextPage">Next</button>
         </div>
         <div :id="id + '-score-div-img'" class="score-div">
@@ -53,7 +55,21 @@ export default {
             let svg = props.vT.renderToSVG(pageToRender.value);
             let image = document.getElementById(props.id + '-score-div-img');
             image.innerHTML = svg.trim();
-            //image.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+
+            let notesOnSVG = document.getElementsByClassName('note');
+            Array.from(notesOnSVG).forEach((e, _) => {
+                if (!e.classList.contains('bounding-box')) {
+                    let sc = document.getElementById('ScoreSelectedID');
+                    e.addEventListener('mouseenter', () => {
+                        sc.innerHTML = 'ID: ' + e.id;
+                        sc.style.padding = '.4em';
+                    });
+                    e.addEventListener('mouseleave', () => {
+                        sc.innerHTML = '';
+                        sc.style.padding = '0em';
+                    });
+                }
+            });
         };
 
         return {
@@ -98,11 +114,26 @@ export default {
 
 g.note.select-start {
     color: red !important;
-    fill: red!important;
+    fill: red !important;
 }
 
 g.note.select-end {
     color: green !important;
-    fill: green!important;
+    fill: green !important;
+}
+
+:hover.note {
+    fill: dodgerblue;
+    stroke: white;
+    stroke-width: 2px;
+    filter: url(#dropshadow);
+}
+
+#ScoreSelectedID {
+    position: absolute;
+    top: auto;
+    left: 7%;
+    background-color:dodgerblue;
+    color:aliceblue;
 }
 </style>
