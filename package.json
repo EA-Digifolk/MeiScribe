@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://ea-digifolk.github.io/MeiConstructor",
+  "homepage": "https://ea-digifolk.github.io/MeiConstructor/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
