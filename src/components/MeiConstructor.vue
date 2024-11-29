@@ -62,7 +62,7 @@ import { onMounted } from 'vue';
 
 import createVerovioModule from 'verovio/wasm';
 import { VerovioToolkit } from 'verovio/esm';
-import * as music21 from 'music21j';
+//import * as music21 from 'music21j';
 
 import TitleStmtForm from './TitleStmtForm.vue';
 import SourceStmtForm from './SourceStmtForm.vue';

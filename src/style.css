@@ -87,4 +87,6 @@ button:focus-visible {
   }
 }
 
-
+.loadingSoundfont {
+  width:0px !important;
+}
