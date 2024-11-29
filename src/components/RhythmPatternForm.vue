@@ -39,37 +39,6 @@ export default {
         });
 
         const saveToMEI = () => {
-
-            let sectionNode = getXpathNode(props.MEIData, './/mei:music//mei:section');
-            if (!sectionNode) {
-                let node = getXpathNode(props.MEIData, './/mei:music');
-
-                const entriesN = ['ambitus'];
-                for (let key in entriesN) {
-                    let temp_node = document.createElementNS('http://www.music-encoding.org/ns/mei', entriesN[key]);
-                    node.append(temp_node);
-                    node = temp_node;
-                }
-                sectionNode = node;
-            }
-
-            for (let i in rhythmPatternData.value) {
-                let item = rhythmPatternData.value[i];
-                let node = getXpathNode(props.MEIData, item.tag);
-
-                if (!node) {
-                    node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'ambNote');
-                    node.setAttribute('type', item.name);
-                    sectionNode.append(node);
-                }
-
-                if (node) {
-                    // midi pitch to pname and oct
-                    const n = new music21.pitch.Pitch(item.value);
-                    node.setAttribute('pname', n.name.toLowerCase());
-                    node.setAttribute('oct', n.octave);
-                }
-            }
         };
 
         const getXpathNode = (nodeP, xpath) => {
@@ -83,18 +52,7 @@ export default {
                 let item = rhythmPatternData.value[i];
                 let node = getXpathNode(props.MEIData, item.tag);
                 if (node) {
-                    const n = new music21.pitch.Pitch(node.getAttribute('pname') + node.getAttribute('oct'));
-                    item.value = n.ps;
                 } else {
-                    // calculate ambitus from score
-                    let midiPitches = props.vT.getDescriptiveFeatures()['pitchesIds'].map((element, index) => {
-                        return props.vT.getMIDIValuesForElement(element[0])['pitch'];
-                    });
-                    if (item.name === 'highest') {
-                        item.value = Math.max.apply(null, midiPitches);
-                    } else {
-                        item.value = Math.min.apply(null, midiPitches);
-                    }
                 }
             }
         };
