@@ -1,3 +1,3 @@
-#!/bin/sh
+#!/bin/bash
 
-npm run build && git --git-dir=https://github.com/EA-Digifolk/MeiConstructor.git subtree push --prefix dist origin gh-pages
+npm run build && git push origin `git subtree split --prefix dist main`:gh-pages --force
