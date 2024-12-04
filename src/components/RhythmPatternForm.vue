@@ -31,7 +31,7 @@ export default {
     props: ['MEIData', 'vT'],
     setup(props) {
         const rhythmPatternData = ref([
-            { name: 'rhythm pattern', tag: './/mei:supplied[@type="rhythm pattern"]', value: 0, on_display: 'Rhythm Pattern', default: 0 },
+            { name: 'rhythm pattern', tag: './/mei:supplied[@type="rhythm pattern"]', value: '', on_display: 'Rhythm Pattern', default: '' },
         ]);
 
         onMounted(() => {
@@ -46,12 +46,49 @@ export default {
             return result.iterateNext();
         }
 
+        const processNoteTag = (tag) => {
+            if (tag.tagName == 'note') {
+                let tagP = ' ' + tag.getAttribute('dur');
+                if (tag.getAttribute('dots')) {
+                    tagP += '.'.repeat(parseInt(tag.getAttribute('dots')));
+                }
+                return tagP;
+            }
+            return '';
+        }
+
         const getInfoFromMEI = () => {
 
             for (let i in rhythmPatternData.value) {
                 let item = rhythmPatternData.value[i];
                 let node = getXpathNode(props.MEIData, item.tag);
+
                 if (node) {
+                    /*
+                    - the string should contain the number of each note of the rhythm, i.e., 8 for 8th notes, 4 for quarter notes, etc.
+                    - each number should be separated by a space
+                    - if the notes should be beamed, they should be surrounded by brackets with a b just next to the first bracket, i.e., [b 8 8]
+                    - if notes have dots, they should be next to the number
+                    - Example of a rhythm_pattern: '[b 8 8] 4 [b 8 16 16] [b 8. 16]'
+                    */
+                    let tempRhythmStr = '';
+                    for (let i in node.children) {
+                        let rhythm = node.children[i];                        
+                        if (rhythm.tagName == 'beam') {
+                            tempRhythmStr += ' [b';
+                            if (rhythm.getAttribute('tuplet')) {
+                                tempRhythmStr += rhythm.getAttribute('tuplet');
+                            }
+                            for (let r2 in rhythm.children) {
+                                tempRhythmStr += processNoteTag(rhythm.children[r2]);
+                            }
+                            tempRhythmStr += ']';
+                        } else if (rhythm.tagName == 'note') {
+                            tempRhythmStr += processNoteTag(rhythm);
+                        }
+                        rhythmPatternData.value[0].value = tempRhythmStr.slice(1);
+                        console.log(rhythmPatternData.value[0].value);
+                    }
                 } else {
                 }
             }
@@ -62,6 +99,7 @@ export default {
             getXpathNode,
             getInfoFromMEI,
             saveToMEI,
+            processNoteTag
         };
     },
 };
