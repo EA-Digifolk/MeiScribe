@@ -10,9 +10,10 @@
                     <div class="col col-sm-2 card-text" style="text-align: right">
                         <p class="card-text">{{ item.on_display }}</p>
                     </div>
-                    <div class="col col-sm-10 card-text"> <input class="w-100 p-1" type="text" v-model="item.value"
+                    <div class="col col-sm-10 card-text"> <input class="w-100 p-1" type="text" v-model="item.value" @click="getMusicalRhythm"
                             :placeholder="item.default" /> </div>
                 </li>
+                <div class="row" id="pattern-canvas"></div>
             </div>
         </div>
         <MusicalScore id="RhythmPatternForm" :vT="vT" />
@@ -20,7 +21,7 @@
 </template>
 
 <script>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import MusicalScore from './MusicalScore.vue';
 import * as music21 from 'music21j';
 
@@ -39,6 +40,26 @@ export default {
         });
 
         const saveToMEI = () => {
+        };
+
+        const getMusicalRhythm = () => {
+            let streamM = new music21.stream.Stream();
+
+            let pattern = rhythmPatternData.value[0].value.split(' ');
+
+            for (let i in pattern) {
+                //if (pattern[i] == ) 
+                //const n = new music21.note.Note('B', pattern[i]);
+                
+            }
+
+            streamM.renderOptions.scaleFactor = {x:.7,y:.7};
+            streamM.renderOptions.staffLines = 1;
+            streamM.renderOptions.displayClef = false;
+            streamM.renderOptions.rightBarline = "none";
+            
+            let div = document.getElementById('pattern-canvas');
+            streamM.appendNewDOM(div);
         };
 
         const getXpathNode = (nodeP, xpath) => {
@@ -87,7 +108,6 @@ export default {
                             tempRhythmStr += processNoteTag(rhythm);
                         }
                         rhythmPatternData.value[0].value = tempRhythmStr.slice(1);
-                        console.log(rhythmPatternData.value[0].value);
                     }
                 } else {
                 }
@@ -99,7 +119,8 @@ export default {
             getXpathNode,
             getInfoFromMEI,
             saveToMEI,
-            processNoteTag
+            processNoteTag,
+            getMusicalRhythm
         };
     },
 };
