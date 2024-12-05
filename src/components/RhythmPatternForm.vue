@@ -59,6 +59,9 @@ export default {
             streamM.renderOptions.rightBarline = "none";
             
             let div = document.getElementById('pattern-canvas');
+            if (div.children[0]) {
+                div.removeChild(div.children[0]);
+            };
             streamM.appendNewDOM(div);
         };
 
@@ -111,6 +114,8 @@ export default {
                     }
                 } else {
                 }
+
+                getMusicalRhythm()
             }
         };
 
