@@ -45,12 +45,35 @@ export default {
         const getMusicalRhythm = () => {
             let streamM = new music21.stream.Stream();
 
-            let pattern = rhythmPatternData.value[0].value.split(' ');
-
+            let pattern = rhythmPatternData.value[0].value.split(']');
             for (let i in pattern) {
-                //if (pattern[i] == ) 
-                //const n = new music21.note.Note('B', pattern[i]);
-                
+                let pt = pattern[i].split('[');
+                for (let j in pt) {
+                    if (pt[j][0] == 'b' && pt[j][1] != ' ') {
+                        // tuplets
+                    } else if (/\d/.test(pt[j])){
+                        let pt_s = pt[j].toString().split(" ").slice(1);
+                        for (let k in pt_s) {
+                            let duration = 4/parseFloat(pt_s[k]);
+                            if (pt_s[k].includes('.')) {
+                                let dots = pt_s[k].toString().split(".");
+                                duration = parseFloat(dots[0])/4;
+                                let tempD = duration;
+                                for (let _ in dots.slice(1)) {
+                                    duration += tempD/2;
+                                    tempD /= 2;
+                                }
+                            } 
+                            const n = new music21.note.Note('B', duration);
+                            if (pt[j][0] == 'b') {
+                                if (k == 0) {n.beams.append('start');}
+                                else if (k == pt_s.length-1) {n.beams.append('stop');}
+                                else {n.beams.append('continue');}
+                            } 
+                            streamM.append(n);
+                        }
+                    }
+                }
             }
 
             streamM.renderOptions.scaleFactor = {x:.7,y:.7};
