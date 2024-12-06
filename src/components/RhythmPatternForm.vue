@@ -10,8 +10,8 @@
                     <div class="col col-sm-2 card-text" style="text-align: right">
                         <p class="card-text">{{ item.on_display }}</p>
                     </div>
-                    <div class="col col-sm-10 card-text"> <input class="w-100 p-1" type="text" v-model="item.value"
-                            @click="getMusicalRhythm" :placeholder="item.default" /> </div>
+                    <div class="col col-sm-10 card-text"> <input class="w-100 p-1" type="text" :value="item.value"
+                            @change="getMusicalRhythm" :placeholder="item.default" /> </div>
                 </li>
                 <div class="row" id="pattern-canvas"></div>
             </div>
@@ -40,9 +40,55 @@ export default {
         });
 
         const saveToMEI = () => {
+            let rhythmPNode = getXpathNode(props.MEIData, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]');
+            if (rhythmPNode) {
+                rhythmPNode.remove();
+            };
+
+            rhythmPNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'supplied');
+            rhythmPNode.setAttribute('type', 'rhythm pattern');
+            getXpathNode(props.MEIData, './/mei:music//mei:section').insertAdjacentElement("afterbegin", rhythmPNode);
+
+            let pattern = rhythmPatternData.value[0].value.split(']');
+            for (let i in pattern) {
+                let pt = pattern[i].split('[');
+                for (let j in pt) {
+                    if (/\d/.test(pt[j])) {
+                        let pt_s = pt[j].toString().split(" ").slice(1);
+
+                        let bT = rhythmPNode;
+                        if (pt[j][0] == 'b') {
+                            bT = document.createElementNS('http://www.music-encoding.org/ns/mei', 'beam');
+                            if (pt[j][1] != ' ') { bT.setAttribute('tuplet', pt[j][1]); }
+                            rhythmPNode.append(bT);
+                        };
+
+                        for (let n in pt_s) {
+                            if (/\d/.test(pt_s[n])) {
+                                let note = document.createElementNS('http://www.music-encoding.org/ns/mei', 'note');
+                                if (pt_s[n].includes('.')) {
+                                    let dots = pt_s[n].toString().split(".");
+                                    note.setAttribute('dur', parseInt(dots[0]));
+                                    note.setAttribute('dots', dots.length - 1);
+                                } else {
+                                    note.setAttribute('dur', parseInt(pt_s[n]));
+                                }
+                                bT.append(note);
+                            }
+                        };
+                    }
+                }
+            }
+
+            console.log(getXpathNode(props.MEIData, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]'));
         };
 
-        const getMusicalRhythm = () => {
+        const getMusicalRhythm = (event) => {
+            
+            if (event) {
+                rhythmPatternData.value[0].value = event.target.value;
+            }
+
             let streamM = new music21.stream.Stream();
 
             let pattern = rhythmPatternData.value[0].value.split(']');
@@ -51,7 +97,6 @@ export default {
                 for (let j in pt) {
                     if (/\d/.test(pt[j])) {
                         let pt_s = pt[j].toString().split(" ").slice(1);
-                        let notes = [];
                         for (let k in pt_s) {
                             let duration = 4 / parseFloat(pt_s[k]);
                             if (pt_s[k].includes('.')) {
@@ -63,17 +108,20 @@ export default {
                                     tempD /= 2;
                                 }
                             }
+
+                            let tuplet = 1;
                             if (pt[j][0] == 'b' && pt[j][1] != ' ') {
-                                const tuplet = parseInt(pt[j][1]);
+                                tuplet = parseInt(pt[j][1]);
                                 duration *= (tuplet - 1) / tuplet;
                             }
+
                             if (duration) {
                                 const n = new music21.note.Note('B', duration);
-                                if (pt[j][0] == 'b') {
+                                if ((pt[j][0] == 'b' && pt[j][1] != ' ' && duration < ((tuplet - 1) / tuplet)) || (pt[j][0] == 'b' && pt[j][1] == ' ')) {
                                     if (k == 0) { n.beams.append('start'); }
                                     else if (k == pt_s.length - 1) { n.beams.append('stop'); }
                                     else { n.beams.append('continue'); }
-                                }
+                                };
                                 streamM.append(n);
                             }
                         }
@@ -116,13 +164,7 @@ export default {
                 let node = getXpathNode(props.MEIData, item.tag);
 
                 if (node) {
-                    /*
-                    - the string should contain the number of each note of the rhythm, i.e., 8 for 8th notes, 4 for quarter notes, etc.
-                    - each number should be separated by a space
-                    - if the notes should be beamed, they should be surrounded by brackets with a b just next to the first bracket, i.e., [b 8 8]
-                    - if notes have dots, they should be next to the number
-                    - Example of a rhythm_pattern: '[b 8 8] 4 [b 8 16 16] [b 8. 16]'
-                    */
+
                     let tempRhythmStr = '';
                     for (let i in node.children) {
                         let rhythm = node.children[i];
@@ -141,6 +183,7 @@ export default {
                         rhythmPatternData.value[0].value = tempRhythmStr.slice(1);
                     }
                 } else {
+                    /* Try to Find An Algorithm that gets the rhythmic pattern ? */
                 }
 
                 getMusicalRhythm()
