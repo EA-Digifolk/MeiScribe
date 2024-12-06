@@ -10,8 +10,8 @@
                     <div class="col col-sm-2 card-text" style="text-align: right">
                         <p class="card-text">{{ item.on_display }}</p>
                     </div>
-                    <div class="col col-sm-10 card-text"> <input class="w-100 p-1" type="text" v-model="item.value" @click="getMusicalRhythm"
-                            :placeholder="item.default" /> </div>
+                    <div class="col col-sm-10 card-text"> <input class="w-100 p-1" type="text" v-model="item.value"
+                            @click="getMusicalRhythm" :placeholder="item.default" /> </div>
                 </li>
                 <div class="row" id="pattern-canvas"></div>
             </div>
@@ -49,38 +49,43 @@ export default {
             for (let i in pattern) {
                 let pt = pattern[i].split('[');
                 for (let j in pt) {
-                    if (pt[j][0] == 'b' && pt[j][1] != ' ') {
-                        // tuplets
-                    } else if (/\d/.test(pt[j])){
+                    if (/\d/.test(pt[j])) {
                         let pt_s = pt[j].toString().split(" ").slice(1);
+                        let notes = [];
                         for (let k in pt_s) {
-                            let duration = 4/parseFloat(pt_s[k]);
+                            let duration = 4 / parseFloat(pt_s[k]);
                             if (pt_s[k].includes('.')) {
                                 let dots = pt_s[k].toString().split(".");
-                                duration = parseFloat(dots[0])/4;
+                                duration = parseFloat(dots[0]) / 4;
                                 let tempD = duration;
                                 for (let _ in dots.slice(1)) {
-                                    duration += tempD/2;
+                                    duration += tempD / 2;
                                     tempD /= 2;
                                 }
-                            } 
-                            const n = new music21.note.Note('B', duration);
-                            if (pt[j][0] == 'b') {
-                                if (k == 0) {n.beams.append('start');}
-                                else if (k == pt_s.length-1) {n.beams.append('stop');}
-                                else {n.beams.append('continue');}
-                            } 
-                            streamM.append(n);
+                            }
+                            if (pt[j][0] == 'b' && pt[j][1] != ' ') {
+                                const tuplet = parseInt(pt[j][1]);
+                                duration *= (tuplet - 1) / tuplet;
+                            }
+                            if (duration) {
+                                const n = new music21.note.Note('B', duration);
+                                if (pt[j][0] == 'b') {
+                                    if (k == 0) { n.beams.append('start'); }
+                                    else if (k == pt_s.length - 1) { n.beams.append('stop'); }
+                                    else { n.beams.append('continue'); }
+                                }
+                                streamM.append(n);
+                            }
                         }
                     }
                 }
             }
 
-            streamM.renderOptions.scaleFactor = {x:.7,y:.7};
+            streamM.renderOptions.scaleFactor = { x: .7, y: .7 };
             streamM.renderOptions.staffLines = 1;
             streamM.renderOptions.displayClef = false;
             streamM.renderOptions.rightBarline = "none";
-            
+
             let div = document.getElementById('pattern-canvas');
             if (div.children[0]) {
                 div.removeChild(div.children[0]);
@@ -120,7 +125,7 @@ export default {
                     */
                     let tempRhythmStr = '';
                     for (let i in node.children) {
-                        let rhythm = node.children[i];                        
+                        let rhythm = node.children[i];
                         if (rhythm.tagName == 'beam') {
                             tempRhythmStr += ' [b';
                             if (rhythm.getAttribute('tuplet')) {
