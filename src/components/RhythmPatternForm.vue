@@ -54,7 +54,10 @@ export default {
                 let pt = pattern[i].split('[');
                 for (let j in pt) {
                     if (/\d/.test(pt[j])) {
-                        let pt_s = pt[j].toString().split(" ").slice(1);
+                        let pt_s = pt[j].toString().split(" ");
+                        if (pt_s[0] == " ") {
+                            pt_s = pt_s.slice(1);
+                        };
 
                         let bT = rhythmPNode;
                         if (pt[j][0] == 'b') {
@@ -97,8 +100,7 @@ export default {
                 
                 for (let j in pt) {
                     if (/\d/.test(pt[j])) {
-                        
-                        let pt_s = pt[j].toString().split(" ")
+                        let pt_s = pt[j].toString().split(" ");
                         if (pt_s[0] == " ") {
                             pt_s = pt_s.slice(1);
                         };
