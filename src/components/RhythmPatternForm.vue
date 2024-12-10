@@ -84,7 +84,7 @@ export default {
         };
 
         const getMusicalRhythm = (event) => {
-            
+
             if (event) {
                 rhythmPatternData.value[0].value = event.target.value;
             }
@@ -94,14 +94,20 @@ export default {
             let pattern = rhythmPatternData.value[0].value.split(']');
             for (let i in pattern) {
                 let pt = pattern[i].split('[');
+                
                 for (let j in pt) {
                     if (/\d/.test(pt[j])) {
-                        let pt_s = pt[j].toString().split(" ").slice(1);
+                        
+                        let pt_s = pt[j].toString().split(" ")
+                        if (pt_s[0] == " ") {
+                            pt_s = pt_s.slice(1);
+                        };
+
                         for (let k in pt_s) {
                             let duration = 4 / parseFloat(pt_s[k]);
                             if (pt_s[k].includes('.')) {
                                 let dots = pt_s[k].toString().split(".");
-                                duration = parseFloat(dots[0]) / 4;
+                                duration = 4 / parseFloat(dots[0]);
                                 let tempD = duration;
                                 for (let _ in dots.slice(1)) {
                                     duration += tempD / 2;
@@ -117,10 +123,15 @@ export default {
 
                             if (duration) {
                                 const n = new music21.note.Note('B', duration);
-                                if ((pt[j][0] == 'b' && pt[j][1] != ' ' && duration < ((tuplet - 1) / tuplet)) || (pt[j][0] == 'b' && pt[j][1] == ' ')) {
-                                    if (k == 0) { n.beams.append('start'); }
-                                    else if (k == pt_s.length - 1) { n.beams.append('stop'); }
-                                    else { n.beams.append('continue'); }
+                                if ((pt[j][0] == 'b' && pt[j][1] != ' ' && duration < ((tuplet - 1) / tuplet)) || (pt[j][0] == 'b' && pt[j][1] == ' ' && duration < 1)) {
+                                    try {
+                                        if (k == 0) { n.beams.append('start'); }
+                                        else if (k == pt_s.length - 1) { n.beams.append('stop'); }
+                                        else { n.beams.append('continue'); }
+                                    } catch(err) {
+                                        console.log('Beamming is not possible!');
+
+                                    }
                                 };
                                 streamM.append(n);
                             }
