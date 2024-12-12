@@ -87,7 +87,7 @@ export default {
         const getXpathNode = (nodeP, xpath) => {
             const result = nodeP.evaluate(xpath, nodeP, prefix => prefix === 'mei' ? 'http://www.music-encoding.org/ns/mei' : null, XPathResult.ANY_TYPE, null);
             return result.iterateNext();
-        }
+        };
 
         const getInfoFromMEI = () => {
 

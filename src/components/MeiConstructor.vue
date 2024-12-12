@@ -62,7 +62,6 @@ import { onMounted } from 'vue';
 
 import createVerovioModule from 'verovio/wasm';
 import { VerovioToolkit } from 'verovio/esm';
-//import * as music21 from 'music21j';
 
 import TitleStmtForm from './TitleStmtForm.vue';
 import SourceStmtForm from './SourceStmtForm.vue';
@@ -158,8 +157,22 @@ export default {
       xmlDoc.value = (new DOMParser()).parseFromString(MEIData.value, "text/xml");
     };
 
+    const getXpathNode = (nodeP, xpath) => {
+        const result = nodeP.evaluate(xpath, nodeP, prefix => prefix === 'mei' ? 'http://www.music-encoding.org/ns/mei' : null, XPathResult.ANY_TYPE, null);
+        return result.iterateNext();
+    };
+
     const exportMEI = () => {
 
+      const a = document.createElement('a');
+      const docString = new XMLSerializer().serializeToString(xmlDoc.value);
+
+      const blob = new Blob([docString], {type: 'application/xml'});
+      a.setAttribute('href', URL.createObjectURL(blob)); 
+
+      let filenameNode = getXpathNode(xmlDoc.value, './/mei:titleStmt//mei:title[@type="main"]');
+      a.setAttribute('download', filenameNode.getAttribute('xml:id') + '.mei');
+      a.click()
     };
 
     // Return reactive references and methods
