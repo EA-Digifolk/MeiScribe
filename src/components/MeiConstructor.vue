@@ -1,8 +1,27 @@
 <template>
   <div class="container-xxl w-100">
-    <h1>MEI Constructor</h1>
+    <nav class="w-100 navbar navbar-expand-lg navbar-light bg-light 2">
+      <a class="navbar-brand p-2" href="#"><img src="/ea-digifolk-logo.png" width="20px"/> EA-Digifolk MEI Constructor</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="#" @click="MEIData = ''">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Link</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!--FILE FRAME-->
     <div class="container-xxl mb-5 mt-5" v-if="MEIData === ''">
+
       <div class="row ">
         <!-- File Input for MEI, MusicXML and MIDI -->
         <div class="col d-flex justify-content-start flex-wrap align-content-center border bg-light">
@@ -28,10 +47,17 @@
           <textarea class="w-100" v-model="abcString" placeholder="Enter ABC string"></textarea>
         </div>
       </div>
+
+      <!--Github Integration-->
+      
+
+
       <div class="row justify-content-center">
         <button class="btn btn-primary w-100" @click="startProcess">Start</button>
       </div>
     </div>
+
+    <!--MAIN FRAME-->
     <div class="container-xxl mb-5 mt-5 align-content-center" v-else>
       <button class="btn btn-primary" style="width: 95% !important" @click="exportMEI">Export MEI</button>
 
@@ -149,14 +175,14 @@ export default {
         urlFile.value = 'https://raw.githubusercontent.com/' + filenameS[3] + '/' + filenameS[4] + '/refs/heads/' + filenameS[6] + '/' + filenameS[7] + '/' + filenameS[8];
       }
 
-      
+
       if (urlFile.value != '') {
         const response = await fetch(urlFile.value);
         const data = await response.text();
 
         let filenameS = urlFile.value.split('/');
         fileData.value = data;
-        fileName.value = filenameS[filenameS.length-1];
+        fileName.value = filenameS[filenameS.length - 1];
       }
 
     };
