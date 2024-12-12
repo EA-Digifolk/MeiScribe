@@ -90,3 +90,13 @@ button:focus-visible {
 .loadingSoundfont {
   width:0px !important;
 }
+
+.custom-tooltip {
+  --bs-tooltip-max-width: 20em !important;
+  --bs-tooltip-bg:#002244 !important;
+}
+
+.custom-tooltip > .tooltip-inner{
+  text-align: left;
+  max-width: 60em;
+}

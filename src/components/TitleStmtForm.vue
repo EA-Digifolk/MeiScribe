@@ -2,13 +2,16 @@
     <div class="card w-100">
         <div class="card-header">
             <h4 class="w-100">Title Statement Form</h4> <button href="#" class="btn-save-mei btn btn-primary ml-1"
-                @click="saveToMEI" data-tooltip="Apply Information To MEI File">Apply To MEI</button>
+                @click="saveToMEI" title="Apply Information To MEI File" data-bs-customClass="custom-tooltip"
+                            data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true">Apply To MEI</button>
         </div>
         <div class="card-body container">
             <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
                 <li class="row mb-1" v-for="item in titleStmtData">
-                    <div class="col col-sm-2 card-text" style="text-align: right" :data-tooltip="item.tooltip">
-                        <p class="card-text">{{ item.on_display }}</p>
+                    <div class="col col-sm-2 card-text" style="text-align: right">
+                        <p class="card-text" :title="item.tooltip" data-bs-customClass="custom-tooltip"
+                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">{{
+                    item.on_display }}</p>
                     </div>
                     <div class="col col-sm-10 card-text"> <input class="w-100 p-1" type="text" v-model="item.value"
                             :placeholder="item.default" /> </div>
@@ -35,6 +38,7 @@ import { ref } from 'vue';
 import { onMounted } from 'vue';
 
 import Modal from './Modal.vue';
+import { Tooltip } from "bootstrap";
 
 export default {
     components: {
@@ -43,24 +47,44 @@ export default {
     props: ['MEIData'],
     setup(props) {
         const titleStmtData = ref([
-            { name: 'id', tag: './/mei:titleStmt//mei:title[@type="main"]', value: '', on_display: 'ID', default: 'CO-YEAR-RE-SUB-NUM', tooltip: 'XPTO'},
-            { name: 'title', tag: './/mei:titleStmt//mei:title', value: '', on_display: 'Title', default: '', tooltip: '' },
-            { name: 'subtitle', tag: './/mei:titleStmt//mei:title[@type="subtitle"]', value: '', on_display: 'Subtitle', default: '', tooltip: '' },
-            { name: 'composer', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="composer"]', value: '', on_display: 'Composer', default: '', tooltip: '' },
-            { name: 'compiler', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="compiler"]', value: '', on_display: 'Compiler', default: '', tooltip: '' },
-            { name: 'informer', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="informer"]', value: '', on_display: 'Informer', default: '', tooltip: '' },
-            { name: 'encoder', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="encoder"]', value: '', on_display: 'Encoder', default: '', tooltip: '' },
-            { name: 'editor', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="editor"]', value: '', on_display: 'Editor', default: '', tooltip: '' },
-            { name: 'geogName', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="informer"]//mei:geogName', value: '', on_display: 'Geography', default: '', tooltip: '' },
+            { name: 'id', tag: './/mei:titleStmt//mei:title[@type="main"]', value: '', on_display: 'ID', default: 'CO-YEAR-RE-SUB-NUM', tooltip: `<pre>ID should be something similar to CO-YEAR-RE-SUB-NUM, with letters standing for:</br>-CO: Country of Origin</br>-YEAR: Year of Collection/Book</br>-RE: Region/District (ex: SA = Salamanca)</br>-SUB: Sub-Region/City</br>-NUM: Number Identifier (e.g., number of song in book, number of page in book, order, etc...)</pre>`},
+            { name: 'title', tag: './/mei:titleStmt//mei:title', value: '', on_display: 'Title', default: '', tooltip: `<pre>Title of the Song</pre>` },
+            { name: 'subtitle', tag: './/mei:titleStmt//mei:title[@type="subtitle"]', value: '', on_display: 'Subtitle', default: '', tooltip: `<pre>Subtitle (optional)</pre>` },
+            { name: 'composer', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="composer"]', value: '', on_display: 'Composer', default: '', tooltip: `<pre>Composer (optional)</pre>` },
+            { name: 'compiler', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="compiler"]', value: '', on_display: 'Compiler', default: '', tooltip: `<pre>Compiler (optional): who compiled the song in a collection</pre>` },
+            { name: 'informer', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="informer"]', value: '', on_display: 'Informer', default: '', tooltip: `<pre>Informer (optional): who told/sung the song</pre>` },
+            { name: 'encoder', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="encoder"]', value: '', on_display: 'Encoder', default: '', tooltip: `<pre>Encoder (optional): who encoded the song as musicXML, MEI, ABC</pre>` },
+            { name: 'editor', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="editor"]', value: '', on_display: 'Editor', default: '', tooltip: `<pre>Editor (optional): who edited the song</pre>` },
+            { name: 'geogName', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="informer"]//mei:geogName', value: '', on_display: 'Geography', default: '', tooltip: `<pre>Geography (optional) information if the song is traditional from a specific region</pre>` },
         ]);
         const showModal = ref(false);
         const TitleStmOntMEI = ref('');
 
         onMounted(() => {
             getInfoFromMEI();
+            let tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new Tooltip(tooltipTriggerEl, {
+                'customClass': 'custom-tooltip',
+                animated: 'fade',
+                placement: 'bottom',
+                trigger: 'hover'
+            })});
         });
 
         const saveToMEI = () => {
+            
+            if (titleStmtData.value[0].value === '' || titleStmtData.value[0].value === null || titleStmtData.value[0].value === undefined) {
+                alert('ID is not set! You must set it to save information to MEI file!')
+                return;
+            }
+
+            if (titleStmtData.value[1].value === '' || titleStmtData.value[1].value === null || titleStmtData.value[1].value === undefined) {
+                alert('Title is not set! You must set it to save information to MEI file!')
+                return;
+            }
+
+
             for (let i in titleStmtData.value) {
                 let item = titleStmtData.value[i];
                 let node = getXpathNode(props.MEIData, item.tag);
@@ -87,13 +111,13 @@ export default {
                 };
                 if (node) {
                     if (item.name == 'id') {
-                        node.setAttribute('xml:id', item.value.replace(/\s+/g,' ').trim());
+                        node.setAttribute('xml:id', item.value.replace(/\s+/g, ' ').trim());
                     } else if (item.name == 'informer') {
                         let tempChildren = node.children[0]
-                        node.textContent = item.value.replace(/\s+/g,' ').trim();
+                        node.textContent = item.value.replace(/\s+/g, ' ').trim();
                         node.append(tempChildren);
                     } else {
-                        node.textContent = item.value.replace(/\s+/g,' ').trim();
+                        node.textContent = item.value.replace(/\s+/g, ' ').trim();
                     };
                 };
             };
@@ -136,9 +160,9 @@ export default {
                 let node = getXpathNode(props.MEIData, item.tag);
                 if (node) {
                     if (item.name == 'id') {
-                        item.value = node.getAttribute('xml:id').replace(/\s+/g,' ').trim();
+                        item.value = node.getAttribute('xml:id').replace(/\s+/g, ' ').trim();
                     } else {
-                        item.value = node.textContent.replace(/\s+/g,' ').trim();
+                        item.value = node.textContent.replace(/\s+/g, ' ').trim();
                     }
                 }
             }
@@ -174,33 +198,5 @@ export default {
 
 #MEI-Modal-TitleStmt {
     max-height: 80% !important;
-}
-
-[data-tooltip]::before {
-    /* needed - do not touch */
-    content: attr(data-tooltip);
-    position: absolute;
-    opacity: 0;
-
-    /* customizable */
-    transition: all 0.15s ease;
-    padding: 10px;
-    color: #333;
-    border-radius: 10px;
-    box-shadow: 2px 2px 1px silver;
-}
-
-[data-tooltip]:hover::before {
-    /* needed - do not touch */
-    opacity: 1;
-
-    /* customizable */
-    background: lightblue;
-    margin-top: 1em;
-    margin-left: -8em;
-}
-
-[data-tooltip]:not([data-tooltip-persistent])::before {
-    pointer-events: none;
 }
 </style>
