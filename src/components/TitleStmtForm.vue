@@ -26,7 +26,7 @@
                     <h3>Saved Title Statement to MEI File</h3>
                 </template>
                 <template #body>
-                    <pre class="w-100" id="MEI-Modal-TitleStmt">{{ TitleStmOntMEI }}</pre>
+                    <pre class="w-100" id="MEI-Modal-TitleStmt">{{ TitleStmtOntMEI }}</pre>
                 </template>
             </modal>
         </Teleport>
@@ -65,7 +65,7 @@ export default {
                 { name: 'geogName', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="informer"]//mei:geogName', value: '', on_display: 'Geography', default: '', tooltip: "<pre>Geography (optional) information if the song is traditional from a specific region</pre>" },
             ],
             showModal: false,
-            TitleStmOntMEI: ''
+            TitleStmtOntMEI: ''
         };
     },
     mounted() {
@@ -128,7 +128,7 @@ export default {
                 }
             });
 
-            this.TitleStmOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:titleStmt')));
+            this.TitleStmtOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:titleStmt')));
             this.showModal = true;
         },
         getInfoFromMEI() {

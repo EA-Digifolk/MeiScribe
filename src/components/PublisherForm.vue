@@ -28,7 +28,7 @@
                     <h3>Saved Publisher Statement to MEI File</h3>
                 </template>
                 <template #body>
-                    <pre class="w-100" id="MEI-Modal-PublisherStmt">{{ PublisherStmOntMEI }}</pre>
+                    <pre class="w-100" id="MEI-Modal-PublisherStmt">{{ PublisherStmtOntMEI }}</pre>
                 </template>
             </modal>
         </Teleport>
@@ -54,7 +54,7 @@ export default {
                 { name: 'availability', tag: './/mei:pubStmt//mei:availability', value: '', on_display: 'Availability', tooltip: `<pre>Availability Notes</pre>`, default: `To the best of our knowledge, the full compositions on this site are in the public domain, the excerpts are in the public domain or are allowable under fair-use, and the few compositions that are still under copyright are used by permission. These scores, are provided for educational use only and are not to be used commercially.` },
             ],
             showModal: false,
-            PublisherStmOntMEI: ''
+            PublisherStmtOntMEI: ''
         };
     },
     mounted() {
@@ -84,7 +84,7 @@ export default {
                 }
             });
 
-            this.PublisherStmOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:pubStmt')));
+            this.PublisherStmtOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:pubStmt')));
             this.showModal = !this.showModal;
         },
         getInfoFromMEI() {
