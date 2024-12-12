@@ -60,6 +60,21 @@ export default {
             let image = document.getElementById(props.id + '-score-div-img');
             image.src = url;
             image.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+            
+
+            /* 
+            CODE TO PLAY AUDIO
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+            audioContext.resume();
+            music21.common.urls.soundfontUrl = 'https://raw.githubusercontent.com/gleitz/midi-js-soundfonts/gh-pages/FluidR3_GM/';
+            music21.miditools.loadSoundfont('clarinet', i => {
+                const tn = music21.tinyNotation.TinyNotation('4/4 c4 d e f g1');
+                tn.instrument = i;
+                tn.playStream();
+            });
+            CODE TO WRITE NOTES
+            const n = new music21.note.Note('F#');
+            */
         };
 
         return {
