@@ -1,7 +1,8 @@
 <template>
   <div class="container-xxl w-100">
     <nav class="w-100 navbar navbar-expand-lg navbar-light bg-light 2">
-      <a class="navbar-brand p-2" href="#"><img src="/ea-digifolk-logo.png" width="20px"/> EA-Digifolk MEI Constructor</a>
+      <a class="navbar-brand p-2" href="#"><img src="/ea-digifolk-logo.png" width="20px" /> EA-Digifolk MEI
+        Constructor</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -12,16 +13,16 @@
           <li class="nav-item active">
             <a class="nav-link" href="#" @click="MEIData = ''">Home <span class="sr-only">(current)</span></a>
           </li>
-          <li class="nav-item">
+          <!--<li class="nav-item">
             <a class="nav-link" href="#">Link</a>
-          </li>
+          </li>-->
         </ul>
       </div>
     </nav>
 
     <!--FILE FRAME-->
     <div class="container-xxl mb-5 mt-5" v-if="MEIData === ''">
-
+      <div class="row border bg-light p-2 pt-3"><p style="text-align: left"><b>Single Files</b></p></div>
       <div class="row ">
         <!-- File Input for MEI, MusicXML and MIDI -->
         <div class="col d-flex justify-content-start flex-wrap align-content-center border bg-light">
@@ -49,10 +50,16 @@
       </div>
 
       <!--Github Integration-->
-      
+      <!--<div class="row mt-3">
+        <div class="col col-12 d-flex justify-content-start flex-wrap align-content-center border bg-light w-100 p-3 pb-2">
+          <p><b>Github Repository</b></p>
+        </div>
+        <div class="col col-12 d-flex justify-content-start flex-wrap align-content-center border bg-light w-100 p-3">
+          zzzz
+        </div>
+      </div>-->
 
-
-      <div class="row justify-content-center">
+      <div class="row justify-content-center mt-3">
         <button class="btn btn-primary w-100" @click="startProcess">Start</button>
       </div>
     </div>
