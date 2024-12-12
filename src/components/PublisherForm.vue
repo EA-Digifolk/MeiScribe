@@ -1,97 +1,106 @@
 <template>
     <div class="card w-100">
         <div class="card-header">
-            <h4 class="w-100">Publisher Form</h4> <button href="#" class="btn-save-mei btn btn-primary ml-1"
-                @click="saveToMEI">Apply To MEI</button>
+            <h4 class="w-100">Publisher Form</h4>
+            <button href="#" class="btn-save-mei btn btn-primary ml-1" title="Apply Information To MEI File"
+                data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="bottom"
+                data-bs-html="true" @click="saveToMEI">Apply To MEI</button>
         </div>
         <div class="card-body container">
             <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
                 <li class="row mb-1" v-for="item in pubData">
                     <div class="col col-sm-2 card-text" style="text-align: right">
-                        <p class="card-text">{{ item.on_display }}</p>
+                        <p class="card-text" :title="item.tooltip" data-bs-customClass="custom-tooltip"
+                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">{{ item.on_display }}
+                        </p>
                     </div>
-                    <div class="col col-sm-10 card-text"> <input class="w-100 p-1" type="text" v-model="item.value"
-                            :placeholder="item.default" /> </div>
+                    <div class="col col-sm-10 card-text">
+                        <input v-if="item.name !== 'availability'" class="w-100 p-1" type="text" v-model="item.value"
+                            :placeholder="item.default" />
+                        <textarea v-else class="w-100 p-1" v-model="item.value" :placeholder="item.default"></textarea>
+                    </div>
                 </li>
             </div>
         </div>
+        <Teleport to="body">
+            <modal :show="showModal" @close="showModal = false">
+                <template #header>
+                    <h3>Saved Publisher Statement to MEI File</h3>
+                </template>
+                <template #body>
+                    <pre class="w-100" id="MEI-Modal-PublisherStmt">{{ PublisherStmOntMEI }}</pre>
+                </template>
+            </modal>
+        </Teleport>
     </div>
 </template>
 
-<script>
-import { ref } from 'vue';
-import { onMounted } from 'vue';
+<script type="module">
+import Modal from './Modal.vue';
+import { Tooltip } from 'bootstrap';
 
 export default {
+    inject: ['getXpathNode', 'prettifyXml'],
+    components: {
+        Tooltip,
+        Modal
+    },
     props: ['MEIData'],
-    setup(props) {
-        const pubData = ref([
-            { name: 'publisher', tag: './/mei:pubStmt//mei:publisher', value: '', on_display: 'Publisher', default: 'EA-Digifolk Reseach Project' },
-            { name: 'date', tag: './/mei:pubStmt//mei:date', value: '', on_display: 'Date', default: '2024' },
-            { name: 'availability', tag: './/mei:pubStmt//mei:availability', value: '', on_display: 'Publisher', default: "To the best of our knowledge, the full compositions on this site are in the public domain, the excerpts are in the public domain or are allowable under fair-use, and the few compositions that are still under copyright are used by permission. These scores, are provided for educational use only and are not to be used commercially." },
-        ]);
-
-        onMounted(() => {
-            //console.log(props.MEIData);
-            getInfoFromMEI();
+    data() {
+        return {
+            pubData: [
+                { name: 'publisher', tag: './/mei:pubStmt//mei:publisher', value: '', on_display: 'Publisher', default: 'EA-Digifolk Reseach Project', tooltip: `<pre>Publisher</pre>` },
+                { name: 'date', tag: './/mei:pubStmt//mei:date', value: '', on_display: 'Date', default: '2024', tooltip: `<pre>Date (Year)</pre>` },
+                { name: 'availability', tag: './/mei:pubStmt//mei:availability', value: '', on_display: 'Availability', tooltip: `<pre>Availability Notes</pre>`, default: `To the best of our knowledge, the full compositions on this site are in the public domain, the excerpts are in the public domain or are allowable under fair-use, and the few compositions that are still under copyright are used by permission. These scores, are provided for educational use only and are not to be used commercially.` },
+            ],
+            showModal: false,
+            PublisherStmOntMEI: ''
+        };
+    },
+    mounted() {
+        this.getInfoFromMEI();
+        let tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new Tooltip(tooltipTriggerEl, {
+                'customClass': 'custom-tooltip',
+                animated: 'fade',
+                placement: 'bottom',
+                trigger: 'hover'
+            })
         });
-
-        const saveToMEI = () => {
-            for (let i in pubData.value) {
-                let item = pubData.value[i];
-                let node = getXpathNode(props.MEIData, item.tag);
+    },
+    methods: {
+        saveToMEI() {
+            this.pubData.forEach(item => {
+                let node = this.getXpathNode(this.MEIData, item.tag);
 
                 if (!node) {
-                    //console.log('No node with tag: ' + item.tag);
-                    let nodeP = getXpathNode(props.MEIData, './/mei:pubStmt//');
+                    let nodeP = this.getXpathNode(this.MEIData, './/mei:pubStmt');
                     let node = document.createElementNS('http://www.music-encoding.org/ns/mei', item.name);
                     nodeP.append(node);
                 }
                 if (node) {
-                    node.textContent = item.value;
+                    node.textContent = item.value.replace(/\s+/g, ' ').trim();
                 }
-            };
-            //console.log(props.MEIData)
-        };
+            });
 
-        const getXpathNode = (nodeP, xpath) => {
-            const result = nodeP.evaluate(xpath, nodeP, prefix => prefix === 'mei' ? 'http://www.music-encoding.org/ns/mei' : null, XPathResult.ANY_TYPE, null);
-            return result.iterateNext();
-        }
-
-        const getInfoFromMEI = () => {
-            for (let i in pubData.value) {
-                let item = pubData.value[i];
-                let node = getXpathNode(props.MEIData, item.tag);
+            this.PublisherStmOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:pubStmt')));
+            this.showModal = !this.showModal;
+        },
+        getInfoFromMEI() {
+            this.pubData.forEach(item => {
+                let node = this.getXpathNode(this.MEIData, item.tag);
                 if (node) {
-                    item.value = node.textContent;
+                    item.value = node.textContent.replace(/\s+/g, ' ').trim();
                 }
-            }
-        };
-
-        return {
-            pubData,
-            getXpathNode,
-            getInfoFromMEI,
-            saveToMEI,
-        };
+            });
+        }
     },
 };
 </script>
 
 <style scoped>
-.logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-}
-
-.logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-}
-
-.logo.vue:hover {
-    filter: drop-shadow(0 0 2em #42b883aa);
+#MEI-Modal-PublisherStmt {
+    max-height: 80% !important;
 }
 </style>

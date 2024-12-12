@@ -27,18 +27,18 @@ export default {
     setup(props) {
 
         const sourceStmtData = ref([
-            { name: 'id', tag: './/mei:source', value: '', on_display: 'ID', default: 'CO-YEAR-RE-SUB', type: 'text' },
-            { name: 'title', tag: './/mei:source//mei:title', value: '', on_display: 'Title', default: '', type: 'text' },
-            { name: 'subtitle', tag: './/mei:source//mei:title[@type="subordinate"]', value: '', on_display: 'Subtitle', default: '', type: 'text' },
-            { name: 'compiler', tag: './/mei:source//mei:respStmt//mei:persName[@role="compiler"]', value: '', on_display: 'Compiler', default: '', type: 'text' },
-            { name: 'collaborator', tag: './/mei:source//mei:respStmt//mei:persName[@role="collaborator"]', value: '', on_display: 'Collaborator', default: '', type: 'text' },
-            { name: 'bibliography', tag: './/mei:source//mei:respStmt//mei:persName[@role="bibliography"]', value: '', on_display: 'Bibliography', default: '', type: 'text' },
-            { name: 'introduction', tag: './/mei:source//mei:respStmt//mei:persName[@role="introduction"]', value: '', on_display: 'Introduction', default: '', type: 'text' },
-            { name: 'edition', tag: './/mei:source//mei:imprint//mei:respStmt//mei:persName[@role="edition"]', value: '', on_display: 'Edition', default: '', type: 'text' },
-            { name: 'publisher', tag: './/mei:source//mei:publisher', value: '', on_display: 'Publisher', default: '', type: 'text' },
-            { name: 'place', tag: './/mei:source//mei:pubPlace', value: '', on_display: 'Publication Place', default: '', type: 'text' },
-            { name: 'date', tag: './/mei:source//mei:date', value: '', on_display: 'Publication Date', default: 2024, type: 'number' },
-            { name: 'pages', tag: './/mei:source//mei:extent[@type="pages"]', value: '', on_display: 'Number of Pages', default: 0, type: 'number' },
+            { name: 'id', tag: './/mei:source', value: '', on_display: 'ID', default: 'CO-YEAR-RE-SUB', type: 'text', tooltip: `` },
+            { name: 'title', tag: './/mei:source//mei:title', value: '', on_display: 'Title', default: '', type: 'text', tooltip: `` },
+            { name: 'subtitle', tag: './/mei:source//mei:title[@type="subordinate"]', value: '', on_display: 'Subtitle', default: '', type: 'text', tooltip: `` },
+            { name: 'compiler', tag: './/mei:source//mei:respStmt//mei:persName[@role="compiler"]', value: '', on_display: 'Compiler', default: '', type: 'text', tooltip: `` },
+            { name: 'collaborator', tag: './/mei:source//mei:respStmt//mei:persName[@role="collaborator"]', value: '', on_display: 'Collaborator', default: '', type: 'text', tooltip: `` },
+            { name: 'bibliography', tag: './/mei:source//mei:respStmt//mei:persName[@role="bibliography"]', value: '', on_display: 'Bibliography', default: '', type: 'text', tooltip: `` },
+            { name: 'introduction', tag: './/mei:source//mei:respStmt//mei:persName[@role="introduction"]', value: '', on_display: 'Introduction', default: '', type: 'text', tooltip: `` },
+            { name: 'edition', tag: './/mei:source//mei:imprint//mei:respStmt//mei:persName[@role="edition"]', value: '', on_display: 'Edition', default: '', type: 'text', tooltip: `` },
+            { name: 'publisher', tag: './/mei:source//mei:publisher', value: '', on_display: 'Publisher', default: '', type: 'text', tooltip: `` },
+            { name: 'place', tag: './/mei:source//mei:pubPlace', value: '', on_display: 'Publication Place', default: '', type: 'text', tooltip: `` },
+            { name: 'date', tag: './/mei:source//mei:date', value: '', on_display: 'Publication Date', default: 2024, type: 'number', tooltip: `` },
+            { name: 'pages', tag: './/mei:source//mei:extent[@type="pages"]', value: '', on_display: 'Number of Pages', default: 0, type: 'number', tooltip: `` },
         ]);
 
         onMounted(() => {
@@ -96,13 +96,12 @@ export default {
 
                 if (node) {
                     if (item.name == 'id') {
-                        node.setAttribute('xml:id', item.value)
+                        node.setAttribute('xml:id', item.value.replace(/\s+/g, ' ').trim());
                     } else {
-                        node.textContent = item.value;
+                        node.textContent = item.value.replace(/\s+/g, ' ').trim();
                     }
                 }
             };
-            //console.log(props.MEIData)
         };
 
         const getXpathNode = (nodeP, xpath) => {
@@ -119,9 +118,9 @@ export default {
                     if (item.name === 'id') {
                         item.value = node.getAttribute('xml:id')
                     } else if (item.name === 'date' || item.name === 'pages') {
-                        item.value = parseInt(node.textContent);
+                        item.value = parseInt(node.textContent.replace(/\s+/g, ' ').trim());
                     } else {
-                        item.value = node.textContent;
+                        item.value = node.textContent.replace(/\s+/g, ' ').trim();
                     }
                 }
             }
