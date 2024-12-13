@@ -49,8 +49,8 @@ export default {
     data() {
         return {
             ambitusData: [
-                { name: 'lowest', tag: './/mei:ambNote[@type="lowest"]', value: 0, on_display: 'Lowest Pitch', default: 0 },
-                { name: 'highest', tag: './/mei:ambNote[@type="highest"]', value: 128, on_display: 'Highest Pitch', default: 128 },
+                { name: 'lowest', tag: './/mei:ambNote[@type="lowest"]', value: 0, on_display: 'Lowest Pitch', default: 0, tooltip: 'Lowest Note of Score in midi pitch' },
+                { name: 'highest', tag: './/mei:ambNote[@type="highest"]', value: 128, on_display: 'Highest Pitch', default: 128, tooltip: 'Highest Note of Score in midi pitch' },
             ],
             showModal: false,
             AmbitusOntMEI: ''

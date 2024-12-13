@@ -2,13 +2,16 @@
     <div class="card w-100">
         <div class="card-header">
             <h4 class="w-100">Rhythmic Patterns</h4> <button href="#" class="btn-save-mei btn btn-primary ml-1"
-                @click="saveToMEI">Apply To MEI</button>
+                @click="saveToMEI" title="Apply Information To MEI File" data-bs-customClass="custom-tooltip"
+                data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true">Apply To MEI</button>
         </div>
         <div class="card-body container">
             <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
                 <li class="row mb-1" v-for="item in rhythmPatternData">
                     <div class="col col-sm-2 card-text" style="text-align: right">
-                        <p class="card-text">{{ item.on_display }}</p>
+                        <p class="card-text" :title="item.tooltip" data-bs-customClass="custom-tooltip"
+                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">{{ item.on_display }}
+                        </p>
                     </div>
                     <div class="col col-sm-10 card-text"> <input class="w-100 p-1" type="text" :value="item.value"
                             @change="getMusicalRhythm" :placeholder="item.default" /> </div>
@@ -17,39 +20,66 @@
             </div>
         </div>
         <MusicalScore id="RhythmPatternForm" :vT="vT" />
+        <Teleport to="body">
+            <modal :show="showModal" @close="showModal = false">
+                <template #header>
+                    <h3>Saved Rhythm Pattern to MEI File</h3>
+                </template>
+                <template #body>
+                    <pre class="w-100" id="MEI-Modal-TitleStmt">{{ RhythmPatternOntMEI }}</pre>
+                </template>
+            </modal>
+        </Teleport>
     </div>
 </template>
 
-<script>
-import { onMounted, ref, watch } from 'vue';
+<script type="module">
+import Modal from './Modal.vue';
+import { Tooltip } from 'bootstrap';
 import MusicalScore from './MusicalScore.vue';
 import * as music21 from 'music21j';
 
 export default {
+    inject: ['getXpathNode', 'prettifyXml'],
     components: {
+        Tooltip,
+        Modal,
         MusicalScore
     },
     props: ['MEIData', 'vT'],
-    setup(props) {
-        const rhythmPatternData = ref([
-            { name: 'rhythm pattern', tag: './/mei:supplied[@type="rhythm pattern"]', value: '', on_display: 'Rhythm Pattern', default: '' },
-        ]);
-
-        onMounted(() => {
-            getInfoFromMEI();
+    data() {
+        return {
+            rhythmPatternData: [
+                { name: 'rhythm pattern', tag: './/mei:supplied[@type="rhythm pattern"]', value: '', on_display: 'Rhythm Pattern', default: '', tooltip: `<pre>rhythm_pattern (str): Rhythm Pattern\n- the string should contain the number of each note of the rhythm, i.e., 8 for 8th notes, 4 for quarter notes, etc.\n- each number should be separated by a space\n- if the notes should be beamed, they should be surrounded by brackets with a b just next to the first bracket, i.e., [b 8 8]\n- Example of a rhythm_pattern: '[b 8 8] 4 [b 8 16 16]'</pre>` },
+            ],
+            showModal: false,
+            RhythmPatternOntMEI: ''
+        }
+    },
+    mounted() {
+        this.getInfoFromMEI();
+        const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(tooltipTriggerEl => {
+            new Tooltip(tooltipTriggerEl, {
+                customClass: 'custom-tooltip',
+                animated: 'fade',
+                placement: 'bottom',
+                trigger: 'hover'
+            });
         });
-
-        const saveToMEI = () => {
-            let rhythmPNode = getXpathNode(props.MEIData, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]');
+    },
+    methods: {
+        saveToMEI() {
+            let rhythmPNode = this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]');
             if (rhythmPNode) {
                 rhythmPNode.remove();
             };
 
             rhythmPNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'supplied');
             rhythmPNode.setAttribute('type', 'rhythm pattern');
-            getXpathNode(props.MEIData, './/mei:music//mei:section').insertAdjacentElement("afterbegin", rhythmPNode);
+            this.getXpathNode(this.MEIData, './/mei:music//mei:section').insertAdjacentElement("afterbegin", rhythmPNode);
 
-            let pattern = rhythmPatternData.value[0].value.split(']');
+            let pattern = this.rhythmPatternData[0].value.split(']');
             for (let i in pattern) {
                 let pt = pattern[i].split('[');
                 for (let j in pt) {
@@ -81,23 +111,23 @@ export default {
                         };
                     }
                 }
-            }
+            };
 
-            console.log(getXpathNode(props.MEIData, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]'));
-        };
-
-        const getMusicalRhythm = (event) => {
+            this.RhythmPatternOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]')));
+            this.showModal = true;
+        },
+        getMusicalRhythm(event) {
 
             if (event) {
-                rhythmPatternData.value[0].value = event.target.value;
+                this.rhythmPatternData[0].value = event.target.value;
             }
 
             let streamM = new music21.stream.Stream();
 
-            let pattern = rhythmPatternData.value[0].value.split(']');
+            let pattern = this.rhythmPatternData[0].value.split(']');
             for (let i in pattern) {
                 let pt = pattern[i].split('[');
-                
+
                 for (let j in pt) {
                     if (/\d/.test(pt[j])) {
                         let pt_s = pt[j].toString().split(" ");
@@ -130,7 +160,7 @@ export default {
                                         if (k == 0) { n.beams.append('start'); }
                                         else if (k == pt_s.length - 1) { n.beams.append('stop'); }
                                         else { n.beams.append('continue'); }
-                                    } catch(err) {
+                                    } catch (err) {
                                         console.log('Beamming is not possible!');
 
                                     }
@@ -152,14 +182,8 @@ export default {
                 div.removeChild(div.children[0]);
             };
             streamM.appendNewDOM(div);
-        };
-
-        const getXpathNode = (nodeP, xpath) => {
-            const result = nodeP.evaluate(xpath, nodeP, prefix => prefix === 'mei' ? 'http://www.music-encoding.org/ns/mei' : null, XPathResult.ANY_TYPE, null);
-            return result.iterateNext();
-        }
-
-        const processNoteTag = (tag) => {
+        },
+        processNoteTag(tag) {
             if (tag.tagName == 'note') {
                 let tagP = ' ' + tag.getAttribute('dur');
                 if (tag.getAttribute('dots')) {
@@ -168,16 +192,11 @@ export default {
                 return tagP;
             }
             return '';
-        }
-
-        const getInfoFromMEI = () => {
-
-            for (let i in rhythmPatternData.value) {
-                let item = rhythmPatternData.value[i];
-                let node = getXpathNode(props.MEIData, item.tag);
-
+        },
+        getInfoFromMEI() {
+            this.rhythmPatternData.forEach(item => {
+                let node = this.getXpathNode(this.MEIData, item.tag);
                 if (node) {
-
                     let tempRhythmStr = '';
                     for (let i in node.children) {
                         let rhythm = node.children[i];
@@ -187,30 +206,21 @@ export default {
                                 tempRhythmStr += rhythm.getAttribute('tuplet');
                             }
                             for (let r2 in rhythm.children) {
-                                tempRhythmStr += processNoteTag(rhythm.children[r2]);
+                                tempRhythmStr += this.processNoteTag(rhythm.children[r2]);
                             }
                             tempRhythmStr += ']';
                         } else if (rhythm.tagName == 'note') {
-                            tempRhythmStr += processNoteTag(rhythm);
+                            tempRhythmStr += this.processNoteTag(rhythm);
                         }
-                        rhythmPatternData.value[0].value = tempRhythmStr.slice(1);
+                        this.rhythmPatternData[0].value = tempRhythmStr.slice(1);
                     }
                 } else {
                     /* Try to Find An Algorithm that gets the rhythmic pattern ? */
                 }
 
-                getMusicalRhythm()
-            }
-        };
-
-        return {
-            rhythmPatternData,
-            getXpathNode,
-            getInfoFromMEI,
-            saveToMEI,
-            processNoteTag,
-            getMusicalRhythm
-        };
+                this.getMusicalRhythm()
+            });
+        }
     },
 };
 </script>
