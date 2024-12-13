@@ -46,7 +46,8 @@ export default {
         Modal,
         MusicalScore
     },
-    props: ['MEIData', 'vT'],
+    props: ['MEIData', 'vT', 'export'],
+    emits: ["saveFinished"],
     data() {
         return {
             rhythmPatternData: [
@@ -68,8 +69,15 @@ export default {
             });
         });
     },
+    watch: {
+        export: function (newVal, oldVal) {
+            if (newVal != oldVal) {
+                this.saveToMEI(false);
+            }
+        }
+    },
     methods: {
-        saveToMEI() {
+        saveToMEI(openModal = true) {
             let rhythmPNode = this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]');
             if (rhythmPNode) {
                 rhythmPNode.remove();
@@ -114,7 +122,12 @@ export default {
             };
 
             this.RhythmPatternOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]')));
-            this.showModal = true;
+            
+            if (openModal) {
+                this.showModal = !this.showModal;
+            } else {
+                this.$emit("saveFinished", "RhythmPatternForm");
+            }
         },
         getMusicalRhythm(event) {
 

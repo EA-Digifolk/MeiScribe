@@ -70,7 +70,8 @@ export default {
         Tooltip,
         Modal
     },
-    props: ['MEIData', 'vT'],
+    props: ['MEIData', 'vT', 'export'],
+    emits: ["saveFinished"],
     data() {
         return {
             phraseSegmentData: [
@@ -94,8 +95,15 @@ export default {
             });
         });
     },
+    watch: {
+        export: function (newVal, oldVal) {
+            if (newVal != oldVal) {
+                this.saveToMEI(false);
+            }
+        }
+    },
     methods: {
-        saveToMEI() {
+        saveToMEI(openModal = true) {
             let phraseNode = this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="phrases"]');
             if (phraseNode) {
                 phraseNode.remove();
@@ -122,7 +130,12 @@ export default {
             }
 
             this.SegmentationOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="phrases"]')));
-            this.showModal = true;
+            
+            if (openModal) {
+                this.showModal = !this.showModal;
+            } else {
+                this.$emit("saveFinished", "SegmentationForm");
+            }
         },
         getInfoFromMEI() {
             this.noteIDS = this.vT.getDescriptiveFeatures()['pitchesIds'].flat().flat();

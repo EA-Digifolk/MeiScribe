@@ -34,8 +34,9 @@
 </template>
 
 <script type="module">
-import Modal from './Modal.vue';
 import { Tooltip } from 'bootstrap';
+
+import Modal from './Modal.vue';
 
 export default {
     inject: ['getXpathNode', 'prettifyXml'],
@@ -43,7 +44,8 @@ export default {
         Tooltip,
         Modal
     },
-    props: ['MEIData'],
+    props: ['MEIData', 'export'],
+    emits: ["saveFinished"],
     data() {
         return {
             titleStmtData: [
@@ -80,8 +82,15 @@ export default {
             });
         });
     },
+    watch: {
+        export: function (newVal, oldVal) {
+            if (newVal != oldVal) {
+                this.saveToMEI(false);
+            }
+        }
+    },
     methods: {
-        saveToMEI() {
+        saveToMEI(openModal = true) {
             if (!this.titleStmtData[0].value) {
                 alert('ID is not set! You must set it to save information to MEI file!');
                 return;
@@ -102,14 +111,14 @@ export default {
                             nodeT.setAttribute('type', "main");
                         }; node = nodeT;
                     } else if (item.name == 'subtitle') {
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'title');
+                        node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'title');
                         node.setAttribute('type', 'subtitle');
                         this.getXpathNode(this.MEIData, this.titleStmtData[1].tag).insertAdjacentElement("afterend", node);
                     } else if (item.name == 'geogName') {
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'geogName');
+                        node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'geogName');
                         this.getXpathNode(this.MEIData, this.titleStmtData[8].tag).append(node);
                     } else {
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'persName');
+                        node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'persName');
                         node.setAttribute('role', item.name);
                         this.getXpathNode(this.MEIData, './/mei:titleStmt//mei:respStmt').append(node);
                     }
@@ -129,7 +138,12 @@ export default {
             });
 
             this.TitleStmtOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:titleStmt')));
-            this.showModal = true;
+
+            if (openModal) {
+                this.showModal = !this.showModal;
+            } else {
+                this.$emit("saveFinished", "TitleForm");
+            }
         },
         getInfoFromMEI() {
             this.titleStmtData.forEach(item => {

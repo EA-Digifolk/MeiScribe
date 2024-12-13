@@ -45,7 +45,8 @@ export default {
         Modal,
         MusicalScore
     },
-    props: ['MEIData', 'vT'],
+    props: ['MEIData', 'vT', 'export'],
+    emits: ["saveFinished"],
     data() {
         return {
             ambitusData: [
@@ -68,8 +69,15 @@ export default {
             });
         });
     },
+    watch: {
+        export: function (newVal, oldVal) {
+            if (newVal != oldVal) {
+                this.saveToMEI(false);
+            }
+        }
+    },
     methods: {
-        saveToMEI() {
+        saveToMEI(openModal = true) {
             let ambitusNode = this.getXpathNode(this.MEIData, './/mei:ambitus');
             if (!ambitusNode) {
                 let node = this.getXpathNode(this.MEIData, './/mei:scoreDef');
@@ -101,7 +109,12 @@ export default {
             });
 
             this.AmbitusOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:ambitus')));
-            this.showModal = true;
+            
+            if (openModal) {
+                this.showModal = !this.showModal;
+            } else {
+                this.$emit("saveFinished", "AmbitusForm");
+            }
         },
         getInfoFromMEI() {
             this.ambitusData.forEach(item => {

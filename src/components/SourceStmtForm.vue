@@ -42,7 +42,8 @@ export default {
         Tooltip,
         Modal
     },
-    props: ['MEIData'],
+    props: ['MEIData', 'export'],
+    emits: ["saveFinished"],
     data() {
         return {
             sourceStmtData: [
@@ -74,9 +75,16 @@ export default {
                 trigger: 'hover'
             });
         });
+    },    
+    watch: {
+        export: function (newVal, oldVal) {
+            if (newVal != oldVal) {
+                this.saveToMEI(false);
+            }
+        }
     },
     methods: {
-        saveToMEI() {
+        saveToMEI(openModal = true) {
             let imprintNode = this.getXpathNode(this.MEIData, './/mei:source//mei:imprint');
             if (!imprintNode) {
                 let node = this.getXpathNode(this.MEIData, './/mei:fileDesc');
@@ -133,7 +141,12 @@ export default {
             });
 
             this.SourceStmtOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:sourceDesc')));
-            this.showModal = true;
+            
+            if (openModal) {
+                this.showModal = !this.showModal;
+            } else {
+                this.$emit("saveFinished", "SourceForm");
+            }
         },
         getInfoFromMEI() {
 

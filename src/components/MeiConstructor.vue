@@ -22,7 +22,9 @@
 
     <!--FILE FRAME-->
     <div class="container-xxl mb-5 mt-5" v-if="MEIData === ''">
-      <div class="row border bg-light p-2 pt-3"><p style="text-align: left"><b>Single Files</b></p></div>
+      <div class="row border bg-light p-2 pt-3">
+        <p style="text-align: left"><b>Single Files</b></p>
+      </div>
       <div class="row ">
         <!-- File Input for MEI, MusicXML and MIDI -->
         <div class="col d-flex justify-content-start flex-wrap align-content-center border bg-light">
@@ -79,13 +81,20 @@
         </div>
 
         <div class="carousel-inner">
-          <TitleStmtForm class="carousel-item active" :MEIData="xmlDoc" />
-          <PublisherForm class="carousel-item" :MEIData="xmlDoc" />
-          <SourceStmtForm class="carousel-item" :MEIData="xmlDoc" />
-          <WorklistForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" />
-          <AmbitusForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" />
-          <RhythmPatternForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" />
-          <PhraseForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" />
+          <TitleStmtForm class="carousel-item active" :MEIData="xmlDoc" :export="exportData"
+            @save-finished="allFormsReadyToExport['TitleForm'] = true; afterTrigger();" />
+          <PublisherForm class="carousel-item" :MEIData="xmlDoc" :export="exportData"
+            @save-finished="allFormsReadyToExport['PublisherForm'] = true; afterTrigger();" />
+          <SourceStmtForm class="carousel-item" :MEIData="xmlDoc" :export="exportData"
+            @save-finished="allFormsReadyToExport['SourceForm'] = true; afterTrigger();" />
+          <WorklistForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
+            @save-finished="allFormsReadyToExport['WorklistForm'] = true; afterTrigger();" />
+          <AmbitusForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
+            @save-finished="allFormsReadyToExport['AmbitusForm'] = true; afterTrigger();" />
+          <RhythmPatternForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
+            @save-finished="allFormsReadyToExport['RhythmPatternForm'] = true; afterTrigger();" />
+          <PhraseForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
+            @save-finished="allFormsReadyToExport['SegmentationForm'] = true; afterTrigger();" />
         </div>
 
         <button class="carousel-control-prev" type="button" data-bs-target="#carouselForms" data-bs-slide="prev">
@@ -104,13 +113,10 @@
 </template>
 
 <script>
-import { ref } from 'vue';
-import { onMounted } from 'vue';
+import { Tooltip } from 'bootstrap';
 
 import createVerovioModule from 'verovio/wasm';
 import { VerovioToolkit } from 'verovio/esm';
-
-import SvgIcon from "vue3-icon";
 
 import TitleStmtForm from './TitleStmtForm.vue';
 import SourceStmtForm from './SourceStmtForm.vue';
@@ -123,6 +129,7 @@ import PhraseForm from './PhraseForm.vue';
 const downloadIcon = "M19.99 6.21a4.49 4.49 0 0 0-8.82-.88A4.325 4.325 0 0 0 9.5 5a4.486 4.486 0 0 0-4.23 3.01A4.498 4.498 0 0 0 5.5 17H11v-5h1v9.086l-1.146-1.146-.707.707L12.5 23l2.353-2.353-.706-.707L13 21.085V17h5.5a5.497 5.497 0 0 0 1.49-10.79z";
 
 export default {
+  inject: ['getXpathNode', 'prettifyXml'],
   components: {
     TitleStmtForm,
     SourceStmtForm,
@@ -131,139 +138,126 @@ export default {
     AmbitusForm,
     RhythmPatternForm,
     PhraseForm,
-    downloadIcon,
-    SvgIcon
+    Tooltip,
   },
-  setup() {
-    // Reactive references
-    const MEIData = ref('');
-    const fileData = ref('');
-    const fileName = ref('');
-    const abcString = ref('');
-    const urlFile = ref('');
-    const message = ref('');
-    const verovioToolkit = ref('');
-    const xmlDoc = ref('');
-
-    onMounted(() => {
-
-      startVerovio();
-    });
-
-    const startVerovio = () => {
-      createVerovioModule().then(VerovioModule => {
-        verovioToolkit.value = new VerovioToolkit(VerovioModule);
-      });
+  data() {
+    return {
+      MEIData: '',
+      fileData: '',
+      fileName: '',
+      abcString: '',
+      urlFile: '',
+      message: '',
+      verovioToolkit: '',
+      xmlDoc: '',
+      exportData: false,
+      allFormsReadyToExport: {
+        'TitleForm': false,
+        'PublisherForm': false,
+        'SourceForm': false,
+        'WorklistForm': false,
+        'AmbitusForm': false,
+        'RhythmPatternForm': false,
+        'SegmentationForm': false
+      }
     }
-
-    // File handling methods
-    const handleFiles = async (event) => {
+  },
+  mounted() {
+    this.startVerovio();
+  },
+  methods: {
+    startVerovio() {
+      createVerovioModule().then(VerovioModule => {
+        this.verovioToolkit = new VerovioToolkit(VerovioModule);
+      });
+    },
+    async handleFiles(event) {
       const file = event.target.files[0];
       if (file && file.name.endsWith('.mid')) {
 
-        fileName.value = file.name;
+        this.fileName = file.name;
       } else if (file) {
         const text = await file.text();
-        fileData.value = text;
-        fileName.value = file.name;
+        this.fileData = text;
+        this.fileName = file.name;
       }
-    };
-
-    // File handling methods
-    const handleURLFile = async () => {
-
-
-      if (urlFile.value.startsWith('https://github.com/')) {
+    },
+    async handleURLFile() {
+      if (this.urlFile.startsWith('https://github.com/')) {
         // Transform Github Link 
         // from: https://github.com/EA-Digifolk/iFolk/blob/main/Spanish/ES-1913-B-JSV-001.mei
         // to: https://raw.githubusercontent.com/EA-Digifolk/iFolk/refs/heads/main/Spanish/ES-1913-B-JSV-001.mei
-
-        let filenameS = urlFile.value.split('/');
-        urlFile.value = 'https://raw.githubusercontent.com/' + filenameS[3] + '/' + filenameS[4] + '/refs/heads/' + filenameS[6] + '/' + filenameS[7] + '/' + filenameS[8];
+        let filenameS = this.urlFile.split('/');
+        this.urlFile = 'https://raw.githubusercontent.com/' + filenameS[3] + '/' + filenameS[4] + '/refs/heads/' + filenameS[6] + '/' + filenameS[7] + '/' + filenameS[8];
       }
-
-
-      if (urlFile.value != '') {
-        const response = await fetch(urlFile.value);
+      if (this.urlFile != '') {
+        const response = await fetch(this.urlFile);
         const data = await response.text();
 
-        let filenameS = urlFile.value.split('/');
-        fileData.value = data;
-        fileName.value = filenameS[filenameS.length - 1];
+        let filenameS = this.urlFile.split('/');
+        this.fileData = data;
+        this.fileName = filenameS[filenameS.length - 1];
       }
-
-    };
-
-    const startProcess = () => {
-      if (fileName.value.endsWith('.abc') || abcString.value !== '') {
-        message.value = 'Loading ABC';
-        verovioToolkit.value.loadData(abcString.value);
-        MEIData.value = verovioToolkit.value.getMEI();
-        message.value = '';
-      } else if (fileName.value.endsWith('.musicxml')) {
-        message.value = 'Loading MusicXML';
-        verovioToolkit.value.loadData(fileData.value);
-        MEIData.value = verovioToolkit.value.getMEI();
-        message.value = '';
-      } else if (fileName.value.endsWith('.mid')) {
-        message.value = 'MIDI is not allowed for now';
-        // console.log(fileData.value);
-        // console.log(music21.converter.parseData(fileData.value));
-        // message.value = '';
-      } else if (fileName.value.endsWith('.mei')) {
-        message.value = 'Loading MEI';
-        MEIData.value = fileData.value;
-        verovioToolkit.value.loadData(fileData.value);
-        message.value = '';
+    },
+    startProcess() {
+      if (this.fileName.endsWith('.abc') || this.abcString !== '') {
+        this.message = 'Loading ABC';
+        this.verovioToolkit.loadData(this.abcString);
+        this.MEIData = this.verovioToolkit.getMEI();
+        this.message = '';
+      } else if (this.fileName.endsWith('.musicxml')) {
+        this.message = 'Loading MusicXML';
+        this.verovioToolkit.loadData(this.fileData);
+        this.MEIData = this.verovioToolkit.getMEI();
+        this.message = '';
+      } else if (this.fileName.endsWith('.mid')) {
+        this.message = 'MIDI is not allowed for now';
+      } else if (this.fileName.endsWith('.mei')) {
+        this.message = 'Loading MEI';
+        this.MEIData = this.fileData;
+        this.verovioToolkit.loadData(this.fileData);
+        this.message = '';
       } else {
-        message.value = 'File type of ' + file.name + ' is not allowed at the moment!';
+        this.message = 'File type of ' + file.name + ' is not allowed at the moment!';
       };
 
-      xmlDoc.value = (new DOMParser()).parseFromString(MEIData.value, "text/xml");
-    };
+      this.xmlDoc = (new DOMParser()).parseFromString(this.MEIData, "text/xml");
+    },
+    exportMEI() {
+      this.exportData = !this.exportData;
+    },
+    afterTrigger() {
+      let checker = arr => arr.every(v => v === true);
 
-    const getXpathNode = (nodeP, xpath) => {
-      const result = nodeP.evaluate(xpath, nodeP, prefix => prefix === 'mei' ? 'http://www.music-encoding.org/ns/mei' : null, XPathResult.ANY_TYPE, null);
-      return result.iterateNext();
-    };
+      if (checker(Object.values(this.allFormsReadyToExport))) {
 
-    const exportMEI = () => {
-      const a = document.createElement('a');
-      const docString = new XMLSerializer().serializeToString(xmlDoc.value);
+        this.allFormsReadyToExport = {
+          'TitleForm': false,
+          'PublisherForm': false,
+          'SourceForm': false,
+          'WorklistForm': false,
+          'AmbitusForm': false,
+          'RhythmPatternForm': false,
+          'SegmentationForm': false
+        };
 
-      const blob = new Blob([docString], { type: 'application/xml' });
-      a.setAttribute('href', URL.createObjectURL(blob));
+        const a = document.createElement('a');
+        const docString = this.prettifyXml(new XMLSerializer().serializeToString(this.xmlDoc));
 
-      let filenameNode = getXpathNode(xmlDoc.value, './/mei:titleStmt//mei:title[@type="main"]');
-      if (!filenameNode.getAttribute('xml:id')) {
-        alert('ID is not set! Try setting it before downloading MEI file!')
-      }
+        const blob = new Blob([docString], { type: 'application/xml' });
+        a.setAttribute('href', URL.createObjectURL(blob));
 
-      a.setAttribute('download', filenameNode.getAttribute('xml:id') + '.mei');
-      a.click()
-      a.remove()
-    };
+        let filenameNode = this.getXpathNode(this.xmlDoc, './/mei:titleStmt//mei:title[@type="main"]');
+        if (!filenameNode.getAttribute('xml:id')) {
+          alert('ID is not set! Try setting it before downloading MEI file!')
+        }
 
-    // Return reactive references and methods
-    return {
-      xmlDoc,
-      MEIData,
-      fileData,
-      fileName,
-      abcString,
-      urlFile,
-      message,
-      verovioToolkit,
-      downloadIcon,
-      SvgIcon,
-      startVerovio,
-      startProcess,
-      handleFiles,
-      handleURLFile,
-      exportMEI,
-    };
+        a.setAttribute('download', filenameNode.getAttribute('xml:id') + '.mei');
+        a.click()
+        a.remove()
+      };
+    }
   },
-
 };
 </script>
 

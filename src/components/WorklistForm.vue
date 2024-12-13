@@ -197,7 +197,8 @@ export default {
         Tooltip,
         Modal
     },
-    props: ['MEIData', 'vT'],
+    props: ['MEIData', 'vT', 'export'],
+    emits: ["saveFinished"],
     data() {
         return {
             worklistData: [
@@ -221,6 +222,13 @@ export default {
             WorklistOntMEI: ''
         }
     },
+    watch: {
+        export: function (newVal, oldVal) {
+            if (newVal != oldVal) {
+                this.saveToMEI(false);
+            }
+        }
+    },
     mounted() {
         this.getInfoFromMEI();
         const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -234,7 +242,7 @@ export default {
         });
     },
     methods: {
-        saveToMEI() {
+        saveToMEI(openModal = true) {
             let workListNode = this.getXpathNode(this.MEIData, './/mei:work');
 
             if (!workListNode) {
@@ -317,7 +325,12 @@ export default {
             nodeMusical.append(this.getMusicalIncipMeasure(sM));
 
             this.WorklistOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:work')));
-            this.showModal = true;
+            
+            if (openModal) {
+                this.showModal = !this.showModal;
+            } else {
+                this.$emit("saveFinished", "WorklistForm");
+            }
         },
         getMusicalIncipMeasure(meas) {
             let docM = document.createElementNS('http://www.music-encoding.org/ns/mei', 'measure');

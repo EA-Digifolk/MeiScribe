@@ -45,7 +45,8 @@ export default {
         Tooltip,
         Modal
     },
-    props: ['MEIData'],
+    props: ['MEIData', 'export'],
+    emits: ["saveFinished"],
     data() {
         return {
             pubData: [
@@ -69,8 +70,15 @@ export default {
             })
         });
     },
+    watch: {
+        export: function (newVal, oldVal) {
+            if (newVal != oldVal) {
+                this.saveToMEI(false);
+            }
+        }
+    },
     methods: {
-        saveToMEI() {
+        saveToMEI(openModal = true) {
             this.pubData.forEach(item => {
                 let node = this.getXpathNode(this.MEIData, item.tag);
 
@@ -85,7 +93,12 @@ export default {
             });
 
             this.PublisherStmtOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:pubStmt')));
-            this.showModal = !this.showModal;
+
+            if (openModal) {
+                this.showModal = !this.showModal;
+            } else {
+                this.$emit("saveFinished", "PublisherForm");
+            }
         },
         getInfoFromMEI() {
             this.pubData.forEach(item => {
