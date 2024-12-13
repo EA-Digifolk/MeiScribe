@@ -4,8 +4,11 @@ import App from './App.vue'
 
 import './style.css'
 import "bootstrap/dist/css/bootstrap.css";
+import SvgIcon from "vue3-icon";
 
 const app = createApp(App)
+
+app.component("svg-icon", SvgIcon);
 
 app.provide('getXpathNode', (nodeP, xpath, returnAll = false) => {
     const result = nodeP.evaluate(xpath, nodeP, prefix => prefix === 'mei' ? 'http://www.music-encoding.org/ns/mei' : null, XPathResult.ANY_TYPE, null);

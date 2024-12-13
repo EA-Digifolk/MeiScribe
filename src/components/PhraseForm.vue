@@ -2,27 +2,36 @@
     <div class="card w-100">
         <div class="card-header">
             <h4 class="w-100">Phrases and Segmentation</h4> <button href="#" class="btn-save-mei btn btn-primary ml-1"
-                @click="saveToMEI">Apply To MEI</button>
+                @click="saveToMEI" title="Apply Information To MEI File" data-bs-customClass="custom-tooltip"
+                data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true">Apply To MEI</button>
         </div>
         <div class="card-body container">
             <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
-                <div class="w-100" @click="cleanPaintSVG"><button class="mb-3" @click="addPhrase">Add</button></div>
+                <div class="w-100" @click="cleanPaintSVG"><button class="mb-3" @click="addPhrase"
+                        title="Add a New Phrase" data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
+                        data-bs-placement="bottom" data-bs-html="true">Add</button></div>
                 <div v-for="item in phraseSegmentData[0].value" class="row phrase-sel">
-                    <div class="col col-xs-1">N</div>
+                    <div class="col col-xs-1" title="Number of the Phrase (min: 1)" data-bs-customClass="custom-tooltip"
+                        data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true">N</div>
                     <input :id="'note-' + item.n" class="col col-xs-1" type="number" :value="item.n"
                         @change="chooseN"></input>
-                    <div class="col col-xs-2">Start ID</div>
+                    <div class="col col-xs-2" title="ID of Phrase's Starting Note" data-bs-customClass="custom-tooltip"
+                        data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true">Start ID</div>
                     <input :id="'start-id-' + item.n" class="col col-xs-2" type="search" list="noteIDS"
                         :value="item.startid" @click="paintNoteSVG" @change="chooseNote"></input>
-                    <div class="col col-xs-1">End ID</div>
+                    <div class="col col-xs-1" title="ID of Phrase's Ending Note" data-bs-customClass="custom-tooltip"
+                        data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true">End ID</div>
                     <input :id="'end-id-' + item.n" class="col col-xs-2" type="search" list="noteIDS"
                         :value="item.endid" @click="paintNoteSVG" @change="chooseNote"></input>
-                    <div class="col col-xs-1">Type</div>
+                    <div class="col col-xs-1" title="Type of Phrase (A/B, etc)" data-bs-customClass="custom-tooltip"
+                        data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true">Type</div>
                     <input :id="'type-' + item.n" class="col col-xs-2" type="search" list="typePhrases"
                         :value="item.type" @change="chooseType"></input>
-                    <a @click="deletePhrase(item.n)" class="col col-xs-1 btn btn-danger btn-sm del-btn"
-                        type="button"><svg-icon :path="thrashIcon" size="20" viewbox="0 0 30 28"
-                            style="color: white"></svg-icon></a>
+                    <a @click="deletePhrase(item.n)" class="col col-xs-1 btn btn-danger btn-sm del-btn" type="button"
+                        title="Delete Phrase" data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
+                        data-bs-placement="bottom" data-bs-html="true">
+                        <svg-icon :path="thrashIcon" size="20" viewbox="0 0 28 28" style="color: white"></svg-icon>
+                    </a>
                     <datalist id="noteIDS">
                         <option v-for="itemX in noteIDs" :value="itemX"></option>
                     </datalist>
@@ -34,35 +43,60 @@
             </div>
         </div>
         <MusicalScore id="phraseForm" :vT="vT" />
+        <Teleport to="body">
+            <modal :show="showModal" @close="showModal = false">
+                <template #header>
+                    <h3>Saved Phrase Structure to MEI File</h3>
+                </template>
+                <template #body>
+                    <pre class="w-100" id="MEI-Modal-Segmentation">{{ SegmentationOntMEI }}</pre>
+                </template>
+            </modal>
+        </Teleport>
     </div>
 </template>
 
-<script>
-import { onMounted, ref, } from 'vue';
-import MusicalScore from './PhraseSelectorMusicalScore.vue';
-import SvgIcon from "vue3-icon";
+<script type="module">
 
-const thrashIcon = "M 10 2 L 9 3 L 5 3 C 4.4 3 4 3.4 4 4 C 4 4.6 4.4 5 5 5 L 7 5 L 17 5 L 19 5 C 19.6 5 20 4.6 20 4 C 20 3.4 19.6 3 19 3 L 15 3 L 14 2 L 10 2 z M 5 7 L 5 20 C 5 21.1 5.9 22 7 22 L 17 22 C 18.1 22 19 21.1 19 20 L 19 7 L 5 7 z M 9 9 C 9.6 9 10 9.4 10 10 L 10 19 C 10 19.6 9.6 20 9 20 C 8.4 20 8 19.6 8 19 L 8 10 C 8 9.4 8.4 9 9 9 z M 15 9 C 15.6 9 16 9.4 16 10 L 16 19 C 16 19.6 15.6 20 15 20 C 14.4 20 14 19.6 14 19 L 14 10 C 14 9.4 14.4 9 15 9 z";
+import { Tooltip } from 'bootstrap';
+
+import Modal from './Modal.vue';
+import MusicalScore from './PhraseSelectorMusicalScore.vue';
 
 export default {
+    inject: ['getXpathNode', 'prettifyXml'],
     components: {
-        SvgIcon,
-        thrashIcon,
-        MusicalScore
+        MusicalScore,
+        Tooltip,
+        Modal
     },
     props: ['MEIData', 'vT'],
-    setup(props) {
-        const phraseSegmentData = ref([
-            { name: 'phrases', tag: './/mei:music//mei:section//mei:supplied[@type="phrases"]', value: [], on_display: 'Phrases' },
-        ]);
-        const noteIDs = ref([]);
-
-        onMounted(() => {
-            getInfoFromMEI();
+    data() {
+        return {
+            phraseSegmentData: [
+                { name: 'phrases', tag: './/mei:music//mei:section//mei:supplied[@type="phrases"]', value: [], on_display: 'Phrases' },
+            ],
+            noteIDs: [],
+            showModal: false,
+            SegmentationOntMEI: '',
+            thrashIcon: "M 10 2 L 9 3 L 5 3 C 4.4 3 4 3.4 4 4 C 4 4.6 4.4 5 5 5 L 7 5 L 17 5 L 19 5 C 19.6 5 20 4.6 20 4 C 20 3.4 19.6 3 19 3 L 15 3 L 14 2 L 10 2 z M 5 7 L 5 20 C 5 21.1 5.9 22 7 22 L 17 22 C 18.1 22 19 21.1 19 20 L 19 7 L 5 7 z M 9 9 C 9.6 9 10 9.4 10 10 L 10 19 C 10 19.6 9.6 20 9 20 C 8.4 20 8 19.6 8 19 L 8 10 C 8 9.4 8.4 9 9 9 z M 15 9 C 15.6 9 16 9.4 16 10 L 16 19 C 16 19.6 15.6 20 15 20 C 14.4 20 14 19.6 14 19 L 14 10 C 14 9.4 14.4 9 15 9 z"
+        }
+    },
+    mounted() {
+        this.getInfoFromMEI();
+        const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(tooltipTriggerEl => {
+            new Tooltip(tooltipTriggerEl, {
+                customClass: 'custom-tooltip',
+                animated: 'fade',
+                placement: 'bottom',
+                trigger: 'hover'
+            });
         });
-
-        const saveToMEI = () => {
-            let phraseNode = getXpathNode(props.MEIData, './/mei:music//mei:section//mei:supplied[@type="phrases"]');
+    },
+    methods: {
+        saveToMEI() {
+            let phraseNode = this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="phrases"]');
             if (phraseNode) {
                 phraseNode.remove();
             };
@@ -70,14 +104,14 @@ export default {
             phraseNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'supplied');
             phraseNode.setAttribute('type', 'phrases');
 
-            let rhythmicSupplied = getXpathNode(props.MEIData, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]');
+            let rhythmicSupplied = this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]');
             if (rhythmicSupplied) {
                 rhythmicSupplied.insertAdjacentElement("afterend", phraseNode);
             } else {
-                getXpathNode(props.MEIData, './/mei:music//mei:section').insertAdjacentElement("afterbegin", phraseNode);
+                this.getXpathNode(this.MEIData, './/mei:music//mei:section').insertAdjacentElement("afterbegin", phraseNode);
             }
 
-            let phrases = phraseSegmentData.value[0].value;
+            let phrases = this.phraseSegmentData[0].value;
             for (let ph in phrases) {
                 let phEl = document.createElementNS('http://www.music-encoding.org/ns/mei', 'phrase');
                 phEl.setAttribute('n', phrases[ph].n);
@@ -86,99 +120,69 @@ export default {
                 phEl.setAttribute('type', phrases[ph].type);
                 phraseNode.append(phEl);
             }
-        };
 
-        const getXpathNode = (nodeP, xpath) => {
-            const result = nodeP.evaluate(xpath, nodeP, prefix => prefix === 'mei' ? 'http://www.music-encoding.org/ns/mei' : null, XPathResult.ANY_TYPE, null);
-            return result.iterateNext();
-        };
-
-        const getInfoFromMEI = () => {
-
-            noteIDs.value = props.vT.getDescriptiveFeatures()['pitchesIds'].flat().flat();
-            for (let i in phraseSegmentData.value) {
-                let item = phraseSegmentData.value[i];
-                let node = getXpathNode(props.MEIData, item.tag);
-
+            this.SegmentationOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="phrases"]')));
+            this.showModal = true;
+        },
+        getInfoFromMEI() {
+            this.noteIDS = this.vT.getDescriptiveFeatures()['pitchesIds'].flat().flat();
+            this.phraseSegmentData.forEach(item => {
+                let node = this.getXpathNode(this.MEIData, item.tag);
                 if (node) {
                     for (let i in node.children) {
                         let phraseN = node.children[i];
                         if (phraseN.tagName == 'phrase') {
                             item.value.push({ 'n': phraseN.getAttribute('n'), 'startid': phraseN.getAttribute('startid').replace('#', ''), 'endid': phraseN.getAttribute('endid').replace('#', ''), 'type': phraseN.getAttribute('type') })
                         }
-                    }
+                    };
                 } else {
-                    addPhrase();
+                    this.addPhrase();
                 }
-            };
-        };
-
-        const deletePhrase = (n) => {
-            phraseSegmentData.value[0].value = phraseSegmentData.value[0].value.filter(function (el) { return el.n != n; });
-        };
-
-        const addPhrase = () => {
-            let lastPhrase = phraseSegmentData.value[0].value[phraseSegmentData.value[0].value.length - 1];
+            });
+        },
+        deletePhrase(n) {
+            this.phraseSegmentData[0].value = this.phraseSegmentData[0].value.filter(function (el) { return el.n != n; });
+        },
+        addPhrase() {
+            let lastPhrase = this.phraseSegmentData[0].value[this.phraseSegmentData[0].value.length - 1];
             if (lastPhrase == null) {
                 lastPhrase = { 'n': 0 };
             }
-            phraseSegmentData.value[0].value.push({ 'n': parseInt(lastPhrase['n']) + 1, 'startid': noteIDs.value[0], 'endid': noteIDs.value[noteIDs.value.length-1], 'type': 'A' })
-        };
-
-        const paintNoteSVG = (event) => {
+            this.phraseSegmentData[0].value.push({ 'n': parseInt(lastPhrase['n']) + 1, 'startid': this.noteIDS[0], 'endid': this.noteIDS[this.noteIDS.length - 1], 'type': 'A' });
+        },
+        paintNoteSVG(event) {
             let svgClass = event.target.id.includes('start') ? "select-start" : "select-end";
             let notesOnSVG = document.getElementsByClassName('note');
-            Array.from(notesOnSVG).forEach((e, i) => {
+            Array.from(notesOnSVG).forEach((e, _) => {
                 if (e.id === event.target.value && !e.classList.contains('bounding-box')) {
                     e.classList.add(svgClass);
                 } else {
                     e.classList.remove(svgClass);
                 }
             });
-        };
-
-        const cleanPaintSVG = () => {
+        },
+        cleanPaintSVG() {
             let notesOnSVG = document.getElementsByClassName('note');
             Array.from(notesOnSVG).forEach((e, _) => {
                 e.classList.remove("select-start");
                 e.classList.remove("select-end");
             });
-        }
-
-        const chooseNote = (event) => {
+        },
+        chooseNote(event) {
             if (event.target.id.includes('start')) {
-                phraseSegmentData.value[0].value.filter(function (el) { return el.n == event.target.id.replace('start-id-', ''); })[0].startid = event.target.value;
+                this.phraseSegmentData[0].value.filter(function (el) { return el.n == event.target.id.replace('start-id-', ''); })[0].startid = event.target.value;
             } else {
-                phraseSegmentData.value[0].value.filter(function (el) { return el.n == event.target.id.replace('end-id-', ''); })[0].endid = event.target.value;
+                this.phraseSegmentData[0].value.filter(function (el) { return el.n == event.target.id.replace('end-id-', ''); })[0].endid = event.target.value;
             };
 
-            paintNoteSVG(event);
-        };
-
-        const chooseN = (event) => {
-            phraseSegmentData.value[0].value.filter(function (el) { return el.n == event.target.id.replace('note-', ''); })[0].n = parseInt(event.target.value);
-        };
-
-        const chooseType = (event) => {
-            phraseSegmentData.value[0].value.filter(function (el) { return el.n == event.target.id.replace('type-', ''); })[0].type = event.target.value;
-        };
-
-        return {
-            phraseSegmentData,
-            thrashIcon,
-            SvgIcon,
-            noteIDs,
-            getXpathNode,
-            getInfoFromMEI,
-            saveToMEI,
-            deletePhrase,
-            addPhrase,
-            paintNoteSVG,
-            cleanPaintSVG,
-            chooseNote,
-            chooseN,
-            chooseType
-        };
+            this.paintNoteSVG(event);
+        },
+        chooseN(event) {
+            this.phraseSegmentData[0].value.filter(function (el) { return el.n == event.target.id.replace('note-', ''); })[0].n = parseInt(event.target.value);
+        },
+        chooseType(event) {
+            this.phraseSegmentData[0].value.filter(function (el) { return el.n == event.target.id.replace('type-', ''); })[0].type = event.target.value;
+        }
     },
 };
 </script>
@@ -193,11 +197,15 @@ export default {
 
 .del-btn {
     margin: .1em .5em .1em 1.5em;
-    padding: .1em;
+    padding: .2em;
     /*max-width: 5% !important;*/
 }
 
 option:hover {
     background-color: red;
+}
+
+#MEI-Modal-Segmentation {
+    max-height: 80% !important;
 }
 </style>
