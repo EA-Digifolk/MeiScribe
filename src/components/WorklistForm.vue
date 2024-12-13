@@ -201,20 +201,20 @@ export default {
     data() {
         return {
             worklistData: [
-                { name: 'title', tag: './/mei:workList//mei:title', value: '', on_display: 'Title', default: '', tooltip: '' },
-                { name: 'author', tag: './/mei:workList//mei:author', value: '', on_display: 'Author', default: '', tooltip: '' },
-                { name: 'lyrics', tag: './/mei:workList//mei:head', value: '', on_display: 'Lyrics', default: '', tooltip: '' },
-                { name: 'key', tag: './/mei:workList//mei:key', value: '', on_display: 'Key', default: '', tooltip: '' },
-                { name: 'mode', tag: './/mei:workList//mei:key', value: '', on_display: 'Mode', default: '', tooltip: '' },
-                { name: 'meter', tag: './/mei:workList//mei:meter', value: '', on_display: 'Meter', default: '', tooltip: '' },
-                { name: 'tempo', tag: './/mei:workList//mei:tempo', value: '', on_display: 'Tempo', default: '', tooltip: '' },
-                { name: 'language', tag: './/mei:workList//mei:langUsage//mei:language', value: '', on_display: 'Language', default: '', tooltip: '' },
-                { name: 'notes', tag: './/mei:workList//mei:annot', value: '', on_display: 'Notes', default: '', tooltip: '' },
-                { name: 'genre', tag: './/mei:workList//mei:term[@type="genre"]', value: '', on_display: 'Genre', default: '', tooltip: '' },
-                { name: 'country', tag: './/mei:workList//mei:term[@type="country"]', value: '', on_display: 'Country', default: '', tooltip: '' },
-                { name: 'region', tag: './/mei:workList//mei:term[@type="region"]', value: '', on_display: 'Region', default: '', tooltip: '' },
-                { name: 'district', tag: './/mei:workList//mei:term[@type="district"]', value: '', on_display: 'District', default: '', tooltip: '' },
-                { name: 'city', tag: './/mei:workList//mei:term[@type="city"]', value: '', on_display: 'City', default: '', tooltip: '' },
+                { name: 'title', tag: './/mei:workList//mei:title', value: '', on_display: 'Title', default: '', tooltip: 'title of song' },
+                { name: 'author', tag: './/mei:workList//mei:author', value: '', on_display: 'Author', default: '', tooltip: 'author/informant of song' },
+                { name: 'lyrics', tag: './/mei:workList//mei:head', value: '', on_display: 'Lyrics', default: '', tooltip: 'complete lyrics of song' },
+                { name: 'key', tag: './/mei:workList//mei:key', value: '', on_display: 'Key', default: '', tooltip: 'key of song (e.g., C, E Flat)' },
+                { name: 'mode', tag: './/mei:workList//mei:key', value: '', on_display: 'Mode', default: '', tooltip: 'mode of song (e.g., Major, Minor)' },
+                { name: 'meter', tag: './/mei:workList//mei:meter', value: '', on_display: 'Meter', default: '', tooltip: 'meter of song [enum: Binary, Ternary, Free, Polyrhythmic]' },
+                { name: 'tempo', tag: './/mei:workList//mei:tempo', value: '', on_display: 'Tempo', default: '', tooltip: 'tempo indication of song (e.g., Allegro)' },
+                { name: 'language', tag: './/mei:workList//mei:langUsage//mei:language', value: '', on_display: 'Language', default: '', tooltip: 'language of lyrics' },
+                { name: 'notes', tag: './/mei:workList//mei:annot', value: '', on_display: 'Notes', default: '', tooltip: 'optional annotations' },
+                { name: 'genre', tag: './/mei:workList//mei:term[@type="genre"]', value: '', on_display: 'Genre', default: '', tooltip: 'genre of song (e.g., Children Song, Work Song, Dance, Lullaby)' },
+                { name: 'country', tag: './/mei:workList//mei:term[@type="country"]', value: '', on_display: 'Country', default: '', tooltip: 'country from where the song came' },
+                { name: 'region', tag: './/mei:workList//mei:term[@type="region"]', value: '', on_display: 'Region', default: '', tooltip: 'region of the country from where the song came' },
+                { name: 'district', tag: './/mei:workList//mei:term[@type="district"]', value: '', on_display: 'District', default: '', tooltip: 'district of the region from where the song came' },
+                { name: 'city', tag: './/mei:workList//mei:term[@type="city"]', value: '', on_display: 'City', default: '', tooltip: 'city of the district from where the song came' },
             ],
             showScore: false,
             showModal: false,
@@ -279,7 +279,7 @@ export default {
                         }
                         let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'term');
                         node.setAttribute('type', item.name)
-                        termlistNode.append(node);                  
+                        termlistNode.append(node);
                     } else {
                         let node = document.createElementNS('http://www.music-encoding.org/ns/mei', item.name);
                         workListNode.append(node);
