@@ -7,8 +7,10 @@ import "bootstrap/dist/css/bootstrap.css";
 
 const app = createApp(App)
 
-app.provide('getXpathNode', (nodeP, xpath) => {
+app.provide('getXpathNode', (nodeP, xpath, returnAll = false) => {
     const result = nodeP.evaluate(xpath, nodeP, prefix => prefix === 'mei' ? 'http://www.music-encoding.org/ns/mei' : null, XPathResult.ANY_TYPE, null);
+    if (returnAll)
+        return result;
     return result.iterateNext();
 });
 
@@ -33,6 +35,10 @@ app.provide('prettifyXml', (sourceXml) => {
     var resultDoc = xsltProcessor.transformToDocument(xmlDoc);
     var resultXml = new XMLSerializer().serializeToString(resultDoc);
     return resultXml;
+});
+
+app.provide('capitalizeFirstLetter', (string) => {
+    return string && (string[0].toUpperCase() + string.slice(1));
 });
 
 app.provide(/* key */ 'message', /* value */ 'hello!')

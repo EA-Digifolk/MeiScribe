@@ -2,7 +2,9 @@
     <div class="card w-100">
         <div class="card-header">
             <h4 class="w-100">Worklist Form</h4>
-            <button href="#" class="btn-save-mei btn btn-primary ml-1" @click="saveToMEI">Apply To MEI</button>
+            <button href="#" class="btn-save-mei btn btn-primary ml-1" @click="saveToMEI"
+                title="Apply Information To MEI File" data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
+                data-bs-placement="bottom" data-bs-html="true">Apply To MEI</button>
         </div>
         <div class="card-body container">
             <div>
@@ -12,7 +14,9 @@
                         v-for="item in worklistData">
                         <div class="w-100 row" v-if="item.name === 'key'">
                             <div class="col col-sm-2 card-text" style="text-align: right">
-                                <p class="card-text">{{ item.on_display }}</p>
+                                <p class="card-text" :title="item.tooltip" data-bs-customClass="custom-tooltip"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">
+                                    {{ item.on_display }}</p>
                             </div>
                             <div class="col col-sm-4 card-text">
                                 <select v-if="item.name == 'key'" class="w-100 p-1" type="text" v-model="item.value"
@@ -23,7 +27,9 @@
                                 </select>
                             </div>
                             <div class="col col-sm-2 card-text" style="text-align: right">
-                                <p class="card-text">{{ worklistData[4].on_display }}</p>
+                                <p class="card-text" :title="worklistData[4].tooltip"
+                                    data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" data-bs-html="true">{{ worklistData[4].on_display }}</p>
                             </div>
                             <div class="col col-sm-4 card-text">
                                 <input class="w-100" type="text" list="modesList" v-model="worklistData[4].value"
@@ -38,7 +44,9 @@
 
                         <div class="w-100 row" v-else-if="item.name === 'meter'">
                             <div class="col col-sm-2 card-text" style="text-align: right">
-                                <p class="card-text">{{ item.on_display }}</p>
+                                <p class="card-text" :title="item.tooltip" data-bs-customClass="custom-tooltip"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">
+                                    {{ item.on_display }}</p>
                             </div>
                             <div class="col col-sm-4 card-text">
                                 <input class="w-100" type="text" list="meterList" v-model="item.value"
@@ -49,7 +57,9 @@
                                 </datalist>
                             </div>
                             <div class="col col-sm-2 card-text" style="text-align: right">
-                                <p class="card-text">{{ worklistData[6].on_display }}</p>
+                                <p class="card-text" :title="worklistData[6].tooltip"
+                                    data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" data-bs-html="true">{{ worklistData[6].on_display }}</p>
                             </div>
                             <div class="col col-sm-4 card-text">
                                 <input class="w-100" type="text" v-model="worklistData[6].value"
@@ -59,7 +69,9 @@
 
                         <div class="w-100 row" v-else-if="item.name === 'language'">
                             <div class="col col-sm-2 card-text" style="text-align: right">
-                                <p class="card-text">{{ item.on_display }}</p>
+                                <p class="card-text" :title="item.tooltip" data-bs-customClass="custom-tooltip"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">{{
+                item.on_display }}</p>
                             </div>
                             <div class="col col-sm-4 card-text">
                                 <input class="w-100" type="text" list="langList" v-model="item.value"
@@ -69,7 +81,9 @@
                                 </datalist>
                             </div>
                             <div class="col col-sm-2 card-text" style="text-align: right">
-                                <p class="card-text">{{ worklistData[9].on_display }}</p>
+                                <p class="card-text" :title="worklistData[9].tooltip"
+                                    data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" data-bs-html="true">{{ worklistData[9].on_display }}</p>
                             </div>
                             <div class="col col-sm-4 card-text">
                                 <input class="w-100" type="text" list="genreList" v-model="worklistData[9].value"
@@ -83,7 +97,9 @@
 
                         <div class="w-100 row" v-else-if="item.name === 'country'">
                             <div class="col col-sm-2 card-text" style="text-align: right">
-                                <p class="card-text">{{ item.on_display }}</p>
+                                <p class="card-text" :title="item.tooltip" data-bs-customClass="custom-tooltip"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">{{
+                item.on_display }}</p>
                             </div>
                             <div class="col col-sm-4 card-text">
                                 <input class="w-100" type="text" list="countryList" v-model="item.value"
@@ -95,7 +111,9 @@
                                 </datalist>
                             </div>
                             <div class="col col-sm-2 card-text" style="text-align: right">
-                                <p class="card-text">{{ worklistData[11].on_display }}</p>
+                                <p class="card-text" :title="worklistData[11].tooltip"
+                                    data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" data-bs-html="true">{{ worklistData[11].on_display }}</p>
                             </div>
                             <div class="col col-sm-4 card-text">
                                 <input class="w-100" type="text" v-model="worklistData[11].value"
@@ -105,13 +123,17 @@
 
                         <div class="w-100 row" v-else-if="item.name === 'district'">
                             <div class="col col-sm-2 card-text" style="text-align: right">
-                                <p class="card-text">{{ item.on_display }}</p>
+                                <p class="card-text" :title="item.tooltip" data-bs-customClass="custom-tooltip"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">{{
+                item.on_display }}</p>
                             </div>
                             <div class="col col-sm-4 card-text">
                                 <input class="w-100" type="text" v-model="item.value" :placeholder="item.default" />
                             </div>
                             <div class="col col-sm-2 card-text" style="text-align: right">
-                                <p class="card-text">{{ worklistData[13].on_display }}</p>
+                                <p class="card-text" :title="worklistData[13].tooltip"
+                                    data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
+                                    data-bs-placement="top" data-bs-html="true">{{ worklistData[13].on_display }}</p>
                             </div>
                             <div class="col col-sm-4 card-text">
                                 <input class="w-100" type="text" v-model="worklistData[13].value"
@@ -124,7 +146,9 @@
 
                         <div class="w-100 row" v-else-if="['notes', 'lyrics'].includes(item.name)">
                             <div class="col col-sm-2 card-text" style="text-align: right">
-                                <p class="card-text">{{ item.on_display }}</p>
+                                <p class="card-text" :title="item.tooltip" data-bs-customClass="custom-tooltip"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">{{
+                item.on_display }}</p>
                             </div>
                             <div class="col col-sm-10 card-text">
                                 <textarea class="w-100 p-1 mb-0" type="text" v-model="item.value"
@@ -134,7 +158,9 @@
 
                         <div class="w-100 row" v-else>
                             <div class="col col-sm-2 card-text" style="text-align: right">
-                                <p class="card-text">{{ item.on_display }}</p>
+                                <p class="card-text" :title="item.tooltip" data-bs-customClass="custom-tooltip"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">{{
+                item.on_display }}</p>
                             </div>
                             <div class="col col-sm-10 card-text">
                                 <input class="w-100 p-1" type="text" v-model="item.value" :placeholder="item.default" />
@@ -146,48 +172,73 @@
         </div>
         <button class="btn-show-score btn btn-primary mb-3" @click="showScore = !showScore">Show Score</button>
         <MusicalScore id="WorkListForm" :vT="vT" v-if="showScore" />
+        <Teleport to="body">
+            <modal :show="showModal" @close="showModal = false">
+                <template #header>
+                    <h3>Saved Worklist to MEI File</h3>
+                </template>
+                <template #body>
+                    <pre class="w-100" id="MEI-Modal-Worklist">{{ WorklistOntMEI }}</pre>
+                </template>
+            </modal>
+        </Teleport>
     </div>
 </template>
 
-<script>
-import { onMounted, ref } from 'vue';
+<script type="module">
+import Modal from './Modal.vue';
+import { Tooltip } from 'bootstrap';
 import MusicalScore from './MusicalScore.vue';
 
 export default {
+    inject: ['capitalizeFirstLetter', 'getXpathNode', 'prettifyXml'],
     components: {
-        MusicalScore
+        MusicalScore,
+        Tooltip,
+        Modal
     },
     props: ['MEIData', 'vT'],
-    setup(props) {
-
-        const worklistData = ref([
-            { name: 'title', tag: './/mei:workList//mei:title', value: '', on_display: 'Title', default: '' },
-            { name: 'author', tag: './/mei:workList//mei:author', value: '', on_display: 'Author', default: '' },
-            { name: 'lyrics', tag: './/mei:workList//mei:head', value: '', on_display: 'Lyrics', default: '' },
-            { name: 'key', tag: './/mei:workList//mei:key', value: '', on_display: 'Key', default: '' },
-            { name: 'mode', tag: './/mei:workList//mei:key', value: '', on_display: 'Mode', default: '' },
-            { name: 'meter', tag: './/mei:workList//mei:meter', value: '', on_display: 'Meter', default: '' },
-            { name: 'tempo', tag: './/mei:workList//mei:tempo', value: '', on_display: 'Tempo', default: '' },
-            { name: 'language', tag: './/mei:workList//mei:langUsage//mei:language', value: '', on_display: 'Language', default: '' },
-            { name: 'notes', tag: './/mei:workList//mei:annot', value: '', on_display: 'Notes', default: '' },
-            { name: 'genre', tag: './/mei:workList//mei:term[@type="genre"]', value: '', on_display: 'Genre', default: '' },
-            { name: 'country', tag: './/mei:workList//mei:term[@type="country"]', value: '', on_display: 'Country', default: '' },
-            { name: 'region', tag: './/mei:workList//mei:term[@type="region"]', value: '', on_display: 'Region', default: '' },
-            { name: 'district', tag: './/mei:workList//mei:term[@type="district"]', value: '', on_display: 'District', default: '' },
-            { name: 'city', tag: './/mei:workList//mei:term[@type="city"]', value: '', on_display: 'City', default: '' },
-        ]);
-        const showScore = ref(false);
-
-        onMounted(() => {
-            //console.log(props.MEIData);
-            getInfoFromMEI();
+    data() {
+        return {
+            worklistData: [
+                { name: 'title', tag: './/mei:workList//mei:title', value: '', on_display: 'Title', default: '', tooltip: '' },
+                { name: 'author', tag: './/mei:workList//mei:author', value: '', on_display: 'Author', default: '', tooltip: '' },
+                { name: 'lyrics', tag: './/mei:workList//mei:head', value: '', on_display: 'Lyrics', default: '', tooltip: '' },
+                { name: 'key', tag: './/mei:workList//mei:key', value: '', on_display: 'Key', default: '', tooltip: '' },
+                { name: 'mode', tag: './/mei:workList//mei:key', value: '', on_display: 'Mode', default: '', tooltip: '' },
+                { name: 'meter', tag: './/mei:workList//mei:meter', value: '', on_display: 'Meter', default: '', tooltip: '' },
+                { name: 'tempo', tag: './/mei:workList//mei:tempo', value: '', on_display: 'Tempo', default: '', tooltip: '' },
+                { name: 'language', tag: './/mei:workList//mei:langUsage//mei:language', value: '', on_display: 'Language', default: '', tooltip: '' },
+                { name: 'notes', tag: './/mei:workList//mei:annot', value: '', on_display: 'Notes', default: '', tooltip: '' },
+                { name: 'genre', tag: './/mei:workList//mei:term[@type="genre"]', value: '', on_display: 'Genre', default: '', tooltip: '' },
+                { name: 'country', tag: './/mei:workList//mei:term[@type="country"]', value: '', on_display: 'Country', default: '', tooltip: '' },
+                { name: 'region', tag: './/mei:workList//mei:term[@type="region"]', value: '', on_display: 'Region', default: '', tooltip: '' },
+                { name: 'district', tag: './/mei:workList//mei:term[@type="district"]', value: '', on_display: 'District', default: '', tooltip: '' },
+                { name: 'city', tag: './/mei:workList//mei:term[@type="city"]', value: '', on_display: 'City', default: '', tooltip: '' },
+            ],
+            showScore: false,
+            showModal: false,
+            WorklistOntMEI: ''
+        }
+    },
+    mounted() {
+        this.getInfoFromMEI();
+        const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(tooltipTriggerEl => {
+            new Tooltip(tooltipTriggerEl, {
+                customClass: 'custom-tooltip',
+                animated: 'fade',
+                placement: 'bottom',
+                trigger: 'hover'
+            });
         });
+    },
+    methods: {
+        saveToMEI() {
+            let workListNode = this.getXpathNode(this.MEIData, './/mei:work');
 
-        const saveToMEI = () => {
-
-            let workListNode = getXpathNode(props.MEIData, './/mei:work');
             if (!workListNode) {
-                let node = getXpathNode(props.MEIData, './/mei:meiHead');
+                let node = this.getXpathNode(this.MEIData, './/mei:meiHead');
 
                 const entriesN = ['workList', 'work'];
                 for (let key in entriesN) {
@@ -199,13 +250,10 @@ export default {
                 workListNode = node;
             }
 
-            for (let i in worklistData.value) {
-                let item = worklistData.value[i];
-
-                let node = getXpathNode(props.MEIData, item.tag);
+            this.worklistData.forEach(item => {
+                let node = this.getXpathNode(this.MEIData, item.tag);
 
                 if (!node) {
-                    console.log('No node with tag: ' + item.tag);
                     if (item.name == 'lyrics') {
                         let nodeINC = document.createElementNS('http://www.music-encoding.org/ns/mei', 'incip');
                         nodeINC.setAttribute('type', 'lyrics');
@@ -222,9 +270,16 @@ export default {
                         nodeL.append(document.createElementNS('http://www.music-encoding.org/ns/mei', 'language'));
                         workListNode.append(nodeL);
                     } else if (['genre', 'country', 'region', 'district', 'city'].includes(item.name)) {
+                        let termlistNode = this.getXpathNode(this.MEIData, './/mei:workList//mei:classification//mei:termList');
+                        if (!termlistNode) {
+                            let classificationNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'classification');
+                            termlistNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'termList');
+                            classificationNode.append(termlistNode);
+                            workListNode.append(classificationNode);
+                        }
                         let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'term');
                         node.setAttribute('type', item.name)
-                        workListNode.append(node);
+                        termlistNode.append(node);                  
                     } else {
                         let node = document.createElementNS('http://www.music-encoding.org/ns/mei', item.name);
                         workListNode.append(node);
@@ -233,98 +288,64 @@ export default {
 
                 if (node) {
                     if (item.name == 'id') {
-                        node.setAttribute('xml:id', item.value)
+                        node.setAttribute('xml:id', item.value.replace(/\s+/g, ' ').trim());
                     } else if (item.name == 'mode') {
-                        node.setAttribute('mode', item.value)
+                        node.setAttribute('mode', item.value.replace(/\s+/g, ' ').trim());
                     } else if (item.name == 'language') {
-                        node.setAttribute('xml:lang', item.value)
+                        node.setAttribute('xml:lang', item.value.replace(/\s+/g, ' ').trim());
                     } else {
-                        node.textContent = item.value;
+                        node.textContent = item.value.replace(/\s+/g, ' ').trim();
                     }
                 }
-            }
+            });
 
-            let nodeMusical = getXpathNode(props.MEIData, './/mei:workList//mei:incip[@type="musical"]');
+            let nodeMusical = this.getXpathNode(this.MEIData, './/mei:workList//mei:incip[@type="musical"]');
             if (!nodeMusical) {
                 nodeMusical = document.createElementNS('http://www.music-encoding.org/ns/mei', 'incip');
                 nodeMusical.setAttribute('type', 'musical');
-                getXpathNode(props.MEIData, worklistData.value[6].tag).insertAdjacentElement("afterend", nodeMusical);
+                this.getXpathNode(this.MEIData, this.worklistData[6].tag).insertAdjacentElement("afterend", nodeMusical);
             } else {
                 while (nodeMusical.firstChild) {
                     nodeMusical.removeChild(nodeMusical.firstChild);
                 }
             }
 
-            let measures = getXpathNode(props.MEIData, './/mei:measure', true);
+            let measures = this.getXpathNode(this.MEIData, './/mei:measure', true);
             let fM = measures.iterateNext();
             let sM = measures.iterateNext();
-            nodeMusical.append(getMusicalIncipMeasure(fM));
-            nodeMusical.append(getMusicalIncipMeasure(sM));
+            nodeMusical.append(this.getMusicalIncipMeasure(fM));
+            nodeMusical.append(this.getMusicalIncipMeasure(sM));
 
-            //console.log(getXpathNode(props.MEIData, './/mei:workList'));
-        };
-
-        const getMusicalIncipMeasure = (meas) => {
+            this.WorklistOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:work')));
+            this.showModal = true;
+        },
+        getMusicalIncipMeasure(meas) {
             let docM = document.createElementNS('http://www.music-encoding.org/ns/mei', 'measure');
             docM.setAttribute('copyof', '#' + meas.getAttribute('xml:id'));
             return docM;
-        };
-
-        const getXpathNode = (nodeP, xpath, returnAll = false) => {
-            const result = nodeP.evaluate(xpath, nodeP, prefix => prefix === 'mei' ? 'http://www.music-encoding.org/ns/mei' : null, XPathResult.ANY_TYPE, null);
-            if (returnAll)
-                return result;
-            return result.iterateNext();
-        };
-
-        const getInfoFromMEI = () => {
-            for (let i in worklistData.value) {
-                let item = worklistData.value[i];
-                let node = getXpathNode(props.MEIData, item.tag);
+        },
+        getInfoFromMEI() {
+            this.worklistData.forEach(item => {
+                let node = this.getXpathNode(this.MEIData, item.tag);
                 if (node) {
                     if (item.name == 'id') {
-                        item.value = node.getAttribute('xml:id');
+                        item.value = node.getAttribute('xml:id').replace(/\s+/g, ' ').trim();
                     } else if (item.name == 'mode') {
-                        item.value = capitalizeFirstLetter(node.getAttribute('mode'));
+                        item.value = this.capitalizeFirstLetter(node.getAttribute('mode')).replace(/\s+/g, ' ').trim();
                     } else if (item.name == 'language') {
-                        item.value = node.getAttribute('xml:lang');
+                        item.value = node.getAttribute('xml:lang').replace(/\s+/g, ' ').trim();
                     } else {
-                        item.value = capitalizeFirstLetter(node.textContent);
+                        item.value = this.capitalizeFirstLetter(node.textContent).replace(/\s+/g, ' ').trim();
                     }
                 }
-            };
-        };
-
-
-
-        const capitalizeFirstLetter = (string) => {
-            return string && (string[0].toUpperCase() + string.slice(1));
+            });
         }
-
-        return {
-            worklistData,
-            showScore,
-            getXpathNode,
-            getInfoFromMEI,
-            saveToMEI,
-        };
-    },
+    }
 };
 </script>
 
 <style scoped>
-.logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-}
-
-.logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-}
-
-.logo.vue:hover {
-    filter: drop-shadow(0 0 2em #42b883aa);
+#MEI-Modal-Worklist {
+    max-height: 80% !important;
 }
 </style>
