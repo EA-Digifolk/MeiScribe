@@ -2,7 +2,7 @@
     <div class="card-body container score-div-cont">
         <div class="score-page-arrows">
             <button class="" :disabled="pageToRender === 1" @click="prevPage">Previous</button>
-            <div class=""> Page <input :disabled="numPages === 1" class="go-page-input" type="number" v-model="pageToRender.value"
+            <div class=""> Page <input :disabled="numPages === 1" class="go-page-input" type="number" v-model="this.pageToRender"
                     :placeholder="pageToRender" :min="1" :max="numPages" /> / {{ numPages }}</div>
             <button class="" :disabled="pageToRender === numPages" @click="nextPage">Next</button>
         </div>
@@ -12,78 +12,55 @@
     </div>
 </template>
 
-<script>
-import { onMounted, watch, ref } from 'vue';
-
+<script module>
 export default {
     props: ['id', 'vT'],
-    setup(props) {
-        const pageToRender = ref(1);
-        const numPages = ref(1);
-
-        onMounted(() => { getScore() });
-        watch(pageToRender, async (newValue, oldValue) => {
+    data() {
+        return {
+            pageToRender: 1,
+            numPages: 1
+        }
+    },
+    mounted() {
+        this.getScore();
+    },
+    watch: {
+        pageToRender: async function (newValue, oldValue) {
             if (newValue != oldValue) {
-                getScore()
-            }
-        })
-
-        const prevPage = () => {
-            if (pageToRender.value > 1) {
-                pageToRender.value -= 1;
+                this.getScore()
             }
         }
-
-        const nextPage = () => {
-            if (pageToRender.value < numPages - 1) {
-                pageToRender.value += 1;
+    },
+    methods: {
+        prevPage() {
+            if (this.pageToRender > 1) {
+                this.pageToRender -= 1;
             }
-        }
-
-        const getScore = () => {
-            props.vT.setOptions({
-                //'adjustPageWidth': true,
+        },
+        nextPage() {
+            if (this.pageToRender < this.numPages - 1) {
+                this.pageToRender += 1;
+            }
+        },
+        getScore() {
+            this.vT.setOptions({
                 'adjustPageHeight': true,
                 'svgViewBox': true,
                 'svgBoundingBoxes': true,
-                //'breaks': 'smart',
-                //'breaksSmartSb': .2,
-                //'condense': 'encoded',
                 'breaksNoWidow': true,
                 'systemMaxPerPage': 2,
             });
-            numPages.value = props.vT.getPageCount();
+            this.numPages = this.vT.getPageCount();
 
-            let svg = props.vT.renderToSVG(pageToRender.value);
+            let svg = this.vT.renderToSVG(this.pageToRender);
             let blob = new Blob([svg], { type: 'image/svg+xml' });
             let url = URL.createObjectURL(blob);
-            let image = document.getElementById(props.id + '-score-div-img');
+            let image = document.getElementById(this.id + '-score-div-img');
             image.src = url;
             image.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
             
 
-            /* 
-            CODE TO PLAY AUDIO
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)()
-            audioContext.resume();
-            music21.common.urls.soundfontUrl = 'https://raw.githubusercontent.com/gleitz/midi-js-soundfonts/gh-pages/FluidR3_GM/';
-            music21.miditools.loadSoundfont('clarinet', i => {
-                const tn = music21.tinyNotation.TinyNotation('4/4 c4 d e f g1');
-                tn.instrument = i;
-                tn.playStream();
-            });
-            CODE TO WRITE NOTES
-            const n = new music21.note.Note('F#');
-            */
-        };
-
-        return {
-            numPages,
-            pageToRender,
-            getScore,
-            nextPage,
-            prevPage,
-        };
+        }
     },
 }
 </script>

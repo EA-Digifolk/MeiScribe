@@ -112,7 +112,7 @@
   </div>
 </template>
 
-<script>
+<script module>
 import { Tooltip } from 'bootstrap';
 
 import createVerovioModule from 'verovio/wasm';
