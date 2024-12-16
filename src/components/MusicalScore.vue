@@ -8,21 +8,21 @@
                 }}</div>
             <button class="" :disabled="pageToRender === numPages" @click="nextPage">Next</button>
         </div>
-        <button class="btn btn-sm">Play</button>
-        <MidiPlayer :id="id + '-midi-player'" :midi="midi" :playMidi="play = !play"></MidiPlayer>
+        <div :id="id + '-midi-player'"/>
         <div :id="id + '-score-div-img'" class="score-div">
         </div>
     </div>
 </template>
 
 <script module>
-import MidiPlayer from './MidiPlayer.vue';
+import * as music21 from 'music21j';
 
 export default {
     components: {
-        MidiPlayer
+        // MidiPlayer
     },
     props: ['id', 'vT', 'showIds', 'showMidiPitch'],
+    emits: ['loadMIDI', 'startPlay'],
     data() {
         return {
             pageToRender: 1,
@@ -90,16 +90,14 @@ export default {
 
             let base64midi = this.vT.renderToMIDI();
             this.midi = base64midi;
-
-            window.addEventListener("keyup", (event) => {
-                if (event === undefined) return;
-                if (event.key === "Enter") {
-                    this.play = !this.play;
-                } else if (event.key === "ArrowRight") {
-                    this.nextPage();
-                }
+            music21.common.urls.midiPlayer = './midiPlayer'
+            music21.common.urls.soundfontUrl = 'https://raw.githubusercontent.com/gleitz/midi-js-soundfonts/gh-pages/FluidR3_GM/';
+            music21.miditools.loadSoundfont('fiddle', i => {
+                let midiPlayer = new music21.miditools.MidiPlayer();
+                midiPlayer.addPlayer(document.getElementById(this.id + '-midi-player'));
+                midiPlayer.base64Load(this.midi);
             });
-        }
+        },
     },
 }
 </script>

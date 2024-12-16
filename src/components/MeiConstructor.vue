@@ -126,8 +126,6 @@ import AmbitusForm from './AmbitusForm.vue';
 import RhythmPatternForm from './RhythmPatternForm.vue';
 import PhraseForm from './PhraseForm.vue';
 
-const downloadIcon = "M19.99 6.21a4.49 4.49 0 0 0-8.82-.88A4.325 4.325 0 0 0 9.5 5a4.486 4.486 0 0 0-4.23 3.01A4.498 4.498 0 0 0 5.5 17H11v-5h1v9.086l-1.146-1.146-.707.707L12.5 23l2.353-2.353-.706-.707L13 21.085V17h5.5a5.497 5.497 0 0 0 1.49-10.79z";
-
 export default {
   inject: ['getXpathNode', 'prettifyXml'],
   components: {
@@ -159,7 +157,8 @@ export default {
         'AmbitusForm': false,
         'RhythmPatternForm': false,
         'SegmentationForm': false
-      }
+      },
+      downloadIcon: "M19.99 6.21a4.49 4.49 0 0 0-8.82-.88A4.325 4.325 0 0 0 9.5 5a4.486 4.486 0 0 0-4.23 3.01A4.498 4.498 0 0 0 5.5 17H11v-5h1v9.086l-1.146-1.146-.707.707L12.5 23l2.353-2.353-.706-.707L13 21.085V17h5.5a5.497 5.497 0 0 0 1.49-10.79z",
     }
   },
   mounted() {
