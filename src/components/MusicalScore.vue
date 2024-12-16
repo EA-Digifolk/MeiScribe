@@ -8,18 +8,27 @@
                 }}</div>
             <button class="" :disabled="pageToRender === numPages" @click="nextPage">Next</button>
         </div>
+        <button class="btn btn-sm">Play</button>
+        <MidiPlayer :id="id + '-midi-player'" :midi="midi" :playMidi="play = !play"></MidiPlayer>
         <div :id="id + '-score-div-img'" class="score-div">
         </div>
     </div>
 </template>
 
 <script module>
+import MidiPlayer from './MidiPlayer.vue';
+
 export default {
+    components: {
+        MidiPlayer
+    },
     props: ['id', 'vT', 'showIds', 'showMidiPitch'],
     data() {
         return {
             pageToRender: 1,
-            numPages: 1
+            numPages: 1,
+            midi: '',
+            play: false,
         }
     },
     mounted() {
@@ -66,7 +75,7 @@ export default {
                         e.addEventListener('mouseenter', () => {
                             if (this.showIds) {
                                 sc.innerHTML = 'ID: ' + e.id;
-                            } else  {
+                            } else {
                                 sc.innerHTML = 'PITCH: ' + this.vT.getMIDIValuesForElement(e.id)['pitch'];
                             }
                             sc.style.padding = '.4em';
@@ -77,7 +86,19 @@ export default {
                         });
                     }
                 });
-            }
+            };
+
+            let base64midi = this.vT.renderToMIDI();
+            this.midi = base64midi;
+
+            window.addEventListener("keyup", (event) => {
+                if (event === undefined) return;
+                if (event.key === "Enter") {
+                    this.play = !this.play;
+                } else if (event.key === "ArrowRight") {
+                    this.nextPage();
+                }
+            });
         }
     },
 }
