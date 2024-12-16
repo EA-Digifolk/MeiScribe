@@ -1,20 +1,21 @@
 <template>
     <div class="card-body container score-div-cont">
         <div class="score-page-arrows">
+            <div :id="id + '-ScoreSelectedID'" class="ScoreSelectedID"></div>
             <button class="" :disabled="pageToRender === 1" @click="prevPage">Previous</button>
-            <div class=""> Page <input :disabled="numPages === 1" class="go-page-input" type="number" v-model="this.pageToRender"
-                    :placeholder="pageToRender" :min="1" :max="numPages" /> / {{ numPages }}</div>
+            <div class=""> Page <input :disabled="numPages === 1" class="go-page-input" type="number"
+                    v-model="pageToRender.value" :placeholder="pageToRender" :min="1" :max="numPages" /> / {{ numPages
+                }}</div>
             <button class="" :disabled="pageToRender === numPages" @click="nextPage">Next</button>
         </div>
-        <div class="score-div">
-            <img :id="id + '-score-div-img'"/>
+        <div :id="id + '-score-div-img'" class="score-div">
         </div>
     </div>
 </template>
 
 <script module>
 export default {
-    props: ['id', 'vT'],
+    props: ['id', 'vT', 'showIds', 'showMidiPitch'],
     data() {
         return {
             pageToRender: 1,
@@ -49,17 +50,34 @@ export default {
                 'svgBoundingBoxes': true,
                 'breaksNoWidow': true,
                 'systemMaxPerPage': 2,
+                'svgAdditionalAttribute': 'note@id'
             });
             this.numPages = this.vT.getPageCount();
 
             let svg = this.vT.renderToSVG(this.pageToRender);
-            let blob = new Blob([svg], { type: 'image/svg+xml' });
-            let url = URL.createObjectURL(blob);
             let image = document.getElementById(this.id + '-score-div-img');
-            image.src = url;
-            image.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
-            
+            image.innerHTML = svg.trim();
 
+            if (this.showIds || this.showMidiPitch) {
+                let notesOnSVG = document.getElementsByClassName('note');
+                Array.from(notesOnSVG).forEach((e, _) => {
+                    if (!e.classList.contains('bounding-box')) {
+                        let sc = document.getElementById(this.id + '-ScoreSelectedID');
+                        e.addEventListener('mouseenter', () => {
+                            if (this.showIds) {
+                                sc.innerHTML = 'ID: ' + e.id;
+                            } else  {
+                                sc.innerHTML = 'PITCH: ' + this.vT.getMIDIValuesForElement(e.id)['pitch'];
+                            }
+                            sc.style.padding = '.4em';
+                        });
+                        e.addEventListener('mouseleave', () => {
+                            sc.innerHTML = '';
+                            sc.style.padding = '0em';
+                        });
+                    }
+                });
+            }
         }
     },
 }
@@ -92,5 +110,30 @@ export default {
 
 .go-page-input {
     margin-left: 1em;
+}
+
+g.note.select-start {
+    color: red !important;
+    fill: red !important;
+}
+
+g.note.select-end {
+    color: green !important;
+    fill: green !important;
+}
+
+:hover.note {
+    fill: dodgerblue;
+    stroke: white;
+    stroke-width: 2px;
+    filter: url(#dropshadow);
+}
+
+.ScoreSelectedID {
+    position: absolute;
+    top: auto;
+    left: 7%;
+    background-color: dodgerblue;
+    color: aliceblue;
 }
 </style>

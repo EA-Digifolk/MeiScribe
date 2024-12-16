@@ -42,7 +42,7 @@
                 </div>
             </div>
         </div>
-        <MusicalScore id="phraseForm" :vT="vT" />
+        <MusicalScore id="phraseForm" :vT="vT" showIds="true"/>
         <Teleport to="body">
             <modal :show="showModal" @close="showModal = false">
                 <template #header>
@@ -61,7 +61,7 @@
 import { Tooltip } from 'bootstrap';
 
 import Modal from './Modal.vue';
-import MusicalScore from './PhraseSelectorMusicalScore.vue';
+import MusicalScore from './MusicalScore.vue';
 
 export default {
     inject: ['getXpathNode', 'prettifyXml'],
