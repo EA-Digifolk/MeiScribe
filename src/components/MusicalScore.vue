@@ -8,7 +8,7 @@
                 }}</div>
             <button class="" :disabled="pageToRender === numPages" @click="nextPage">Next</button>
         </div>
-        <div :id="id + '-midi-player'"/>
+        <div :id="id + '-midi-player'" />
         <div :id="id + '-score-div-img'" class="score-div">
         </div>
     </div>
@@ -88,14 +88,25 @@ export default {
                 });
             };
 
-            let base64midi = this.vT.renderToMIDI();
-            this.midi = base64midi;
             music21.common.urls.midiPlayer = './midiPlayer'
             music21.common.urls.soundfontUrl = 'https://raw.githubusercontent.com/gleitz/midi-js-soundfonts/gh-pages/FluidR3_GM/';
+
+            let midiPlayer = new music21.miditools.MidiPlayer();
+            midiPlayer.addPlayer(document.getElementById(this.id + '-midi-player'));
+            midiPlayer.player.timeWarp = midiPlayer.speed;
             music21.miditools.loadSoundfont('fiddle', i => {
-                let midiPlayer = new music21.miditools.MidiPlayer();
-                midiPlayer.addPlayer(document.getElementById(this.id + '-midi-player'));
-                midiPlayer.base64Load(this.midi);
+                midiPlayer.player.loadFile(
+                    'data:audio/midi;base64,' + this.vT.renderToMIDI(),
+                    () => {
+                        // success
+                        midiPlayer.fileLoaded();
+                    },
+                    undefined, // loading
+                    e => {
+                        // failure
+                        console.log(e);
+                    }
+                );
             });
         },
     },
