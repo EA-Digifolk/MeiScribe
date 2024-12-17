@@ -8,9 +8,8 @@
                 }}</div>
             <button class="" :disabled="pageToRender === numPages" @click="nextPage">Next</button>
         </div>
-        <div :id="id + '-midi-player'" />
-        <div :id="id + '-score-div-img'" class="score-div">
-        </div>
+        <div :id="id + '-score-div-img'" class="score-div"></div>
+        <div :id="id + '-midi-player'" class="m21-midi-player"></div>
     </div>
 </template>
 
@@ -165,5 +164,19 @@ g.note.select-end {
     left: 7%;
     background-color: dodgerblue;
     color: aliceblue;
+}
+
+.timeControls {
+    width: 100% !important;
+    top: -30px !important;
+    left: -50px !important;
+}
+
+.timePlayed, .timeRemaining {
+    width: auto !important;
+}
+
+.m21-midi-player {
+    margin-top: 2em !important;
 }
 </style>
