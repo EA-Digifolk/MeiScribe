@@ -151,6 +151,9 @@ export default {
                 if (node) {
                     if (item.name === 'id') {
                         item.value = node.getAttribute('xml:id')?.trim() || '';
+                    } else if (item.name === 'informer') {
+                        console.log(node.parentNode);
+                        item.value = node.childNodes[0].textContent?.trim() || '';
                     } else {
                         item.value = node.textContent?.trim() || '';
                     }

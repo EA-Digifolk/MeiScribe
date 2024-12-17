@@ -285,7 +285,7 @@ export default {
                             classificationNode.append(termlistNode);
                             workListNode.append(classificationNode);
                         }
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'term');
+                        node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'term');
                         node.setAttribute('type', item.name)
                         termlistNode.append(node);
                     } else {
