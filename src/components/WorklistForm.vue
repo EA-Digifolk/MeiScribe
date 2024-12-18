@@ -301,6 +301,8 @@ export default {
                         node.setAttribute('mode', item.value.replace(/\s+/g, ' ').trim());
                     } else if (item.name == 'language') {
                         node.setAttribute('xml:lang', item.value.replace(/\s+/g, ' ').trim());
+                    } else if (item.name === 'lyrics' || item.name === 'notes') {
+                        node.textContent = item.value;
                     } else {
                         node.textContent = item.value.replace(/\s+/g, ' ').trim();
                     }
@@ -347,6 +349,8 @@ export default {
                         item.value = this.capitalizeFirstLetter(node.getAttribute('mode')).replace(/\s+/g, ' ').trim();
                     } else if (item.name == 'language') {
                         item.value = node.getAttribute('xml:lang').replace(/\s+/g, ' ').trim();
+                    } else if (item.name === 'lyrics' || item.name === 'notes') {
+                        item.value = node.textContent;
                     } else {
                         item.value = this.capitalizeFirstLetter(node.textContent).replace(/\s+/g, ' ').trim();
                     }
