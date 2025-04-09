@@ -14,6 +14,7 @@
     "@popperjs/core": "^2.11.8",
     "@vue/compiler-sfc": "^3.5.13",
     "bootstrap": "^5.3.3",
+    "google-drive-vue": "^0.0.2",
     "music21j": "^0.16.5",
     "verovio": "^4.3.1",
     "vue": "^3.5.12",

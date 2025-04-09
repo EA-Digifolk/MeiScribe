@@ -52,14 +52,38 @@
       </div>
 
       <!--Github Integration-->
-      <!--<div class="row mt-3">
-        <div class="col col-12 d-flex justify-content-start flex-wrap align-content-center border bg-light w-100 p-3 pb-2">
+      <div class="row mt-3">
+        <div class="col col-12 w-100 justify-content-start flex-wrap align-content-center border bg-light w-100 p-3 pb-2">
+          <p style="text-align: left"><b>Repositories</b></p>
+        </div>
+        <div
+          class="col col-3 d-flex justify-content-start flex-wrap align-content-center border bg-light w-25 p-3 pb-2">
           <p><b>Github Repository</b></p>
         </div>
-        <div class="col col-12 d-flex justify-content-start flex-wrap align-content-center border bg-light w-100 p-3">
+        <div class="col col-9 d-flex justify-content-start flex-wrap align-content-center border bg-light w-75 p-3">
           zzzz
         </div>
-      </div>-->
+        <div
+          class="col col-3 d-flex justify-content-start flex-wrap align-content-center border bg-light w-25 p-3 pb-2">
+          <p><b>Google Drive</b></p>
+        </div>
+        <div class="col col-9 d-flex justify-content-start flex-wrap align-content-center border bg-light w-75 p-3">
+          zzzz
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        <div class="col col-12 w-100 justify-content-start flex-wrap align-content-center border bg-light w-100 p-3 pb-2">
+          <p style="text-align: left"><b>Batch Conversion</b></p>
+        </div>
+        <div
+          class="col col-3 d-flex justify-content-start flex-wrap align-content-center border bg-light w-25 p-3 pb-2">
+          <p><b>Upload Folder</b></p>
+        </div>
+        <div class="col col-9 d-flex justify-content-start flex-wrap align-content-center border bg-light w-75 p-3">
+          zzzz
+        </div>
+      </div>
 
       <div class="row justify-content-center mt-3">
         <button class="btn btn-primary w-100" @click="startProcess">Start</button>
