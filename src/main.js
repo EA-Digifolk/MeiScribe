@@ -1,21 +1,20 @@
-import { createApp } from 'vue'
+import { createApp } from 'vue';
 
-import App from './App.vue'
+import App from './App.vue';
 
-import './style.css'
+import './style.css';
 import "bootstrap/dist/css/bootstrap.css";
 import SvgIcon from "vue3-icon";
+
+import { getXpathNode, createNodesMethods } from './mei_methods.js';
 
 const app = createApp(App)
 
 app.component("svg-icon", SvgIcon);
 
-app.provide('getXpathNode', (nodeP, xpath, returnAll = false) => {
-    const result = nodeP.evaluate(xpath, nodeP, prefix => prefix === 'mei' ? 'http://www.music-encoding.org/ns/mei' : null, XPathResult.ANY_TYPE, null);
-    if (returnAll)
-        return result;
-    return result.iterateNext();
-});
+app.provide('getXpathNode', getXpathNode);
+app.provide('createNodesMethods', createNodesMethods);
+
 
 app.provide('prettifyXml', (sourceXml) => {
     var xmlDoc = new DOMParser().parseFromString(sourceXml, 'application/xml');

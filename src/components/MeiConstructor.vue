@@ -1,4 +1,6 @@
 <template>
+
+  <!-- HEADER -->
   <div class="container-xxl w-100">
     <nav class="w-100 navbar navbar-expand-lg navbar-light bg-light 2">
       <a class="navbar-brand p-2" href="#"><img src="/ea-digifolk-logo.png" width="20px" /> EA-Digifolk MEI
@@ -21,9 +23,9 @@
     </nav>
 
     <!--FILE FRAME-->
-    <div class="container-xxl mb-5 mt-5" v-if="MEIData === ''">
+    <div class="container-xxl mb-5 mt-5"> <!--v-if="MEIData === ''">-->
       <div class="row border bg-light p-2 pt-3">
-        <p style="text-align: left"><b>Single Files</b></p>
+        <p style="text-align: left"><b>MEI Convertor</b></p>
       </div>
       <div class="row ">
         <!-- File Input for MEI, MusicXML and MIDI -->
@@ -51,51 +53,17 @@
         </div>
       </div>
 
-      <!--Github Integration-->
-      <div class="row mt-3">
-        <div class="col col-12 w-100 justify-content-start flex-wrap align-content-center border bg-light w-100 p-3 pb-2">
-          <p style="text-align: left"><b>Repositories</b></p>
-        </div>
-        <div
-          class="col col-3 d-flex justify-content-start flex-wrap align-content-center border bg-light w-25 p-3 pb-2">
-          <p><b>Github Repository</b></p>
-        </div>
-        <div class="col col-9 d-flex justify-content-start flex-wrap align-content-center border bg-light w-75 p-3">
-          zzzz
-        </div>
-        <div
-          class="col col-3 d-flex justify-content-start flex-wrap align-content-center border bg-light w-25 p-3 pb-2">
-          <p><b>Google Drive</b></p>
-        </div>
-        <div class="col col-9 d-flex justify-content-start flex-wrap align-content-center border bg-light w-75 p-3">
-          zzzz
-        </div>
-      </div>
-
-      <div class="row mt-3">
-        <div class="col col-12 w-100 justify-content-start flex-wrap align-content-center border bg-light w-100 p-3 pb-2">
-          <p style="text-align: left"><b>Batch Conversion</b></p>
-        </div>
-        <div
-          class="col col-3 d-flex justify-content-start flex-wrap align-content-center border bg-light w-25 p-3 pb-2">
-          <p><b>Upload Folder</b></p>
-        </div>
-        <div class="col col-9 d-flex justify-content-start flex-wrap align-content-center border bg-light w-75 p-3">
-          zzzz
-        </div>
-      </div>
-
       <div class="row justify-content-center mt-3">
         <button class="btn btn-primary w-100" @click="startProcess">Start</button>
       </div>
     </div>
 
     <!--MAIN FRAME-->
-    <div class="container-xxl mb-5 mt-5 align-content-center" v-else>
+    <!--<div class="container-xxl mb-5 mt-5 align-content-center" v-else>
       <button class="btn btn-primary" style="width: 95% !important" @click="exportMEI">Export MEI</button>
 
       <div id="carouselForms" class="container-xxl carousel carousel-dark slide w-100" data-bs-interval="false"
-        data-bs-pause="hover"> <!--data-bs-interval="false"  data-bs-ride="carousel" -->
+        data-bs-pause="hover"> <--data-bs-interval="false"  data-bs-ride="carousel" --
 
         <div class="carousel-indicators">
           <button type="button" data-bs-target="#carouselForms" data-bs-slide-to="0" class="active" aria-current="true"
@@ -130,7 +98,7 @@
           <span class="visually-hidden">Next</span>
         </button>
       </div>
-    </div>
+    </div>-->
 
     <div v-if="message">{{ message }}</div>
   </div>
@@ -151,7 +119,7 @@ import RhythmPatternForm from './RhythmPatternForm.vue';
 import PhraseForm from './PhraseForm.vue';
 
 export default {
-  inject: ['getXpathNode', 'prettifyXml'],
+  inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods'],
   components: {
     TitleStmtForm,
     SourceStmtForm,
@@ -197,7 +165,6 @@ export default {
     async handleFiles(event) {
       const file = event.target.files[0];
       if (file && file.name.endsWith('.mid')) {
-
         this.fileName = file.name;
       } else if (file) {
         const text = await file.text();
@@ -222,6 +189,16 @@ export default {
         this.fileName = filenameS[filenameS.length - 1];
       }
     },
+    createALLMEICamps(meiTree) {
+
+      // Title Statement
+      meiTree = this.createNodesMethods(meiTree);
+      meiTree = this.createNodesMethods(meiTree, 'publisher');
+
+      console.log(this.getXpathNode(meiTree, './/mei:pubStmt'));
+
+      return this.prettifyXml(new XMLSerializer().serializeToString(meiTree));
+    },
     startProcess() {
       if (this.fileName.endsWith('.abc') || this.abcString !== '') {
         this.message = 'Loading ABC';
@@ -244,7 +221,8 @@ export default {
         this.message = 'File type of ' + file.name + ' is not allowed at the moment!';
       };
 
-      this.xmlDoc = (new DOMParser()).parseFromString(this.MEIData, "text/xml");
+      this.xmlDoc = (new DOMParser()).parseFromString(this.MEIData, "text/xml"); // Parse String to XML DOC to EDIT
+      this.xmlDoc = this.createALLMEICamps(this.xmlDoc); // Create All Camps
     },
     exportMEI() {
       this.exportData = !this.exportData;
