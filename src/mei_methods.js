@@ -459,7 +459,7 @@ const updateNodesRhythm = (meiTree, data) => {
     let rhythmPNode = getXpathNode(meiTree, data[0].tag);
     if (rhythmPNode.children.length > 0) {
         rhythmPNode.replaceChildren();
-    }
+    };
 
     let pattern = data[0].value.split(']');
     for (let i in pattern) {
@@ -505,8 +505,19 @@ const updateNodesRhythm = (meiTree, data) => {
  * @returns 
  */
 const updateNodesSegmentation = (meiTree, data) => {
-    data.forEach(item => {
 
+    let phraseNode = getXpathNode(meiTree, data[0].tag);
+    if (phraseNode.children.length > 0) {
+        phraseNode.replaceChildren();
+    };
+
+    data[0].value.forEach(item => {
+        let phEl = document.createElementNS('http://www.music-encoding.org/ns/mei', 'phrase');
+        phEl.setAttribute('n', item.n);
+        phEl.setAttribute('startid', '#' + item.startid);
+        phEl.setAttribute('endid', '#' + item.endid);
+        phEl.setAttribute('type', item.type);
+        phraseNode.append(phEl);
     });
     return meiTree;
 };

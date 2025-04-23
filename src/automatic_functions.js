@@ -21,7 +21,7 @@ export const getAutomaticAmbitus = (vT, low = true) => {
 };
 
 export const getAutomaticModeKey = () => {
-
+    
 };
 
 export const getAutomaticRhythmPattern = () => {

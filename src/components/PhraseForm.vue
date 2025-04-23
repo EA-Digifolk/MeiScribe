@@ -64,7 +64,7 @@ import Modal from './Modal.vue';
 import MusicalScore from './MusicalScore.vue';
 
 export default {
-    inject: ['getXpathNode', 'prettifyXml'],
+    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods', 'getAutomaticSegmentation'],
     components: {
         MusicalScore,
         Tooltip,
@@ -105,29 +105,10 @@ export default {
     methods: {
         saveToMEI(openModal = true) {
             let phraseNode = this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="phrases"]');
-            if (phraseNode) {
-                phraseNode.remove();
-            };
-
-            phraseNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'supplied');
-            phraseNode.setAttribute('type', 'phrases');
-
-            let rhythmicSupplied = this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]');
-            if (rhythmicSupplied) {
-                rhythmicSupplied.insertAdjacentElement("afterend", phraseNode);
-            } else {
-                this.getXpathNode(this.MEIData, './/mei:music//mei:section').insertAdjacentElement("afterbegin", phraseNode);
+            if (!phraseNode) {
+                this.createNodesMethods('segmentation');
             }
-
-            let phrases = this.phraseSegmentData[0].value;
-            for (let ph in phrases) {
-                let phEl = document.createElementNS('http://www.music-encoding.org/ns/mei', 'phrase');
-                phEl.setAttribute('n', phrases[ph].n);
-                phEl.setAttribute('startid', '#' + phrases[ph].startid);
-                phEl.setAttribute('endid', '#' + phrases[ph].endid);
-                phEl.setAttribute('type', phrases[ph].type);
-                phraseNode.append(phEl);
-            }
+            this.updateNodesMethods(this.MEIData, this.phraseSegmentData, 'segmentation');
 
             this.SegmentationOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="phrases"]')));
             
@@ -150,6 +131,7 @@ export default {
                     };
                 } else {
                     this.addPhrase();
+                    // getAutomaticSegmentation
                 }
             });
         },
