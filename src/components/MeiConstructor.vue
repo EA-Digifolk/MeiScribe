@@ -83,9 +83,9 @@
             @save-finished="allFormsReadyToExport['WorklistForm'] = true; afterTrigger();" />
           <AmbitusForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
             @save-finished="allFormsReadyToExport['AmbitusForm'] = true; afterTrigger();" />
-          <!--<RhythmPatternForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
+          <RhythmPatternForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
             @save-finished="allFormsReadyToExport['RhythmPatternForm'] = true; afterTrigger();" />
-          <PhraseForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
+          <!--<PhraseForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
             @save-finished="allFormsReadyToExport['SegmentationForm'] = true; afterTrigger();" />-->
         </div>
 

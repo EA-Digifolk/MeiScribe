@@ -405,7 +405,7 @@ const updateNodesWorklist = (meiTree, data) => {
             if (!item.value && item.default) {
                 item.value = item.default;
             }
-            
+
             if (item.name == 'id') {
                 node.setAttribute('xml:id', item.value.replace(/\s+/g, ' ').trim());
             } else if (item.name == 'mode') {
@@ -418,7 +418,7 @@ const updateNodesWorklist = (meiTree, data) => {
             } else {
                 node.textContent = item.value.replace(/\s+/g, ' ').trim();
             }
-            
+
         }
     });
     return meiTree;
@@ -445,6 +445,70 @@ const updateNodesAmbitus = (meiTree, data) => {
             node.setAttribute('automatic', automatic);
         }
     });
+    return meiTree;
+};
+
+/**
+ * Update Rhythm Pattern with data
+ * @param {*} meiTree 
+ * @param {*} data 
+ * @returns 
+ */
+const updateNodesRhythm = (meiTree, data) => {
+
+    let rhythmPNode = getXpathNode(meiTree, data[0].tag);
+    if (rhythmPNode.children.length > 0) {
+        rhythmPNode.replaceChildren();
+    }
+
+    let pattern = data[0].value.split(']');
+    for (let i in pattern) {
+        let pt = pattern[i].split('[');
+        for (let j in pt) {
+            if (/\d/.test(pt[j])) {
+                let pt_s = pt[j].toString().split(" ");
+                if (pt_s[0] == " ") {
+                    pt_s = pt_s.slice(1);
+                };
+
+                let bT = rhythmPNode;
+                if (pt[j][0] == 'b') {
+                    bT = document.createElementNS('http://www.music-encoding.org/ns/mei', 'beam');
+                    if (pt[j][1] != ' ') { bT.setAttribute('tuplet', pt[j][1]); }
+                    rhythmPNode.append(bT);
+                };
+
+                for (let n in pt_s) {
+                    if (/\d/.test(pt_s[n])) {
+                        let note = document.createElementNS('http://www.music-encoding.org/ns/mei', 'note');
+                        if (pt_s[n].includes('.')) {
+                            let dots = pt_s[n].toString().split(".");
+                            note.setAttribute('dur', parseInt(dots[0]));
+                            note.setAttribute('dots', dots.length - 1);
+                        } else {
+                            note.setAttribute('dur', parseInt(pt_s[n]));
+                        }
+                        bT.append(note);
+                    }
+                };
+            }
+        }
+    };
+
+    return meiTree;
+};
+
+/**
+ * Update Segmentation with data
+ * @param {*} meiTree 
+ * @param {*} data 
+ * @returns 
+ */
+const updateNodesSegmentation = (meiTree, data) => {
+    data.forEach(item => {
+
+    });
+    return meiTree;
 };
 
 /**
@@ -460,5 +524,7 @@ export const updateNodesMethods = (meiTree, data, info = 'titleStmt') => {
         case 'sourceStmt': return updateNodesSourceStmt(meiTree, data);
         case 'worklist': return updateNodesWorklist(meiTree, data);
         case 'ambitus': return updateNodesAmbitus(meiTree, data);
+        case 'rhythmPattern': return updateNodesRhythm(meiTree, data);
+        case 'segmentation': return updateNodesSegmentation(meiTree, data);
     }
 };

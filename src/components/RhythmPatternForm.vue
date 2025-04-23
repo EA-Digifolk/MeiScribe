@@ -40,7 +40,7 @@ import MusicalScore from './MusicalScore.vue';
 import * as music21 from 'music21j';
 
 export default {
-    inject: ['getXpathNode', 'prettifyXml'],
+    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods', 'getAutomaticRhythmPattern'],
     components: {
         Tooltip,
         Modal,
@@ -79,48 +79,11 @@ export default {
     methods: {
         saveToMEI(openModal = true) {
             let rhythmPNode = this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]');
-            if (rhythmPNode) {
-                rhythmPNode.remove();
-            };
-
-            rhythmPNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'supplied');
-            rhythmPNode.setAttribute('type', 'rhythm pattern');
-            this.getXpathNode(this.MEIData, './/mei:music//mei:section').insertAdjacentElement("afterbegin", rhythmPNode);
-
-            let pattern = this.rhythmPatternData[0].value.split(']');
-            for (let i in pattern) {
-                let pt = pattern[i].split('[');
-                for (let j in pt) {
-                    if (/\d/.test(pt[j])) {
-                        let pt_s = pt[j].toString().split(" ");
-                        if (pt_s[0] == " ") {
-                            pt_s = pt_s.slice(1);
-                        };
-
-                        let bT = rhythmPNode;
-                        if (pt[j][0] == 'b') {
-                            bT = document.createElementNS('http://www.music-encoding.org/ns/mei', 'beam');
-                            if (pt[j][1] != ' ') { bT.setAttribute('tuplet', pt[j][1]); }
-                            rhythmPNode.append(bT);
-                        };
-
-                        for (let n in pt_s) {
-                            if (/\d/.test(pt_s[n])) {
-                                let note = document.createElementNS('http://www.music-encoding.org/ns/mei', 'note');
-                                if (pt_s[n].includes('.')) {
-                                    let dots = pt_s[n].toString().split(".");
-                                    note.setAttribute('dur', parseInt(dots[0]));
-                                    note.setAttribute('dots', dots.length - 1);
-                                } else {
-                                    note.setAttribute('dur', parseInt(pt_s[n]));
-                                }
-                                bT.append(note);
-                            }
-                        };
-                    }
-                }
-            };
-
+            if (!rhythmPNode) {
+                this.createNodesMethods('rhythmPattern');
+            }
+            this.updateNodesMethods(this.MEIData, this.rhythmPatternData, 'rhythmPattern');
+            
             this.RhythmPatternOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]')));
             
             if (openModal) {
@@ -228,10 +191,10 @@ export default {
                         this.rhythmPatternData[0].value = tempRhythmStr.slice(1);
                     }
                 } else {
-                    /* Try to Find An Algorithm that gets the rhythmic pattern ? */
+                    //this.getAutomaticRhythmPattern()
                 }
 
-                this.getMusicalRhythm()
+                this.getMusicalRhythm();
             });
         }
     },
