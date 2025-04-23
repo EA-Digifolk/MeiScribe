@@ -1,5 +1,7 @@
 // mei_methods.js
 
+import * as music21 from 'music21j';
+
 const MEICAMPS = {
     'titleStmt': [
         { name: 'id', tag: './/mei:titleStmt//mei:title[@type="main"]' },
@@ -66,6 +68,12 @@ export const getXpathNode = (nodeP, xpath, returnAll = false) => {
     return result.iterateNext();
 };
 
+export const getMusicalIncipMeasure = (meas) => {
+    let docM = document.createElementNS('http://www.music-encoding.org/ns/mei', 'measure');
+    docM.setAttribute('copyof', '#' + meas.getAttribute('xml:id'));
+    return docM;
+};
+
 /**
  * Create Nodes for Title Statement
  * @param {*} meiTree 
@@ -106,13 +114,10 @@ const createNodesPublisher = (meiTree) => {
     MEICAMPS['publisher'].forEach(item => {
         let node = getXpathNode(meiTree, item.tag);
         if (!node) {
-            let nodeP = getXpathNode(meiTree, './/mei:pubStmt');
-            let node = document.createElementNS('http://www.music-encoding.org/ns/mei', item.name);
-            nodeP.append(node);
+            node = document.createElementNS('http://www.music-encoding.org/ns/mei', item.name);
+            getXpathNode(meiTree, './/mei:pubStmt').append(node);
         }
-        if (node) {
-            node.textContent = item.default.replace(/\s+/g, ' ').trim();
-        }
+        node.textContent = item.default.replace(/\s+/g, ' ').trim();
     });
     return meiTree;
 };
@@ -147,7 +152,7 @@ const createNodesSourceStmt = (meiTree) => {
                 if (!nodeR) {
                     nodeR = document.createElementNS('http://www.music-encoding.org/ns/mei', 'respStmt');
                     imprintNode.append(nodeR);
-                }
+                };
                 let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'persName');
                 node.setAttribute('role', item.name);
                 nodeR.append(node);
@@ -219,6 +224,24 @@ const createNodesWorklist = (meiTree) => {
             }
         };
     });
+
+    let nodeMusical = getXpathNode(meiTree, './/mei:workList//mei:incip[@type="musical"]');
+    if (!nodeMusical) {
+        nodeMusical = document.createElementNS('http://www.music-encoding.org/ns/mei', 'incip');
+        nodeMusical.setAttribute('type', 'musical');
+        getXpathNode(meiTree, MEICAMPS['worklist'][6].tag).insertAdjacentElement("afterend", nodeMusical);
+    } else {
+        while (nodeMusical.firstChild) {
+            nodeMusical.removeChild(nodeMusical.firstChild);
+        }
+    }
+
+    let measures = getXpathNode(meiTree, './/mei:measure', true);
+    let fM = measures.iterateNext();
+    let sM = measures.iterateNext();
+    nodeMusical.append(getMusicalIncipMeasure(fM));
+    nodeMusical.append(getMusicalIncipMeasure(sM));
+
     return meiTree;
 };
 
@@ -257,7 +280,13 @@ const createNodesAmbitus = (meiTree) => {
  * @returns 
  */
 const createNodesRhythm = (meiTree) => {
-
+    let rhythmPNode = getXpathNode(meiTree, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]');
+    if (!rhythmPNode) {
+        rhythmPNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'supplied');
+        rhythmPNode.setAttribute('type', 'rhythm pattern');
+        getXpathNode(meiTree, './/mei:music//mei:section').insertAdjacentElement("afterbegin", rhythmPNode);
+    };
+    return meiTree;
 };
 
 /**
@@ -266,7 +295,18 @@ const createNodesRhythm = (meiTree) => {
  * @returns 
  */
 const createNodesSegmentation = (meiTree) => {
-
+    let phraseNode = getXpathNode(meiTree, './/mei:music//mei:section//mei:supplied[@type="phrases"]');
+    if (!phraseNode) {
+        phraseNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'supplied');
+        phraseNode.setAttribute('type', 'phrases');
+    };
+    let rhythmicSupplied = getXpathNode(meiTree, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]');
+    if (rhythmicSupplied) {
+        rhythmicSupplied.insertAdjacentElement("afterend", phraseNode);
+    } else {
+        getXpathNode(meiTree, './/mei:music//mei:section').insertAdjacentElement("afterbegin", phraseNode);
+    };
+    return meiTree;
 };
 
 
@@ -289,15 +329,15 @@ export const createNodesMethods = (meiTree, info = 'titleStmt') => {
 };
 
 /**
- * 
+ * Update TitleStatement with data
  * @param {*} meiTree 
  * @param {*} data 
  */
 const updateNodesTitleStmt = (meiTree, data) => {
-    for (let item in data) {
-        if (item.name in MEICAMPS['titleStmt'].map((e) => { return e.name })) {
+    data.forEach(item => {
+        if (MEICAMPS['titleStmt'].map((e) => { return e.name }).includes(item.name)) {
             let node = getXpathNode(meiTree, item.tag);
-            if (item.name == 'id') {
+            if (item.name === 'id') {
                 node.setAttribute('xml:id', item.value.replace(/\s+/g, ' ').trim());
             } else if (item.name == 'informer') {
                 let tempChildren = node.children[0]
@@ -307,23 +347,114 @@ const updateNodesTitleStmt = (meiTree, data) => {
                 node.textContent = item.value.replace(/\s+/g, ' ').trim();
             };
         }
-    }
+    });
     return meiTree;
 };
 
+/**
+ * Update Publisher Statement with data
+ * @param {*} meiTree 
+ * @param {*} data 
+ */
 const updateNodesPublisher = (meiTree, data) => {
-    for (let item in data) {
-        if (item.name in MEICAMPS['publisher'].map((e) => { return e.name })) {
+    data.forEach(item => {
+        if (MEICAMPS['publisher'].map((e) => { return e.name }).includes(item.name)) {
             let node = getXpathNode(meiTree, item.tag);
             node.textContent = item.value.replace(/\s+/g, ' ').trim();
         }
-    }
+    });
     return meiTree;
 };
 
+/**
+ * Update Source Statement with data
+ * @param {*} meiTree 
+ * @param {*} data 
+ * @returns
+ */
+const updateNodesSourceStmt = (meiTree, data) => {
+    data.forEach(item => {
+        if (MEICAMPS['sourceStmt'].map((e) => { return e.name }).includes(item.name)) {
+            let node = getXpathNode(meiTree, item.tag);
+            if (!item.value && item.default) {
+                item.value = item.default;
+            }
+            if (item.name === 'id') {
+                node.setAttribute('xml:id', item.value.replace(/\s+/g, ' ').trim());
+            } else if (item.name === 'date' || item.name === 'pages') {
+                node.textContent = item.value;
+            } else {
+                node.textContent = item.value.replace(/\s+/g, ' ').trim();
+            }
+        }
+    });
+    return meiTree;
+};
+
+/**
+ * Update Worklist Statement with data
+ * @param {*} meiTree 
+ * @param {*} data 
+ * @returns 
+ */
+const updateNodesWorklist = (meiTree, data) => {
+    data.forEach(item => {
+        if (MEICAMPS['worklist'].map((e) => { return e.name }).includes(item.name)) {
+            let node = getXpathNode(meiTree, item.tag);
+
+            if (!item.value && item.default) {
+                item.value = item.default;
+            }
+            
+            if (item.name == 'id') {
+                node.setAttribute('xml:id', item.value.replace(/\s+/g, ' ').trim());
+            } else if (item.name == 'mode') {
+                node.setAttribute('mode', item.value.replace(/\s+/g, ' ').trim());
+                if (item.automatic) {
+                    node.setAttribute('automatic');
+                }
+            } else if (item.name == 'language') {
+                node.setAttribute('xml:lang', item.value.replace(/\s+/g, ' ').trim());
+            } else if (item.name === 'lyrics' || item.name === 'notes') {
+                node.textContent = item.value;
+            } else {
+                node.textContent = item.value.replace(/\s+/g, ' ').trim();
+            }
+            
+        }
+    });
+    return meiTree;
+};
+
+/**
+ * Update Ambitus with data
+ * @param {*} meiTree 
+ * @param {*} data 
+ * @returns 
+ */
+const updateNodesAmbitus = (meiTree, data) => {
+    data.forEach(item => {
+        if (MEICAMPS['ambitus'].map((e) => { return e.name }).includes(item.name)) {
+            let node = getXpathNode(meiTree, item.tag);
+            const n = new music21.pitch.Pitch(item.value);
+            node.setAttribute('pname', n.name.toLowerCase().replace(/\s+/g, ' ').trim());
+            node.setAttribute('oct', n.octave);
+        }
+    });
+};
+
+/**
+ * Update Nodes for All Kinds of Info
+ * @param {*} meiTree 
+ * @param {*} data 
+ * @param {*} info to update
+ */
 export const updateNodesMethods = (meiTree, data, info = 'titleStmt') => {
     switch (info) {
         case 'titleStmt': return updateNodesTitleStmt(meiTree, data);
         case 'publisher': return updateNodesPublisher(meiTree, data);
+        case 'sourceStmt': return updateNodesSourceStmt(meiTree, data);
+        case 'worklist': return updateNodesWorklist(meiTree, data);
+        case 'ambitus': return updateNodesAmbitus(meiTree, data);
     }
 };

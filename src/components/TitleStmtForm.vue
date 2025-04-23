@@ -39,7 +39,7 @@ import { Tooltip } from 'bootstrap';
 import Modal from './Modal.vue';
 
 export default {
-    inject: ['getXpathNode', 'prettifyXml'],
+    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods'],
     components: {
         Tooltip,
         Modal
@@ -94,48 +94,17 @@ export default {
             if (!this.titleStmtData[0].value) {
                 alert('ID is not set! You must set it to save information to MEI file!');
                 return;
-            }
+            };
 
             if (!this.titleStmtData[1].value) {
                 alert('Title is not set! You must set it to save information to MEI file!');
                 return;
-            }
+            };
 
-            this.titleStmtData.forEach(item => {
-                let node = this.getXpathNode(this.MEIData, item.tag);
-
-                if (!node) {
-                    if (item.name == 'id') {
-                        let nodeT = this.getXpathNode(this.MEIData, this.titleStmtData[1].tag);
-                        if (!nodeT.hasAttribute('type')) {
-                            nodeT.setAttribute('type', "main");
-                        }; node = nodeT;
-                    } else if (item.name == 'subtitle') {
-                        node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'title');
-                        node.setAttribute('type', 'subtitle');
-                        this.getXpathNode(this.MEIData, this.titleStmtData[1].tag).insertAdjacentElement("afterend", node);
-                    } else if (item.name == 'geogName') {
-                        node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'geogName');
-                        this.getXpathNode(this.MEIData, this.titleStmtData[8].tag).append(node);
-                    } else {
-                        node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'persName');
-                        node.setAttribute('role', item.name);
-                        this.getXpathNode(this.MEIData, './/mei:titleStmt//mei:respStmt').append(node);
-                    }
-                }
-
-                if (node) {
-                    if (item.name == 'id') {
-                        node.setAttribute('xml:id', item.value.replace(/\s+/g, ' ').trim());
-                    } else if (item.name == 'informer') {
-                        let tempChildren = node.children[0]
-                        node.textContent = item.value.replace(/\s+/g, ' ').trim();
-                        node.append(tempChildren);
-                    } else {
-                        node.textContent = item.value.replace(/\s+/g, ' ').trim();
-                    };
-                }
-            });
+            if (!this.getXpathNode(this.MEIData, './/mei:titleStmt')) {
+                this.createNodesMethods('titleStmt');
+            };
+            this.updateNodesMethods(this.MEIData, this.titleStmtData, 'titleStmt');
 
             this.TitleStmtOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:titleStmt')));
 
@@ -146,13 +115,15 @@ export default {
             }
         },
         getInfoFromMEI() {
+
             this.titleStmtData.forEach(item => {
                 const node = this.getXpathNode(this.MEIData, item.tag);
                 if (node) {
                     if (item.name === 'id') {
                         item.value = node.getAttribute('xml:id')?.trim() || '';
+                    } else if (item.name === 'title') {
+                        item.value = node.textContent;
                     } else if (item.name === 'informer') {
-                        console.log(node.parentNode);
                         item.value = node.childNodes[0].textContent?.trim() || '';
                     } else {
                         item.value = node.textContent?.trim() || '';

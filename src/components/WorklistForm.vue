@@ -191,7 +191,7 @@ import { Tooltip } from 'bootstrap';
 import MusicalScore from './MusicalScore.vue';
 
 export default {
-    inject: ['capitalizeFirstLetter', 'getXpathNode', 'prettifyXml'],
+    inject: ['getXpathNode', 'prettifyXml', 'capitalizeFirstLetter', 'createNodesMethods', 'updateNodesMethods'],
     components: {
         MusicalScore,
         Tooltip,
@@ -205,14 +205,14 @@ export default {
                 { name: 'title', tag: './/mei:workList//mei:title', value: '', on_display: 'Title', default: '', tooltip: 'title of song' },
                 { name: 'author', tag: './/mei:workList//mei:author', value: '', on_display: 'Author', default: '', tooltip: 'author/informant of song' },
                 { name: 'lyrics', tag: './/mei:workList//mei:head', value: '', on_display: 'Lyrics', default: '', tooltip: 'complete lyrics of song' },
-                { name: 'key', tag: './/mei:workList//mei:key', value: '', on_display: 'Key', default: '', tooltip: 'key of song (e.g., C, E Flat)' },
-                { name: 'mode', tag: './/mei:workList//mei:key', value: '', on_display: 'Mode', default: '', tooltip: 'mode of song (e.g., Major, Minor)' },
-                { name: 'meter', tag: './/mei:workList//mei:meter', value: '', on_display: 'Meter', default: '', tooltip: 'meter of song [enum: Binary, Ternary, Free, Polyrhythmic]' },
+                { name: 'key', tag: './/mei:workList//mei:key', value: '', on_display: 'Key', default: 'C', tooltip: 'key of song (e.g., C, E Flat)' },
+                { name: 'mode', tag: './/mei:workList//mei:key', value: '', on_display: 'Mode', default: 'Major', tooltip: 'mode of song (e.g., Major, Minor)' },
+                { name: 'meter', tag: './/mei:workList//mei:meter', value: '', on_display: 'Meter', default: 'Binary', tooltip: 'meter of song [enum: Binary, Ternary, Free, Polyrhythmic]' },
                 { name: 'tempo', tag: './/mei:workList//mei:tempo', value: '', on_display: 'Tempo', default: '', tooltip: 'tempo indication of song (e.g., Allegro)' },
-                { name: 'language', tag: './/mei:workList//mei:langUsage//mei:language', value: '', on_display: 'Language', default: '', tooltip: 'language of lyrics' },
+                { name: 'language', tag: './/mei:workList//mei:langUsage//mei:language', value: '', on_display: 'Language', default: 'en', tooltip: 'language of lyrics' },
                 { name: 'notes', tag: './/mei:workList//mei:annot', value: '', on_display: 'Notes', default: '', tooltip: 'optional annotations' },
-                { name: 'genre', tag: './/mei:workList//mei:term[@type="genre"]', value: '', on_display: 'Genre', default: '', tooltip: 'genre of song (e.g., Children Song, Work Song, Dance, Lullaby)' },
-                { name: 'country', tag: './/mei:workList//mei:term[@type="country"]', value: '', on_display: 'Country', default: '', tooltip: 'country from where the song came' },
+                { name: 'genre', tag: './/mei:workList//mei:term[@type="genre"]', value: '', on_display: 'Genre', default: 'Dance', tooltip: 'genre of song (e.g., Children Song, Work Song, Dance, Lullaby)' },
+                { name: 'country', tag: './/mei:workList//mei:term[@type="country"]', value: '', on_display: 'Country', default: 'Ireland', tooltip: 'country from where the song came' },
                 { name: 'region', tag: './/mei:workList//mei:term[@type="region"]', value: '', on_display: 'Region', default: '', tooltip: 'region of the country from where the song came' },
                 { name: 'district', tag: './/mei:workList//mei:term[@type="district"]', value: '', on_display: 'District', default: '', tooltip: 'district of the region from where the song came' },
                 { name: 'city', tag: './/mei:workList//mei:term[@type="city"]', value: '', on_display: 'City', default: '', tooltip: 'city of the district from where the song came' },
@@ -246,85 +246,9 @@ export default {
             let workListNode = this.getXpathNode(this.MEIData, './/mei:work');
 
             if (!workListNode) {
-                let node = this.getXpathNode(this.MEIData, './/mei:meiHead');
-
-                const entriesN = ['workList', 'work'];
-                for (let key in entriesN) {
-                    let temp_node = document.createElementNS('http://www.music-encoding.org/ns/mei', entriesN[key]);
-                    node.append(temp_node);
-                    node = temp_node;
-                }
-
-                workListNode = node;
-            }
-
-            this.worklistData.forEach(item => {
-                let node = this.getXpathNode(this.MEIData, item.tag);
-
-                if (!node) {
-                    if (item.name == 'lyrics') {
-                        let nodeINC = document.createElementNS('http://www.music-encoding.org/ns/mei', 'incip');
-                        nodeINC.setAttribute('type', 'lyrics');
-                        let nodeIText = document.createElementNS('http://www.music-encoding.org/ns/mei', 'incipText');
-                        nodeINC.append(nodeIText);
-                        nodeIText.append(document.createElementNS('http://www.music-encoding.org/ns/mei', 'head'));
-                        workListNode.append(nodeINC);
-                    } else if (item.name == 'notes') {
-                        let nodeNSt = document.createElementNS('http://www.music-encoding.org/ns/mei', 'notesStmt');
-                        nodeNSt.append(document.createElementNS('http://www.music-encoding.org/ns/mei', 'annot'));
-                        workListNode.append(nodeNSt);
-                    } else if (item.name == 'language') {
-                        let nodeL = document.createElementNS('http://www.music-encoding.org/ns/mei', 'langUsage');
-                        nodeL.append(document.createElementNS('http://www.music-encoding.org/ns/mei', 'language'));
-                        workListNode.append(nodeL);
-                    } else if (['genre', 'country', 'region', 'district', 'city'].includes(item.name)) {
-                        let termlistNode = this.getXpathNode(this.MEIData, './/mei:workList//mei:classification//mei:termList');
-                        if (!termlistNode) {
-                            let classificationNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'classification');
-                            termlistNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'termList');
-                            classificationNode.append(termlistNode);
-                            workListNode.append(classificationNode);
-                        }
-                        node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'term');
-                        node.setAttribute('type', item.name)
-                        termlistNode.append(node);
-                    } else {
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', item.name);
-                        workListNode.append(node);
-                    }
-                }
-
-                if (node) {
-                    if (item.name == 'id') {
-                        node.setAttribute('xml:id', item.value.replace(/\s+/g, ' ').trim());
-                    } else if (item.name == 'mode') {
-                        node.setAttribute('mode', item.value.replace(/\s+/g, ' ').trim());
-                    } else if (item.name == 'language') {
-                        node.setAttribute('xml:lang', item.value.replace(/\s+/g, ' ').trim());
-                    } else if (item.name === 'lyrics' || item.name === 'notes') {
-                        node.textContent = item.value;
-                    } else {
-                        node.textContent = item.value.replace(/\s+/g, ' ').trim();
-                    }
-                }
-            });
-
-            let nodeMusical = this.getXpathNode(this.MEIData, './/mei:workList//mei:incip[@type="musical"]');
-            if (!nodeMusical) {
-                nodeMusical = document.createElementNS('http://www.music-encoding.org/ns/mei', 'incip');
-                nodeMusical.setAttribute('type', 'musical');
-                this.getXpathNode(this.MEIData, this.worklistData[6].tag).insertAdjacentElement("afterend", nodeMusical);
-            } else {
-                while (nodeMusical.firstChild) {
-                    nodeMusical.removeChild(nodeMusical.firstChild);
-                }
-            }
-
-            let measures = this.getXpathNode(this.MEIData, './/mei:measure', true);
-            let fM = measures.iterateNext();
-            let sM = measures.iterateNext();
-            nodeMusical.append(this.getMusicalIncipMeasure(fM));
-            nodeMusical.append(this.getMusicalIncipMeasure(sM));
+                this.createNodesMethods('worklist');
+            };
+            this.updateNodesMethods(this.MEIData, this.worklistData, 'worklist');
 
             this.WorklistOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:work')));
             
@@ -334,11 +258,6 @@ export default {
                 this.$emit("saveFinished", "WorklistForm");
             }
         },
-        getMusicalIncipMeasure(meas) {
-            let docM = document.createElementNS('http://www.music-encoding.org/ns/mei', 'measure');
-            docM.setAttribute('copyof', '#' + meas.getAttribute('xml:id'));
-            return docM;
-        },
         getInfoFromMEI() {
             this.worklistData.forEach(item => {
                 let node = this.getXpathNode(this.MEIData, item.tag);
@@ -346,9 +265,15 @@ export default {
                     if (item.name == 'id') {
                         item.value = node.getAttribute('xml:id').replace(/\s+/g, ' ').trim();
                     } else if (item.name == 'mode') {
-                        item.value = this.capitalizeFirstLetter(node.getAttribute('mode')).replace(/\s+/g, ' ').trim();
+                        let mode = node.getAttribute('mode');
+                        if (mode) {
+                            item.value = this.capitalizeFirstLetter(mode).replace(/\s+/g, ' ').trim();
+                        }
                     } else if (item.name == 'language') {
-                        item.value = node.getAttribute('xml:lang').replace(/\s+/g, ' ').trim();
+                        let lang = node.getAttribute('xml:lang');
+                        if (lang) {
+                            item.value = lang.replace(/\s+/g, ' ').trim();
+                        }
                     } else if (item.name === 'lyrics' || item.name === 'notes') {
                         item.value = node.textContent;
                     } else {

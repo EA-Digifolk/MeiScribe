@@ -39,7 +39,7 @@ import MusicalScore from './MusicalScore.vue';
 import * as music21 from 'music21j';
 
 export default {
-    inject: ['getXpathNode', 'prettifyXml'],
+    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods'],
     components: {
         Tooltip,
         Modal,
@@ -50,8 +50,8 @@ export default {
     data() {
         return {
             ambitusData: [
-                { name: 'lowest', tag: './/mei:ambNote[@type="lowest"]', value: 0, on_display: 'Lowest Pitch', default: 0, tooltip: 'Lowest Note of Score in midi pitch' },
-                { name: 'highest', tag: './/mei:ambNote[@type="highest"]', value: 128, on_display: 'Highest Pitch', default: 128, tooltip: 'Highest Note of Score in midi pitch' },
+                { name: 'lowest', tag: './/mei:ambNote[@type="lowest"]', value: 0, on_display: 'Lowest Pitch', default: 0, tooltip: 'Lowest Note of Score in midi pitch', automatic: false },
+                { name: 'highest', tag: './/mei:ambNote[@type="highest"]', value: 128, on_display: 'Highest Pitch', default: 128, tooltip: 'Highest Note of Score in midi pitch', automatic: false  },
             ],
             showModal: false,
             AmbitusOntMEI: ''
@@ -80,33 +80,9 @@ export default {
         saveToMEI(openModal = true) {
             let ambitusNode = this.getXpathNode(this.MEIData, './/mei:ambitus');
             if (!ambitusNode) {
-                let node = this.getXpathNode(this.MEIData, './/mei:scoreDef');
-
-                const entriesN = ['ambitus'];
-                for (let key in entriesN) {
-                    let temp_node = document.createElementNS('http://www.music-encoding.org/ns/mei', entriesN[key]);
-                    node.append(temp_node);
-                    node = temp_node;
-                }
-                ambitusNode = node;
+                this.createNodesMethods('ambitus');
             }
-
-            this.ambitusData.forEach(item => {
-                let node = this.getXpathNode(this.MEIData, item.tag);
-
-                if (!node) {
-                    node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'ambNote');
-                    node.setAttribute('type', item.name);
-                    ambitusNode.append(node);
-                }
-
-                if (node) {
-                    // midi pitch to pname and oct
-                    const n = new music21.pitch.Pitch(item.value);
-                    node.setAttribute('pname', n.name.toLowerCase().replace(/\s+/g, ' ').trim());
-                    node.setAttribute('oct', n.octave);
-                }
-            });
+            this.updateNodesMethods(this.MEIData, this.ambitusData, 'ambitus');
 
             this.AmbitusOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:ambitus')));
             
@@ -119,7 +95,7 @@ export default {
         getInfoFromMEI() {
             this.ambitusData.forEach(item => {
                 let node = this.getXpathNode(this.MEIData, item.tag);
-                if (node) {
+                if (node && node.getAttribute('pname')) {
                     const n = new music21.pitch.Pitch(node.getAttribute('pname') + node.getAttribute('oct'));
                     item.value = n.ps;
                 } else {
@@ -132,6 +108,7 @@ export default {
                     } else {
                         item.value = Math.min.apply(null, midiPitches);
                     }
+                    item.automatic = true;
                 }
             });
         }

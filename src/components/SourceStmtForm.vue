@@ -37,7 +37,7 @@ import Modal from './Modal.vue';
 import { Tooltip } from 'bootstrap';
 
 export default {
-    inject: ['getXpathNode', 'prettifyXml'],
+    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods'],
     components: {
         Tooltip,
         Modal
@@ -87,58 +87,9 @@ export default {
         saveToMEI(openModal = true) {
             let imprintNode = this.getXpathNode(this.MEIData, './/mei:source//mei:imprint');
             if (!imprintNode) {
-                let node = this.getXpathNode(this.MEIData, './/mei:fileDesc');
-
-                const entriesN = ['sourceDesc', 'source', 'biblStruct', 'monogr', 'imprint'];
-                for (let key in entriesN) {
-                    let temp_node = document.createElementNS('http://www.music-encoding.org/ns/mei', entriesN[key]);
-                    node.append(temp_node);
-                    node = temp_node;
-                }
-
-                imprintNode = node;
-            }
-
-            this.sourceStmtData.forEach(item => {
-                let node = this.getXpathNode(this.MEIData, item.tag);
-
-                if (!node) {
-                    if (item.name === 'subtitle') {
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'title');
-                        node.setAttribute('type', 'subordinate');
-                        imprintNode.append(node);
-                    } else if (['compiler', 'collaborator', 'bibliography', 'introduction', 'edition'].includes(item.name)) {
-                        let nodeR = this.getXpathNode(this.MEIData, './/mei:source//mei:respStmt');
-                        if (!nodeR) {
-                            nodeR = document.createElementNS('http://www.music-encoding.org/ns/mei', 'respStmt');
-                            imprintNode.append(nodeR);
-                        }
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'persName');
-                        node.setAttribute('role', item.name);
-                        nodeR.append(node);
-                    } else if (item.name === 'place') {
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'pubPlace');
-                        imprintNode.append(node);
-                    } else if (item.name === 'pages') {
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'extent');
-                        node.setAttribute('type', 'pages');
-                        imprintNode.append(node);
-                    } else {
-                        let node = document.createElementNS('http://www.music-encoding.org/ns/mei', item.name);
-                        imprintNode.append(node);
-                    }
-                }
-
-                if (node) {
-                    if (item.name == 'id') {
-                        node.setAttribute('xml:id', item.value.replace(/\s+/g, ' ').trim());
-                    } else if (item.name === 'date' || item.name === 'pages') {
-                        node.textContent = item.value;
-                    } else {
-                        node.textContent = item.value.replace(/\s+/g, ' ').trim();
-                    }
-                }
-            });
+                this.createNodesMethods('sourceStmt');
+            };
+            this.updateNodesMethods(this.MEIData, this.sourceStmtData, 'sourceStmt');
 
             this.SourceStmtOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:sourceDesc')));
             
@@ -149,7 +100,6 @@ export default {
             }
         },
         getInfoFromMEI() {
-
             this.sourceStmtData.forEach(item => {
                 let node = this.getXpathNode(this.MEIData, item.tag);
                 if (node) {

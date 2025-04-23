@@ -40,7 +40,7 @@ import Modal from './Modal.vue';
 import { Tooltip } from 'bootstrap';
 
 export default {
-    inject: ['getXpathNode', 'prettifyXml'],
+    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods'],
     components: {
         Tooltip,
         Modal
@@ -79,18 +79,10 @@ export default {
     },
     methods: {
         saveToMEI(openModal = true) {
-            this.pubData.forEach(item => {
-                let node = this.getXpathNode(this.MEIData, item.tag);
-
-                if (!node) {
-                    let nodeP = this.getXpathNode(this.MEIData, './/mei:pubStmt');
-                    let node = document.createElementNS('http://www.music-encoding.org/ns/mei', item.name);
-                    nodeP.append(node);
-                }
-                if (node) {
-                    node.textContent = item.value.replace(/\s+/g, ' ').trim();
-                }
-            });
+            if (!this.getXpathNode(this.MEIData, './/mei:pubStmt')) {
+                this.createNodesMethods('pubStmt');
+            };
+            this.updateNodesMethods(this.MEIData, this.pubData, 'pubStmt');
 
             this.PublisherStmtOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:pubStmt')));
 

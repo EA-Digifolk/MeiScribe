@@ -13,7 +13,7 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item active">
-            <a class="nav-link" href="#" @click="MEIData = ''">Home <span class="sr-only">(current)</span></a>
+            <a class="nav-link" href="#" @click="MEIData = ''; openSingleForms = false;">Home <span class="sr-only">(current)</span></a>
           </li>
           <!--<li class="nav-item">
             <a class="nav-link" href="#">Link</a>
@@ -23,7 +23,7 @@
     </nav>
 
     <!--FILE FRAME-->
-    <div class="container-xxl mb-5 mt-5"> <!--v-if="MEIData === ''">-->
+    <div class="container-xxl mb-5 mt-5" v-if="openSingleForms === false">
       <div class="row border bg-light p-2 pt-3">
         <p style="text-align: left"><b>MEI Convertor</b></p>
       </div>
@@ -59,11 +59,11 @@
     </div>
 
     <!--MAIN FRAME-->
-    <!--<div class="container-xxl mb-5 mt-5 align-content-center" v-else>
+    <div class="container-xxl mb-5 mt-5 align-content-center" v-else>
       <button class="btn btn-primary" style="width: 95% !important" @click="exportMEI">Export MEI</button>
 
       <div id="carouselForms" class="container-xxl carousel carousel-dark slide w-100" data-bs-interval="false"
-        data-bs-pause="hover"> <--data-bs-interval="false"  data-bs-ride="carousel" --
+        data-bs-pause="hover"> <!--data-bs-interval="false"  data-bs-ride="carousel" -->
 
         <div class="carousel-indicators">
           <button type="button" data-bs-target="#carouselForms" data-bs-slide-to="0" class="active" aria-current="true"
@@ -83,10 +83,10 @@
             @save-finished="allFormsReadyToExport['WorklistForm'] = true; afterTrigger();" />
           <AmbitusForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
             @save-finished="allFormsReadyToExport['AmbitusForm'] = true; afterTrigger();" />
-          <RhythmPatternForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
+          <!--<RhythmPatternForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
             @save-finished="allFormsReadyToExport['RhythmPatternForm'] = true; afterTrigger();" />
           <PhraseForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
-            @save-finished="allFormsReadyToExport['SegmentationForm'] = true; afterTrigger();" />
+            @save-finished="allFormsReadyToExport['SegmentationForm'] = true; afterTrigger();" />-->
         </div>
 
         <button class="carousel-control-prev" type="button" data-bs-target="#carouselForms" data-bs-slide="prev">
@@ -98,7 +98,7 @@
           <span class="visually-hidden">Next</span>
         </button>
       </div>
-    </div>-->
+    </div>
 
     <div v-if="message">{{ message }}</div>
   </div>
@@ -133,6 +133,7 @@ export default {
   data() {
     return {
       MEIData: '',
+      openSingleForms: false,
       fileData: '',
       fileName: '',
       abcString: '',
@@ -190,8 +191,6 @@ export default {
       }
     },
     createALLMEICamps(meiTree) {
-
-      // Title Statement
       this.createNodesMethods(meiTree, 'titleStmt');
       this.createNodesMethods(meiTree, 'publisher');
       this.createNodesMethods(meiTree, 'sourceStmt');
@@ -199,10 +198,7 @@ export default {
       this.createNodesMethods(meiTree, 'ambitus');
       this.createNodesMethods(meiTree, 'rhythmPattern');
       this.createNodesMethods(meiTree, 'segmentation');
-
-      console.log(meiTree);
-
-      return this.prettifyXml(new XMLSerializer().serializeToString(meiTree));
+      return meiTree;
     },
     startProcess() {
       if (this.fileName.endsWith('.abc') || this.abcString !== '') {
@@ -228,6 +224,8 @@ export default {
 
       this.xmlDoc = (new DOMParser()).parseFromString(this.MEIData, "text/xml"); // Parse String to XML DOC to EDIT
       this.xmlDoc = this.createALLMEICamps(this.xmlDoc); // Create All Camps
+
+      this.openSingleForms = true;
     },
     exportMEI() {
       this.exportData = !this.exportData;
@@ -261,6 +259,8 @@ export default {
         a.setAttribute('download', filenameNode.getAttribute('xml:id') + '.mei');
         a.click()
         a.remove()
+
+        this.openSingleForms = false;
       };
     }
   },
