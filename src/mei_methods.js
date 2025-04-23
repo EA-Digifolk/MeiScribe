@@ -183,7 +183,7 @@ const createNodesWorklist = (meiTree) => {
             node = temp_node;
         }
         workListNode = node;
-    }
+    };
     MEICAMPS['worklist'].forEach(item => {
         let node = getXpathNode(meiTree, item.tag);
         if (!node) {
@@ -217,10 +217,58 @@ const createNodesWorklist = (meiTree) => {
                 let node = document.createElementNS('http://www.music-encoding.org/ns/mei', item.name);
                 workListNode.append(node);
             }
-        }
+        };
     });
     return meiTree;
 };
+
+/**
+ * Create Nodes for Ambitus
+ * @param {*} meiTree 
+ * @returns 
+ */
+const createNodesAmbitus = (meiTree) => {
+    let ambitusNode = getXpathNode(meiTree, './/mei:ambitus');
+    if (!ambitusNode) {
+        let node = getXpathNode(meiTree, './/mei:scoreDef');
+
+        const entriesN = ['ambitus'];
+        for (let key in entriesN) {
+            let temp_node = document.createElementNS('http://www.music-encoding.org/ns/mei', entriesN[key]);
+            node.append(temp_node);
+            node = temp_node;
+        }
+        ambitusNode = node;
+    };
+    MEICAMPS['ambitus'].forEach(item => {
+        let node = getXpathNode(meiTree, item.tag);
+        if (!node) {
+            node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'ambNote');
+            node.setAttribute('type', item.name);
+            ambitusNode.append(node);
+        };
+    });
+    return meiTree;
+};
+
+/**
+ * Create Nodes for Rhythm Pattern
+ * @param {*} meiTree 
+ * @returns 
+ */
+const createNodesRhythm = (meiTree) => {
+
+};
+
+/**
+ * Create Nodes for Segmentation
+ * @param {*} meiTree 
+ * @returns 
+ */
+const createNodesSegmentation = (meiTree) => {
+
+};
+
 
 /**
  * Create Nodes for All Kinds of Info
@@ -235,6 +283,8 @@ export const createNodesMethods = (meiTree, info = 'titleStmt') => {
         case 'sourceStmt': return createNodesSourceStmt(meiTree);
         case 'worklist': return createNodesWorklist(meiTree);
         case 'ambitus': return createNodesAmbitus(meiTree);
+        case 'rhythmPattern': return createNodesRhythm(meiTree);
+        case 'segmentation': return createNodesSegmentation(meiTree);
     }
 };
 
@@ -247,7 +297,6 @@ const updateNodesTitleStmt = (meiTree, data) => {
     for (let item in data) {
         if (item.name in MEICAMPS['titleStmt'].map((e) => { return e.name })) {
             let node = getXpathNode(meiTree, item.tag);
-
             if (item.name == 'id') {
                 node.setAttribute('xml:id', item.value.replace(/\s+/g, ' ').trim());
             } else if (item.name == 'informer') {
