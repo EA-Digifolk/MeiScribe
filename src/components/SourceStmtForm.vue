@@ -75,7 +75,7 @@ export default {
                 trigger: 'hover'
             });
         });
-    },    
+    },
     watch: {
         export: function (newVal, oldVal) {
             if (newVal != oldVal) {
@@ -92,7 +92,7 @@ export default {
             this.updateNodesMethods(this.MEIData, this.sourceStmtData, 'sourceStmt');
 
             this.SourceStmtOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:sourceDesc')));
-            
+
             if (openModal) {
                 this.showModal = !this.showModal;
             } else {

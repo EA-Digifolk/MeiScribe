@@ -19,7 +19,7 @@
                 <div class="row" id="pattern-canvas"></div>
             </div>
         </div>
-        <MusicalScore id="RhythmPatternForm" :vT="vT"/>
+        <MusicalScore id="RhythmPatternForm" :vT="vT" />
         <Teleport to="body">
             <modal :show="showModal" @close="showModal = false">
                 <template #header>
@@ -83,9 +83,9 @@ export default {
                 this.createNodesMethods('rhythmPattern');
             }
             this.updateNodesMethods(this.MEIData, this.rhythmPatternData, 'rhythmPattern');
-            
+
             this.RhythmPatternOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]')));
-            
+
             if (openModal) {
                 this.showModal = !this.showModal;
             } else {

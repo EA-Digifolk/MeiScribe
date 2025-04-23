@@ -16,12 +16,12 @@ export const getAutomaticAmbitus = (vT, low = true) => {
 
     if (!low) {
         return Math.max.apply(null, midiPitches);
-    } 
+    }
     return Math.min.apply(null, midiPitches);
 };
 
 export const getAutomaticModeKey = () => {
-    
+
 };
 
 export const getAutomaticRhythmPattern = () => {

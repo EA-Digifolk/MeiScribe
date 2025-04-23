@@ -42,7 +42,7 @@
                 </div>
             </div>
         </div>
-        <MusicalScore id="phraseForm" :vT="vT" showIds="true"/>
+        <MusicalScore id="phraseForm" :vT="vT" showIds="true" />
         <Teleport to="body">
             <modal :show="showModal" @close="showModal = false">
                 <template #header>
@@ -111,7 +111,7 @@ export default {
             this.updateNodesMethods(this.MEIData, this.phraseSegmentData, 'segmentation');
 
             this.SegmentationOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="phrases"]')));
-            
+
             if (openModal) {
                 this.showModal = !this.showModal;
             } else {

@@ -18,7 +18,7 @@
                 </li>
             </div>
         </div>
-        <MusicalScore id="AmbitusForm" :vT="vT" :showMidiPitch="true"/>
+        <MusicalScore id="AmbitusForm" :vT="vT" :showMidiPitch="true" />
         <Teleport to="body">
             <modal :show="showModal" @close="showModal = false">
                 <template #header>
@@ -85,7 +85,7 @@ export default {
             this.updateNodesMethods(this.MEIData, this.ambitusData, 'ambitus');
 
             this.AmbitusOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:ambitus')));
-            
+
             if (openModal) {
                 this.showModal = !this.showModal;
             } else {
@@ -96,7 +96,7 @@ export default {
             this.ambitusData.forEach(item => {
                 let node = this.getXpathNode(this.MEIData, item.tag);
 
-                item.default = this.getAutomaticAmbitus(this.vT, item.name==='lowest');
+                item.default = this.getAutomaticAmbitus(this.vT, item.name === 'lowest');
                 if (node && node.getAttribute('pname')) {
                     const n = new music21.pitch.Pitch(node.getAttribute('pname') + node.getAttribute('oct'));
                     item.value = n.ps;

@@ -172,7 +172,8 @@ g.note.select-end {
     left: -50px !important;
 }
 
-.timePlayed, .timeRemaining {
+.timePlayed,
+.timeRemaining {
     width: auto !important;
 }
 

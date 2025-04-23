@@ -251,7 +251,7 @@ export default {
             this.updateNodesMethods(this.MEIData, this.worklistData, 'worklist');
 
             this.WorklistOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:work')));
-            
+
             if (openModal) {
                 this.showModal = !this.showModal;
             } else {
