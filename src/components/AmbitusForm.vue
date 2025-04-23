@@ -39,7 +39,7 @@ import MusicalScore from './MusicalScore.vue';
 import * as music21 from 'music21j';
 
 export default {
-    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods'],
+    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods', 'getAutomaticAmbitus'],
     components: {
         Tooltip,
         Modal,
@@ -50,8 +50,8 @@ export default {
     data() {
         return {
             ambitusData: [
-                { name: 'lowest', tag: './/mei:ambNote[@type="lowest"]', value: 0, on_display: 'Lowest Pitch', default: 0, tooltip: 'Lowest Note of Score in midi pitch', automatic: false },
-                { name: 'highest', tag: './/mei:ambNote[@type="highest"]', value: 128, on_display: 'Highest Pitch', default: 128, tooltip: 'Highest Note of Score in midi pitch', automatic: false  },
+                { name: 'lowest', tag: './/mei:ambNote[@type="lowest"]', value: 0, on_display: 'Lowest Pitch', default: 0, tooltip: 'Lowest Note of Score in midi pitch' },
+                { name: 'highest', tag: './/mei:ambNote[@type="highest"]', value: 128, on_display: 'Highest Pitch', default: 128, tooltip: 'Highest Note of Score in midi pitch' },
             ],
             showModal: false,
             AmbitusOntMEI: ''
@@ -95,20 +95,13 @@ export default {
         getInfoFromMEI() {
             this.ambitusData.forEach(item => {
                 let node = this.getXpathNode(this.MEIData, item.tag);
+
+                item.default = this.getAutomaticAmbitus(this.vT, item.name==='lowest');
                 if (node && node.getAttribute('pname')) {
                     const n = new music21.pitch.Pitch(node.getAttribute('pname') + node.getAttribute('oct'));
                     item.value = n.ps;
                 } else {
-                    // calculate ambitus from score
-                    let midiPitches = this.vT.getDescriptiveFeatures()['pitchesIds'].map((element, index) => {
-                        return this.vT.getMIDIValuesForElement(element[0])['pitch'];
-                    });
-                    if (item.name === 'highest') {
-                        item.value = Math.max.apply(null, midiPitches);
-                    } else {
-                        item.value = Math.min.apply(null, midiPitches);
-                    }
-                    item.automatic = true;
+                    item.value = item.default;
                 }
             });
         }

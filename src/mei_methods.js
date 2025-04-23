@@ -410,9 +410,7 @@ const updateNodesWorklist = (meiTree, data) => {
                 node.setAttribute('xml:id', item.value.replace(/\s+/g, ' ').trim());
             } else if (item.name == 'mode') {
                 node.setAttribute('mode', item.value.replace(/\s+/g, ' ').trim());
-                if (item.automatic) {
-                    node.setAttribute('automatic');
-                }
+                node.setAttribute('automatic', item.automatic);
             } else if (item.name == 'language') {
                 node.setAttribute('xml:lang', item.value.replace(/\s+/g, ' ').trim());
             } else if (item.name === 'lyrics' || item.name === 'notes') {
@@ -439,6 +437,12 @@ const updateNodesAmbitus = (meiTree, data) => {
             const n = new music21.pitch.Pitch(item.value);
             node.setAttribute('pname', n.name.toLowerCase().replace(/\s+/g, ' ').trim());
             node.setAttribute('oct', n.octave);
+
+            let automatic = true;
+            if (item.value !== item.default) {
+                automatic = false;
+            };
+            node.setAttribute('automatic', automatic);
         }
     });
 };
