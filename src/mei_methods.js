@@ -18,19 +18,44 @@ const MEICAMPS = {
         { name: 'availability', tag: './/mei:pubStmt//mei:availability', default: `To the best of our knowledge, the full compositions on this site are in the public domain, the excerpts are in the public domain or are allowable under fair-use, and the few compositions that are still under copyright are used by permission. These scores, are provided for educational use only and are not to be used commercially.` },
     ],
     'sourceStmt': [
-
+        { name: 'id', tag: './/mei:source' },
+        { name: 'title', tag: './/mei:source//mei:title' },
+        { name: 'subtitle', tag: './/mei:source//mei:title[@type="subordinate"]' },
+        { name: 'compiler', tag: './/mei:source//mei:respStmt//mei:persName[@role="compiler"]' },
+        { name: 'collaborator', tag: './/mei:source//mei:respStmt//mei:persName[@role="collaborator"]' },
+        { name: 'bibliography', tag: './/mei:source//mei:respStmt//mei:persName[@role="bibliography"]' },
+        { name: 'introduction', tag: './/mei:source//mei:respStmt//mei:persName[@role="introduction"]' },
+        { name: 'edition', tag: './/mei:source//mei:imprint//mei:respStmt//mei:persName[@role="edition"]' },
+        { name: 'publisher', tag: './/mei:source//mei:publisher' },
+        { name: 'place', tag: './/mei:source//mei:pubPlace' },
+        { name: 'date', tag: './/mei:source//mei:date' },
+        { name: 'pages', tag: './/mei:source//mei:extent[@type="pages"]' },
     ],
     'worklist': [
-
+        { name: 'title', tag: './/mei:workList//mei:title' },
+        { name: 'author', tag: './/mei:workList//mei:author' },
+        { name: 'lyrics', tag: './/mei:workList//mei:head' },
+        { name: 'key', tag: './/mei:workList//mei:key' },
+        { name: 'mode', tag: './/mei:workList//mei:key' },
+        { name: 'meter', tag: './/mei:workList//mei:meter' },
+        { name: 'tempo', tag: './/mei:workList//mei:tempo' },
+        { name: 'language', tag: './/mei:workList//mei:langUsage//mei:language' },
+        { name: 'notes', tag: './/mei:workList//mei:annot' },
+        { name: 'genre', tag: './/mei:workList//mei:term[@type="genre"]' },
+        { name: 'country', tag: './/mei:workList//mei:term[@type="country"]' },
+        { name: 'region', tag: './/mei:workList//mei:term[@type="region"]' },
+        { name: 'district', tag: './/mei:workList//mei:term[@type="district"]' },
+        { name: 'city', tag: './/mei:workList//mei:term[@type="city"]' },
     ],
     'ambitus': [
-
+        { name: 'lowest', tag: './/mei:ambNote[@type="lowest"]' },
+        { name: 'highest', tag: './/mei:ambNote[@type="highest"]' },
     ],
     'rhythmPattern': [
-
+        { name: 'rhythm pattern', tag: './/mei:supplied[@type="rhythm pattern"]' },
     ],
     'segmentation': [
-
+        { name: 'phrases', tag: './/mei:music//mei:section//mei:supplied[@type="phrases"]' },
     ]
 };
 
@@ -47,9 +72,7 @@ export const getXpathNode = (nodeP, xpath, returnAll = false) => {
  * @returns 
  */
 const createNodesTitleStmt = (meiTree) => {
-    for (let i in MEICAMPS['titleStmt']) {
-        let item = MEICAMPS['titleStmt'][i];
-
+    MEICAMPS['titleStmt'].forEach(item => {
         let node = getXpathNode(meiTree, item.tag);
         if (!node) {
             if (item.name == 'id' || item.name == 'title') {
@@ -70,8 +93,149 @@ const createNodesTitleStmt = (meiTree) => {
                 getXpathNode(meiTree, './/mei:titleStmt//mei:respStmt').append(node);
             }
         }
-    }
+    });
     return meiTree;
+};
+
+/**
+ * Create Nodes for Publisher Statement
+ * @param {*} meiTree 
+ * @returns 
+ */
+const createNodesPublisher = (meiTree) => {
+    MEICAMPS['publisher'].forEach(item => {
+        let node = getXpathNode(meiTree, item.tag);
+        if (!node) {
+            let nodeP = getXpathNode(meiTree, './/mei:pubStmt');
+            let node = document.createElementNS('http://www.music-encoding.org/ns/mei', item.name);
+            nodeP.append(node);
+        }
+        if (node) {
+            node.textContent = item.default.replace(/\s+/g, ' ').trim();
+        }
+    });
+    return meiTree;
+};
+
+
+/**
+ * Create Nodes for Source Statement
+ * @param {*} meiTree 
+ * @returns 
+ */
+const createNodesSourceStmt = (meiTree) => {
+    let imprintNode = getXpathNode(meiTree, './/mei:source//mei:imprint');
+    if (!imprintNode) {
+        let node = getXpathNode(meiTree, './/mei:fileDesc');
+        const entriesN = ['sourceDesc', 'source', 'biblStruct', 'monogr', 'imprint'];
+        for (let key in entriesN) {
+            let temp_node = document.createElementNS('http://www.music-encoding.org/ns/mei', entriesN[key]);
+            node.append(temp_node);
+            node = temp_node;
+        }
+        imprintNode = node;
+    }
+    MEICAMPS['sourceStmt'].forEach(item => {
+        let node = getXpathNode(meiTree, item.tag);
+        if (!node) {
+            if (item.name === 'subtitle') {
+                let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'title');
+                node.setAttribute('type', 'subordinate');
+                imprintNode.append(node);
+            } else if (['compiler', 'collaborator', 'bibliography', 'introduction', 'edition'].includes(item.name)) {
+                let nodeR = getXpathNode(meiTree, './/mei:source//mei:respStmt');
+                if (!nodeR) {
+                    nodeR = document.createElementNS('http://www.music-encoding.org/ns/mei', 'respStmt');
+                    imprintNode.append(nodeR);
+                }
+                let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'persName');
+                node.setAttribute('role', item.name);
+                nodeR.append(node);
+            } else if (item.name === 'place') {
+                let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'pubPlace');
+                imprintNode.append(node);
+            } else if (item.name === 'pages') {
+                let node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'extent');
+                node.setAttribute('type', 'pages');
+                imprintNode.append(node);
+            } else {
+                let node = document.createElementNS('http://www.music-encoding.org/ns/mei', item.name);
+                imprintNode.append(node);
+            }
+        }
+    });
+    return meiTree;
+};
+
+/**
+ * Create Nodes for Worklist
+ * @param {*} meiTree 
+ * @returns 
+ */
+const createNodesWorklist = (meiTree) => {
+    let workListNode = getXpathNode(meiTree, './/mei:work');
+    if (!workListNode) {
+        let node = getXpathNode(meiTree, './/mei:meiHead');
+        const entriesN = ['workList', 'work'];
+        for (let key in entriesN) {
+            let temp_node = document.createElementNS('http://www.music-encoding.org/ns/mei', entriesN[key]);
+            node.append(temp_node);
+            node = temp_node;
+        }
+        workListNode = node;
+    }
+    MEICAMPS['worklist'].forEach(item => {
+        let node = getXpathNode(meiTree, item.tag);
+        if (!node) {
+            if (item.name == 'lyrics') {
+                let nodeINC = document.createElementNS('http://www.music-encoding.org/ns/mei', 'incip');
+                nodeINC.setAttribute('type', 'lyrics');
+                let nodeIText = document.createElementNS('http://www.music-encoding.org/ns/mei', 'incipText');
+                nodeINC.append(nodeIText);
+                nodeIText.append(document.createElementNS('http://www.music-encoding.org/ns/mei', 'head'));
+                workListNode.append(nodeINC);
+            } else if (item.name == 'notes') {
+                let nodeNSt = document.createElementNS('http://www.music-encoding.org/ns/mei', 'notesStmt');
+                nodeNSt.append(document.createElementNS('http://www.music-encoding.org/ns/mei', 'annot'));
+                workListNode.append(nodeNSt);
+            } else if (item.name == 'language') {
+                let nodeL = document.createElementNS('http://www.music-encoding.org/ns/mei', 'langUsage');
+                nodeL.append(document.createElementNS('http://www.music-encoding.org/ns/mei', 'language'));
+                workListNode.append(nodeL);
+            } else if (['genre', 'country', 'region', 'district', 'city'].includes(item.name)) {
+                let termlistNode = getXpathNode(meiTree, './/mei:workList//mei:classification//mei:termList');
+                if (!termlistNode) {
+                    let classificationNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'classification');
+                    termlistNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'termList');
+                    classificationNode.append(termlistNode);
+                    workListNode.append(classificationNode);
+                }
+                node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'term');
+                node.setAttribute('type', item.name)
+                termlistNode.append(node);
+            } else {
+                let node = document.createElementNS('http://www.music-encoding.org/ns/mei', item.name);
+                workListNode.append(node);
+            }
+        }
+    });
+    return meiTree;
+};
+
+/**
+ * Create Nodes for All Kinds of Info
+ * @param {*} meiTree 
+ * @param {*} info 
+ * @returns 
+ */
+export const createNodesMethods = (meiTree, info = 'titleStmt') => {
+    switch (info) {
+        case 'titleStmt': return createNodesTitleStmt(meiTree);
+        case 'publisher': return createNodesPublisher(meiTree);
+        case 'sourceStmt': return createNodesSourceStmt(meiTree);
+        case 'worklist': return createNodesWorklist(meiTree);
+        case 'ambitus': return createNodesAmbitus(meiTree);
+    }
 };
 
 /**
@@ -98,25 +262,6 @@ const updateNodesTitleStmt = (meiTree, data) => {
     return meiTree;
 };
 
-const createNodesPublisher = (meiTree) => {
-    for (let i in MEICAMPS['publisher']) {
-        let item = MEICAMPS['publisher'][i];
-
-        let node = getXpathNode(meiTree, item.tag);
-
-        if (!node) {
-            let nodeP = getXpathNode(meiTree, './/mei:pubStmt');
-            let node = document.createElementNS('http://www.music-encoding.org/ns/mei', item.name);
-            nodeP.append(node);
-        }
-
-        if (node) {
-            node.textContent = item.default.replace(/\s+/g, ' ').trim();
-        }
-    }
-    return meiTree;
-};
-
 const updateNodesPublisher = (meiTree, data) => {
     for (let item in data) {
         if (item.name in MEICAMPS['publisher'].map((e) => { return e.name })) {
@@ -125,14 +270,6 @@ const updateNodesPublisher = (meiTree, data) => {
         }
     }
     return meiTree;
-};
-
-
-export const createNodesMethods = (meiTree, info = 'titleStmt') => {
-    switch (info) {
-        case 'titleStmt': return createNodesTitleStmt(meiTree);
-        case 'publisher': return createNodesPublisher(meiTree);
-    }
 };
 
 export const updateNodesMethods = (meiTree, data, info = 'titleStmt') => {

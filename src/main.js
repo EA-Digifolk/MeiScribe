@@ -6,7 +6,7 @@ import './style.css';
 import "bootstrap/dist/css/bootstrap.css";
 import SvgIcon from "vue3-icon";
 
-import { getXpathNode, createNodesMethods } from './mei_methods.js';
+import { getXpathNode, createNodesMethods, updateNodesMethods } from './mei_methods.js';
 
 const app = createApp(App)
 
@@ -14,7 +14,7 @@ app.component("svg-icon", SvgIcon);
 
 app.provide('getXpathNode', getXpathNode);
 app.provide('createNodesMethods', createNodesMethods);
-
+app.provide('updateNodesMethods', updateNodesMethods);
 
 app.provide('prettifyXml', (sourceXml) => {
     var xmlDoc = new DOMParser().parseFromString(sourceXml, 'application/xml');

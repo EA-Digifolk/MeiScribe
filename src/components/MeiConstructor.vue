@@ -192,10 +192,15 @@ export default {
     createALLMEICamps(meiTree) {
 
       // Title Statement
-      meiTree = this.createNodesMethods(meiTree);
-      meiTree = this.createNodesMethods(meiTree, 'publisher');
+      this.createNodesMethods(meiTree, 'titleStmt');
+      this.createNodesMethods(meiTree, 'publisher');
+      this.createNodesMethods(meiTree, 'sourceStmt');
+      this.createNodesMethods(meiTree, 'worklist');
+      this.createNodesMethods(meiTree, 'ambitus');
+      this.createNodesMethods(meiTree, 'rhythmPattern');
+      this.createNodesMethods(meiTree, 'segmentation');
 
-      console.log(this.getXpathNode(meiTree, './/mei:pubStmt'));
+      console.log(meiTree);
 
       return this.prettifyXml(new XMLSerializer().serializeToString(meiTree));
     },
