@@ -26,13 +26,13 @@
     <!--FILE FRAME-->
     <div class="container-xxl mb-5 mt-5" v-if="openSingleForms === false">
       <div class="row border bg-light p-2 pt-3">
-        <p style="text-align: left"><b>MEI Convertor</b></p>
+        <p style="text-align: left"><b>MEI Constructor</b></p>
       </div>
       <div class="row ">
         <!-- File Input for MEI, MusicXML and MIDI -->
         <div class="col d-flex justify-content-start flex-wrap align-content-center border bg-light">
           <label class="w-100 p-3" style="text-align: left">Load MEI or MusicXML</label> <!--or MIDI (,.mid)-->
-          <input class="w-100 p-3" type="file" @change="handleFiles" accept=".mei,.musicxml" />
+          <input class="w-100 p-3" type="file" @change="handleFiles" accept=".mei,.musicxml" multiple />
         </div>
         <!-- File Input for MEI, MusicXML and MIDI from URL-->
         <div
@@ -135,8 +135,7 @@ export default {
     return {
       MEIData: '',
       openSingleForms: false,
-      fileData: '',
-      fileName: '',
+      files: [],
       abcString: '',
       urlFile: '',
       message: '',
@@ -165,14 +164,19 @@ export default {
       });
     },
     async handleFiles(event) {
-      const file = event.target.files[0];
-      if (file && file.name.endsWith('.mid')) {
-        this.fileName = file.name;
-      } else if (file) {
-        const text = await file.text();
-        this.fileData = text;
-        this.fileName = file.name;
-      }
+      for (const file of event.target.files) {
+        
+        if (file && file.name) {
+          let fileStructure = {};
+          fileStructure['filename'] = file.name;
+          if (!fileStructure['filename'].endsWith('.mid')) {
+            const text = await file.text();
+            fileStructure['fileData'] = text;
+          }
+          this.files.push(fileStructure);
+        }
+
+      };
     },
     async handleURLFile() {
       if (this.urlFile.startsWith('https://github.com/')) {
@@ -182,13 +186,13 @@ export default {
         let filenameS = this.urlFile.split('/');
         this.urlFile = 'https://raw.githubusercontent.com/' + filenameS[3] + '/' + filenameS[4] + '/refs/heads/' + filenameS[6] + '/' + filenameS[7] + '/' + filenameS[8];
       }
+
       if (this.urlFile != '') {
         const response = await fetch(this.urlFile);
         const data = await response.text();
 
         let filenameS = this.urlFile.split('/');
-        this.fileData = data;
-        this.fileName = filenameS[filenameS.length - 1];
+        this.files.append({ 'filename': filenameS[filenameS.length - 1], 'fileData': data, 'url': this.urlFile });
       }
     },
     createALLMEICamps(meiTree) {
@@ -201,32 +205,59 @@ export default {
       this.createNodesMethods(meiTree, 'segmentation');
       return meiTree;
     },
-    startProcess() {
-      if (this.fileName.endsWith('.abc') || this.abcString !== '') {
+    importSingleFile(file) {
+
+      let MEIData = '';
+
+      if (file["filename"].endsWith('.abc')) {
         this.message = 'Loading ABC';
+        this.verovioToolkit.loadData(file["fileData"]);
+        MEIData = this.verovioToolkit.getMEI();
+        this.message = '';
+      } else if (file["filename"].endsWith('.musicxml')) {
+        this.message = 'Loading MusicXML';
+        this.verovioToolkit.loadData(file["fileData"]);
+        MEIData = this.verovioToolkit.getMEI();
+        this.message = '';
+      } else if (file["filename"].endsWith('.mei')) {
+        this.message = 'Loading MEI';
+        MEIData = file["fileData"];
+        this.verovioToolkit.loadData(file["fileData"]);
+        this.message = '';
+      } else if (file["filename"].endsWith('.mid')) {
+        this.message = 'MIDI is not allowed for now';
+        MEIData = null;
+      } else {
+        this.message = 'File type of ' + file.name + ' is not allowed at the moment!';
+        MEIData = null;
+      };
+
+      return MEIData;
+    },
+    startProcess() {
+
+      if (this.abcString !== '') {
+        this.message = 'Loading ABC from abcString';
         this.verovioToolkit.loadData(this.abcString);
         this.MEIData = this.verovioToolkit.getMEI();
         this.message = '';
-      } else if (this.fileName.endsWith('.musicxml')) {
-        this.message = 'Loading MusicXML';
-        this.verovioToolkit.loadData(this.fileData);
-        this.MEIData = this.verovioToolkit.getMEI();
-        this.message = '';
-      } else if (this.fileName.endsWith('.mid')) {
-        this.message = 'MIDI is not allowed for now';
-      } else if (this.fileName.endsWith('.mei')) {
-        this.message = 'Loading MEI';
-        this.MEIData = this.fileData;
-        this.verovioToolkit.loadData(this.fileData);
-        this.message = '';
+        this.xmlDoc = (new DOMParser()).parseFromString(this.MEIData, "text/xml"); // Parse String to XML DOC to EDIT
+        this.xmlDoc = this.createALLMEICamps(this.xmlDoc); // Create All Camps
+        this.openSingleForms = true;
+      } else if (this.files.length == 1) {
+        this.MEIData = this.importSingleFile(this.files[0]);
+        this.xmlDoc = (new DOMParser()).parseFromString(this.MEIData, "text/xml"); // Parse String to XML DOC to EDIT
+        this.xmlDoc = this.createALLMEICamps(this.xmlDoc); // Create All Camps
+        this.openSingleForms = true;
       } else {
-        this.message = 'File type of ' + file.name + ' is not allowed at the moment!';
-      };
-
-      this.xmlDoc = (new DOMParser()).parseFromString(this.MEIData, "text/xml"); // Parse String to XML DOC to EDIT
-      this.xmlDoc = this.createALLMEICamps(this.xmlDoc); // Create All Camps
-
-      this.openSingleForms = true;
+        this.files.forEach(file => {
+          let meiData = this.importSingleFile(file);
+          let xmlDoc = (new DOMParser()).parseFromString(meiData, "text/xml"); // Parse String to XML DOC to EDIT
+          xmlDoc = this.createALLMEICamps(xmlDoc); // Create All Camps
+          console.log(xmlDoc);
+          //this.openMultiplesForm = true;
+        });
+      }
     },
     exportMEI() {
       this.exportData = !this.exportData;
