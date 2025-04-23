@@ -207,6 +207,11 @@ export default {
     },
     importSingleFile(file) {
 
+      let vT = this.verovioToolkit;
+      createVerovioModule().then(VerovioModule => {
+        vT = new VerovioToolkit(VerovioModule);
+      });
+
       let MEIData = '';
 
       if (file["filename"].endsWith('.abc')) {
@@ -232,7 +237,7 @@ export default {
         MEIData = null;
       };
 
-      return MEIData;
+      return MEIData, vT;
     },
     startProcess() {
 
@@ -245,16 +250,16 @@ export default {
         this.xmlDoc = this.createALLMEICamps(this.xmlDoc); // Create All Camps
         this.openSingleForms = true;
       } else if (this.files.length == 1) {
-        this.MEIData = this.importSingleFile(this.files[0]);
+        this.MEIData, this.verovioToolkit = this.importSingleFile(this.files[0]);
         this.xmlDoc = (new DOMParser()).parseFromString(this.MEIData, "text/xml"); // Parse String to XML DOC to EDIT
         this.xmlDoc = this.createALLMEICamps(this.xmlDoc); // Create All Camps
         this.openSingleForms = true;
       } else {
         this.files.forEach(file => {
-          let meiData = this.importSingleFile(file);
-          let xmlDoc = (new DOMParser()).parseFromString(meiData, "text/xml"); // Parse String to XML DOC to EDIT
-          xmlDoc = this.createALLMEICamps(xmlDoc); // Create All Camps
-          console.log(xmlDoc);
+          file['meiData'], file['vT'] = this.importSingleFile(file);
+          file['xmlDoc'] = (new DOMParser()).parseFromString(file['meiData'], "text/xml"); // Parse String to XML DOC to EDIT
+          file['xmlDoc'] = this.createALLMEICamps(file['xmlDoc']); // Create All Camps
+          console.log(file['xmlDoc']);
           //this.openMultiplesForm = true;
         });
       }
