@@ -24,7 +24,7 @@
     </nav>
 
     <!--FILE FRAME-->
-    <div class="container-xxl mb-5 mt-5" v-if="openSingleForms === false">
+    <div class="container-xxl mb-5 mt-5" v-if="openSingleForms === false && openMultiplesForm === false">
       <div class="row border bg-light p-2 pt-3">
         <p style="text-align: left"><b>MEI Constructor</b></p>
       </div>
@@ -59,7 +59,13 @@
       </div>
     </div>
 
-    <!--MAIN FRAME-->
+    <div class="container-xxl mb-5 mt-5 align-content-center" v-else-if="openMultiplesForm">
+      <button class="btn btn-primary" style="width: 95% !important" @click="exportMEIMultiple">Export MEI</button>
+      <MultipleFilesForm class="carousel-item" :MEIData="files" :export="exportDataMultiple"
+        @save-finished="afterTriggerMultiple();" />
+    </div>
+
+    <!--MAIN FRAME SINGLE FILE-->
     <div class="container-xxl mb-5 mt-5 align-content-center" v-else>
       <button class="btn btn-primary" style="width: 95% !important" @click="exportMEI">Export MEI</button>
 
@@ -118,6 +124,7 @@ import WorklistForm from './WorklistForm.vue';
 import AmbitusForm from './AmbitusForm.vue';
 import RhythmPatternForm from './RhythmPatternForm.vue';
 import PhraseForm from './PhraseForm.vue';
+import MultipleFilesForm from './MultipleFilesForm.vue';
 
 export default {
   inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods'],
@@ -129,12 +136,14 @@ export default {
     AmbitusForm,
     RhythmPatternForm,
     PhraseForm,
+    MultipleFilesForm,
     Tooltip,
   },
   data() {
     return {
       MEIData: '',
       openSingleForms: false,
+      openMultiplesForm: false,
       files: [],
       abcString: '',
       urlFile: '',
@@ -165,7 +174,7 @@ export default {
     },
     async handleFiles(event) {
       for (const file of event.target.files) {
-        
+
         if (file && file.name) {
           let fileStructure = {};
           fileStructure['filename'] = file.name;
@@ -260,7 +269,7 @@ export default {
           file['xmlDoc'] = (new DOMParser()).parseFromString(file['meiData'], "text/xml"); // Parse String to XML DOC to EDIT
           file['xmlDoc'] = this.createALLMEICamps(file['xmlDoc']); // Create All Camps
           console.log(file['xmlDoc']);
-          //this.openMultiplesForm = true;
+          this.openMultiplesForm = true;
         });
       }
     },
