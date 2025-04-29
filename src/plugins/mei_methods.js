@@ -61,14 +61,16 @@ const MEICAMPS = {
     ]
 };
 
-export const getXpathNode = (nodeP, xpath, returnAll = false) => {
+const getXpathNode = (nodeP, xpath, returnAll = false) => {
     const result = nodeP.evaluate(xpath, nodeP, prefix => prefix === 'mei' ? 'http://www.music-encoding.org/ns/mei' : null, XPathResult.ANY_TYPE, null);
     if (returnAll)
         return result;
     return result.iterateNext();
 };
 
-export const getMusicalIncipMeasure = (meas) => {
+
+
+const getMusicalIncipMeasure = (meas) => {
     let docM = document.createElementNS('http://www.music-encoding.org/ns/mei', 'measure');
     docM.setAttribute('copyof', '#' + meas.getAttribute('xml:id'));
     return docM;
@@ -316,7 +318,7 @@ const createNodesSegmentation = (meiTree) => {
  * @param {*} info 
  * @returns 
  */
-export const createNodesMethods = (meiTree, info = 'titleStmt') => {
+const createNodesMethods = (meiTree, info = 'titleStmt') => {
     switch (info) {
         case 'titleStmt': return createNodesTitleStmt(meiTree);
         case 'publisher': return createNodesPublisher(meiTree);
@@ -528,7 +530,7 @@ const updateNodesSegmentation = (meiTree, data) => {
  * @param {*} data 
  * @param {*} info to update
  */
-export const updateNodesMethods = (meiTree, data, info = 'titleStmt') => {
+const updateNodesMethods = (meiTree, data, info = 'titleStmt') => {
     switch (info) {
         case 'titleStmt': return updateNodesTitleStmt(meiTree, data);
         case 'publisher': return updateNodesPublisher(meiTree, data);
@@ -539,3 +541,12 @@ export const updateNodesMethods = (meiTree, data, info = 'titleStmt') => {
         case 'segmentation': return updateNodesSegmentation(meiTree, data);
     }
 };
+
+export default {
+    install: (app, options) => {
+      // Plugin code goes here
+      app.provide('getXpathNode', getXpathNode);
+      app.provide('createNodesMethods', createNodesMethods);
+      app.provide('updateNodesMethods', updateNodesMethods);
+    }
+  }

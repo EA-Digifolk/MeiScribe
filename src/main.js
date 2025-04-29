@@ -6,8 +6,9 @@ import './style.css';
 import "bootstrap/dist/css/bootstrap.css";
 import SvgIcon from "vue3-icon";
 
-import { getXpathNode, createNodesMethods, updateNodesMethods } from './mei_methods.js';
-import { getAutomaticAmbitus, getAutomaticModeKey, getAutomaticRhythmPattern, getAutomaticSegmentation } from './automatic_functions.js';
+import MeiMethods from './plugins/mei_methods.js';
+
+import AuthomaticMethods from './plugins/automatic_functions.js';
 
 const app = createApp(App)
 
@@ -40,16 +41,10 @@ app.provide('capitalizeFirstLetter', (string) => {
     return string && (string[0].toUpperCase() + string.slice(1));
 });
 
-app.provide('getXpathNode', getXpathNode);
-app.provide('createNodesMethods', createNodesMethods);
-app.provide('updateNodesMethods', updateNodesMethods);
+app.provide(/* key */ 'message', /* value */ 'hello!');
 
-app.provide('getAutomaticAmbitus', getAutomaticAmbitus);
-app.provide('getAutomaticModeKey', getAutomaticModeKey);
-app.provide('getAutomaticRhythmPattern', getAutomaticRhythmPattern);
-app.provide('getAutomaticSegmentation', getAutomaticSegmentation);
-
-app.provide(/* key */ 'message', /* value */ 'hello!')
+app.use(MeiMethods);
+app.use(AuthomaticMethods);
 
 app.mount('#app');
 
