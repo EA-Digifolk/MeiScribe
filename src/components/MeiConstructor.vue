@@ -246,7 +246,7 @@ export default {
         MEIData = null;
       };
 
-      return MEIData, vT;
+      return [MEIData, vT];
     },
     startProcess() {
 
@@ -258,18 +258,20 @@ export default {
         this.xmlDoc = (new DOMParser()).parseFromString(this.MEIData, "text/xml"); // Parse String to XML DOC to EDIT
         this.xmlDoc = this.createALLMEICamps(this.xmlDoc); // Create All Camps
         this.openSingleForms = true;
+        this.openMultiplesForm = false;
       } else if (this.files.length == 1) {
-        this.MEIData, this.verovioToolkit = this.importSingleFile(this.files[0]);
+        [this.MEIData, this.verovioToolkit] = this.importSingleFile(this.files[0]);
         this.xmlDoc = (new DOMParser()).parseFromString(this.MEIData, "text/xml"); // Parse String to XML DOC to EDIT
         this.xmlDoc = this.createALLMEICamps(this.xmlDoc); // Create All Camps
         this.openSingleForms = true;
+        this.openMultiplesForm = false;
       } else {
         this.files.forEach(file => {
-          file['meiData'], file['vT'] = this.importSingleFile(file);
+          [file['meiData'], file['vT']] = this.importSingleFile(file);
           file['xmlDoc'] = (new DOMParser()).parseFromString(file['meiData'], "text/xml"); // Parse String to XML DOC to EDIT
           file['xmlDoc'] = this.createALLMEICamps(file['xmlDoc']); // Create All Camps
-          console.log(file['xmlDoc']);
           this.openMultiplesForm = true;
+          this.openSingleForms = false;
         });
       }
     },
