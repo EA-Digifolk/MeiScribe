@@ -6,8 +6,8 @@ import './style.css';
 import "bootstrap/dist/css/bootstrap.css";
 import SvgIcon from "vue3-icon";
 
-import { getXpathNode, createNodesMethods, updateNodesMethods } from './mei_methods.js';
-import { getAutomaticAmbitus, getAutomaticModeKey, getAutomaticRhythmPattern, getAutomaticSegmentation } from './automatic_functions.js';
+import { getXpathNode, createNodesMethods, updateNodesMethods } from './extra_methods/mei_methods.js';
+import { getAutomaticAmbitus, getAutomaticModeKey, getAutomaticRhythmPattern, getAutomaticSegmentation } from './extra_methods/automatic_functions.js';
 
 const app = createApp(App)
 
