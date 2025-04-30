@@ -22,6 +22,8 @@ import TitleStmtForm from './MultipleFileForm/TitleStmtForm.vue';
 import WorklistForm from './MultipleFileForm/WorklistForm.vue';
 //import AutomaticMusicForm from './MultipleFileForm/AutomaticMusicForm.vue';
 
+import JSZip from 'jszip';
+
 export default {
     inject: ['getXpathNode', 'prettifyXml'],
     components: {
@@ -41,12 +43,12 @@ export default {
                 'PublisherForm': false,
                 'SourceForm': false,
                 'WorklistForm': false,
-                'AutomaticMusicForm': false,
+                //'AutomaticMusicForm': false,
             },
         };
     },
     methods: {
-        afterTrigger() {
+        async afterTrigger() {
             let checker = arr => arr.every(v => v === true);
 
             if (checker(Object.values(this.allFormsReadyToExport))) {
@@ -56,25 +58,28 @@ export default {
                     'PublisherForm': false,
                     'SourceForm': false,
                     'WorklistForm': false,
-                    'AutomaticMusicForm': false,
+                    //'AutomaticMusicForm': false,
                 };
 
                 console.log(this.MEIfiles);
 
-                /*const a = document.createElement('a');
-                const docString = this.prettifyXml(new XMLSerializer().serializeToString(this.xmlDoc));
+                const zip = new JSZip();
 
-                const blob = new Blob([docString], { type: 'application/xml' });
-                a.setAttribute('href', URL.createObjectURL(blob));
+                this.MEIfiles.forEach((file) => {
+                    const docString = this.prettifyXml(new XMLSerializer().serializeToString(file['xmlDoc']));
+                    const blob = new Blob([docString], { type: 'application/xml' });
+                    zip.file(file['filename'].split(".").slice(0, -1).join(".") + '.mei', blob);
+                });
 
-                let filenameNode = this.getXpathNode(this.xmlDoc, './/mei:titleStmt//mei:title[@type="main"]');
-                if (!filenameNode.getAttribute('xml:id')) {
-                    alert('ID is not set! Try setting it before downloading MEI file!')
-                }
+                const zipData = await zip.generateAsync({
+                    type: "blob",
+                    streamFiles: true
+                });
 
-                a.setAttribute('download', filenameNode.getAttribute('xml:id') + '.mei');
-                a.click()
-                a.remove()*/
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(zipData);
+                link.download = `meifiles.zip`;
+                link.click();
 
                 this.$emit("downloadFinished");
             };
@@ -83,4 +88,25 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+h1 {
+    font-size: 2em;
+}
+
+input,
+textarea {
+    display: block;
+    margin: 10px 0;
+}
+
+button {
+    margin: 5px;
+}
+
+.carousel-control-next,
+.carousel-control-prev {
+    height: 80% !important;
+    margin-top: 10%;
+    width: 8% !important;
+}
+</style>
