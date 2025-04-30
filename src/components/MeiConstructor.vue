@@ -73,8 +73,8 @@
             :data-bs-slide-to="item + 1" aria-label="Slide {{item+2}}"></button>
         </div>
 
-        <SingleFilesForm :xmlDoc="xmlDoc" :verovioToolkit="verovioToolkit" v-if="openSingleForms === true"
-          @download-finished="openSingleForms = false;" />
+        <SingleFilesForm :xmlDoc="xmlDoc" :verovioToolkit="verovioToolkit" :exportData="exportData" v-if="openSingleForms === true"
+          @download-finished="openSingleForms = false; verovioToolkit = ''; xmlDoc = '';" />
         <!--<MultipleFilesForm v-else-if="openMultiplesForm === true" />-->
 
         <button class="carousel-control-prev" type="button" data-bs-target="#carouselForms" data-bs-slide="prev">
@@ -119,6 +119,7 @@ export default {
       message: '',
       verovioToolkit: '',
       xmlDoc: '',
+      exportData: false,
       downloadIcon: "M19.99 6.21a4.49 4.49 0 0 0-8.82-.88A4.325 4.325 0 0 0 9.5 5a4.486 4.486 0 0 0-4.23 3.01A4.498 4.498 0 0 0 5.5 17H11v-5h1v9.086l-1.146-1.146-.707.707L12.5 23l2.353-2.353-.706-.707L13 21.085V17h5.5a5.497 5.497 0 0 0 1.49-10.79z",
     }
   },
@@ -232,6 +233,9 @@ export default {
           this.openSingleForms = false;
         });
       }
+    },
+    exportMEI() {
+      this.exportData = !this.exportData;
     },
   }
 };

@@ -40,11 +40,10 @@ export default {
         PhraseForm,
         Tooltip,
     },
-    props: ['xmlDoc', 'verovioToolkit'],
+    props: ['xmlDoc', 'verovioToolkit', 'exportData'],
     emits: ["downloadFinished"],
     data() {
         return {
-            exportData: false,
             allFormsReadyToExport: {
                 'TitleForm': false,
                 'PublisherForm': false,
@@ -57,9 +56,6 @@ export default {
         };
     },
     methods: {
-        exportMEI() {
-            this.exportData = !this.exportData;
-        },
         afterTrigger() {
             let checker = arr => arr.every(v => v === true);
 
