@@ -41,7 +41,7 @@ import Modal from '../Modal.vue';
 import { Tooltip } from 'bootstrap';
 
 export default {
-    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods'],
+    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods', 'getAutomaticAmbitus'],
     components: {
         Tooltip,
         Modal
@@ -79,14 +79,25 @@ export default {
         }
     },
     methods: {
-        calculateAmbitus() { 
-            console.log('AMBITUS') 
+        calculateAmbitus() {
+            this.MEIFiles.forEach((file) => {
+                const lowAmb = this.getAutomaticAmbitus(file['vT'], true);
+                const highAmb = this.getAutomaticAmbitus(file['vT'], false);
+                if (!this.getXpathNode(file['xmlDoc'], './/mei:ambitus')) {
+                    this.createNodesMethods(file['xmlDoc'], 'ambitus');
+                }
+                this.updateNodesMethods(file['xmlDoc'], [
+                    { name: 'lowest', tag: './/mei:ambNote[@type="lowest"]', value: lowAmb, default: lowAmb },
+                    { name: 'highest', tag: './/mei:ambNote[@type="highest"]', value: highAmb, default: highAmb },
+                ], 'ambitus');
+                console.log(this.getXpathNode(file['xmlDoc'], './/mei:ambitus'))
+            });
         },
-        calculateRhythmPattern() { 
-            console.log('RHYTHM') 
+        calculateRhythmPattern() {
+            console.log('RHYTHM')
         },
-        calculateSegmentation() { 
-            console.log('PHRASE') 
+        calculateSegmentation() {
+            console.log('PHRASE')
         },
         saveToMEI(openModal = true) {
 

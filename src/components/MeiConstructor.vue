@@ -112,6 +112,7 @@ function initialState() {
     abcString: '',
     urlFile: '',
     message: '',
+    verovioModule: '',
     verovioToolkit: '',
     xmlDoc: '',
     exportData: false,
@@ -144,6 +145,7 @@ export default {
     },
     startVerovio() {
       createVerovioModule().then(VerovioModule => {
+        this.verovioModule = VerovioModule;
         this.verovioToolkit = new VerovioToolkit(VerovioModule);
       });
     },
@@ -191,27 +193,24 @@ export default {
     },
     importSingleFile(file) {
 
-      let vT = this.verovioToolkit;
-      createVerovioModule().then(VerovioModule => {
-        vT = new VerovioToolkit(VerovioModule);
-      });
+      const vT = new VerovioToolkit(this.verovioModule);
 
       let MEIData = '';
 
       if (file["filename"].endsWith('.abc')) {
         this.message = 'Loading ABC';
-        this.verovioToolkit.loadData(file["fileData"]);
-        MEIData = this.verovioToolkit.getMEI();
+        vT.loadData(file["fileData"]);
+        MEIData = vT.getMEI();
         this.message = '';
       } else if (file["filename"].endsWith('.musicxml')) {
         this.message = 'Loading MusicXML';
-        this.verovioToolkit.loadData(file["fileData"]);
-        MEIData = this.verovioToolkit.getMEI();
+        vT.loadData(file["fileData"]);
+        MEIData = vT.getMEI();
         this.message = '';
       } else if (file["filename"].endsWith('.mei')) {
         this.message = 'Loading MEI';
         MEIData = file["fileData"];
-        this.verovioToolkit.loadData(file["fileData"]);
+        vT.loadData(file["fileData"]);
         this.message = '';
       } else if (file["filename"].endsWith('.mid')) {
         this.message = 'MIDI is not allowed for now';
