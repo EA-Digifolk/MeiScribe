@@ -8,8 +8,8 @@
             @save-finished="allFormsReadyToExport['SourceForm'] = true; afterTrigger();" />
         <WorklistForm class="carousel-item" :MEIFiles="MEIfiles" :vT="verovioToolkit" :export="exportData"
             @save-finished="allFormsReadyToExport['WorklistForm'] = true; afterTrigger();" />
-        <!--<AutomaticMusicForm class="carousel-item" :MEIFiles="MEIfiles" :vT="verovioToolkit" :export="exportData"
-            @save-finished="allFormsReadyToExport['AutomaticMusicForm'] = true; afterTrigger();" />-->
+        <AutomaticMusicForm class="carousel-item" :MEIFiles="MEIfiles" :vT="verovioToolkit" :export="exportData"
+            @save-finished="allFormsReadyToExport['AutomaticMusicForm'] = true; afterTrigger();" />
     </div>
 </template>
 
@@ -20,7 +20,7 @@ import PublisherForm from './MultipleFileForm/PublisherForm.vue';
 import SourceStmtForm from './MultipleFileForm/SourceStmtForm.vue';
 import TitleStmtForm from './MultipleFileForm/TitleStmtForm.vue';
 import WorklistForm from './MultipleFileForm/WorklistForm.vue';
-//import AutomaticMusicForm from './MultipleFileForm/AutomaticMusicForm.vue';
+import AutomaticMusicForm from './MultipleFileForm/AutomaticMusicForm.vue';
 
 import JSZip from 'jszip';
 
@@ -31,7 +31,7 @@ export default {
         PublisherForm,
         SourceStmtForm,
         WorklistForm,
-        //AutomaticMusicForm,
+        AutomaticMusicForm,
         Tooltip,
     },
     props: ['MEIfiles', 'exportData'],
