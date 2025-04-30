@@ -82,7 +82,7 @@ export default {
     methods: {
         saveToMEI(openModal = true) {
             if (!this.getXpathNode(this.MEIData, './/mei:pubStmt')) {
-                this.createNodesMethods('pubStmt');
+                this.createNodesMethods(this.MEIData,'pubStmt');
             };
             this.updateNodesMethods(this.MEIData, this.pubData, 'pubStmt');
 

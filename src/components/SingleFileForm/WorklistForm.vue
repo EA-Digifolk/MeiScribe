@@ -246,7 +246,7 @@ export default {
             let workListNode = this.getXpathNode(this.MEIData, './/mei:work');
 
             if (!workListNode) {
-                this.createNodesMethods('worklist');
+                this.createNodesMethods(this.MEIData,'worklist');
             };
             this.updateNodesMethods(this.MEIData, this.worklistData, 'worklist');
 

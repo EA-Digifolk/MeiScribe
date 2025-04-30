@@ -87,7 +87,7 @@ export default {
         saveToMEI(openModal = true) {
             let imprintNode = this.getXpathNode(this.MEIData, './/mei:source//mei:imprint');
             if (!imprintNode) {
-                this.createNodesMethods('sourceStmt');
+                this.createNodesMethods(this.MEIData,'sourceStmt');
             };
             this.updateNodesMethods(this.MEIData, this.sourceStmtData, 'sourceStmt');
 

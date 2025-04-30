@@ -13,7 +13,7 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item active">
-            <a class="nav-link" href="#" @click="MEIData = ''; openSingleForms = false;">Home <!--<span
+            <a class="nav-link" href="#" @click="resetWindow">Home <!--<span
                 class="sr-only">(current)</span>--></a>
           </li>
           <!--<li class="nav-item">
@@ -69,13 +69,15 @@
         <div class="carousel-indicators">
           <button type="button" data-bs-target="#carouselForms" data-bs-slide-to="0" class="active" aria-current="true"
             aria-label="Slide 1"></button>
-          <button v-for="item in [...Array(6).keys()]" type="button" data-bs-target="#carouselForms"
+          <button v-for="item in getNumberOfTabs" type="button" data-bs-target="#carouselForms"
             :data-bs-slide-to="item + 1" aria-label="Slide {{item+2}}"></button>
         </div>
 
-        <SingleFilesForm :xmlDoc="xmlDoc" :verovioToolkit="verovioToolkit" :exportData="exportData" v-if="openSingleForms === true"
+        <SingleFilesForm :xmlDoc="xmlDoc" :verovioToolkit="verovioToolkit" :exportData="exportData"
+          v-if="openSingleForms === true"
           @download-finished="openSingleForms = false; verovioToolkit = ''; xmlDoc = '';" />
-        <!--<MultipleFilesForm v-else-if="openMultiplesForm === true" />-->
+        <MultipleFilesForm :MEIfiles="files" :exportData="exportData" v-else-if="openMultiplesForm === true"
+          @download-finished="openMultiplesForm = false; files = [];" />
 
         <button class="carousel-control-prev" type="button" data-bs-target="#carouselForms" data-bs-slide="prev">
           <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -101,6 +103,22 @@ import createVerovioModule from 'verovio/wasm';
 import MultipleFilesForm from './MultipleFilesForm.vue';
 import SingleFilesForm from './SingleFilesForm.vue';
 
+function initialState() {
+  return {
+    MEIData: '',
+    openSingleForms: false,
+    openMultiplesForm: false,
+    files: [],
+    abcString: '',
+    urlFile: '',
+    message: '',
+    verovioToolkit: '',
+    xmlDoc: '',
+    exportData: false,
+    downloadIcon: "M19.99 6.21a4.49 4.49 0 0 0-8.82-.88A4.325 4.325 0 0 0 9.5 5a4.486 4.486 0 0 0-4.23 3.01A4.498 4.498 0 0 0 5.5 17H11v-5h1v9.086l-1.146-1.146-.707.707L12.5 23l2.353-2.353-.706-.707L13 21.085V17h5.5a5.497 5.497 0 0 0 1.49-10.79z",
+  }
+}
+
 export default {
   inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods'],
   components: {
@@ -109,24 +127,21 @@ export default {
     Tooltip,
   },
   data() {
-    return {
-      MEIData: '',
-      openSingleForms: false,
-      openMultiplesForm: false,
-      files: [],
-      abcString: '',
-      urlFile: '',
-      message: '',
-      verovioToolkit: '',
-      xmlDoc: '',
-      exportData: false,
-      downloadIcon: "M19.99 6.21a4.49 4.49 0 0 0-8.82-.88A4.325 4.325 0 0 0 9.5 5a4.486 4.486 0 0 0-4.23 3.01A4.498 4.498 0 0 0 5.5 17H11v-5h1v9.086l-1.146-1.146-.707.707L12.5 23l2.353-2.353-.706-.707L13 21.085V17h5.5a5.497 5.497 0 0 0 1.49-10.79z",
-    }
+    return initialState()
   },
   mounted() {
     this.startVerovio();
   },
+  computed: {
+    getNumberOfTabs() {
+      return this.openMultiplesForm === true ? [...Array(4).keys()] : [...Array(6).keys()]
+    }
+  },
   methods: {
+    resetWindow: function (){
+        Object.assign(this.$data, initialState());
+        this.startVerovio();
+    },
     startVerovio() {
       createVerovioModule().then(VerovioModule => {
         this.verovioToolkit = new VerovioToolkit(VerovioModule);

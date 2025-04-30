@@ -106,7 +106,7 @@ export default {
         saveToMEI(openModal = true) {
             let phraseNode = this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="phrases"]');
             if (!phraseNode) {
-                this.createNodesMethods('segmentation');
+                this.createNodesMethods(this.MEIData,'segmentation');
             }
             this.updateNodesMethods(this.MEIData, this.phraseSegmentData, 'segmentation');
 

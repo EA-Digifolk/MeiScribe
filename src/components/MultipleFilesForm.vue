@@ -1,114 +1,81 @@
 <template>
-    <div class="card w-100">
-        <div class="card-header">
-            <h4 class="w-100">Multiple File Form</h4>
-            <button href="#" class="btn-save-mei btn btn-primary ml-1" @click="saveToMEI"
-                title="Apply Information To MEI File" data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
-                data-bs-placement="bottom" data-bs-html="true">Apply To MEI</button>
-        </div>
-        <div class="card-body container">
-            <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
-                <li class="row mb-1" v-for="item in titleStmtData" :key="item.name">
-                    <div class="col col-sm-2 card-text" style="text-align: right">
-                        <p class="card-text" :title="item.tooltip" data-bs-customClass="custom-tooltip"
-                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">{{ item.on_display }}
-                        </p>
-                    </div>
-                    <div class="col col-sm-10 card-text">
-                        <input class="w-100 p-1" type="text" v-model="item.value" :placeholder="item.default" />
-                    </div>
-                </li>
-            </div>
-        </div>
-        <Teleport to="body">
-            <modal :show="showModal" @close="showModal = false">
-                <template #header>
-                    <h3>Saved Informations to MEI Files</h3>
-                </template>
-                <template #body>
-                    <pre class="w-100" id="MEI-Modal-TitleStmt">{{ TitleStmtOntMEI }}</pre>
-                </template>
-            </modal>
-        </Teleport>
+    <div class="carousel-inner">
+        <TitleStmtForm class="carousel-item active" :MEIFiles="MEIfiles" :export="exportData"
+            @save-finished="allFormsReadyToExport['TitleForm'] = true; afterTrigger();" />
+        <!--<PublisherForm class="carousel-item" :MEIFiles="MEIfiles" :export="exportData"
+            @save-finished="allFormsReadyToExport['PublisherForm'] = true; afterTrigger();" />
+        <SourceStmtForm class="carousel-item" :MEIFiles="MEIfiles" :export="exportData"
+            @save-finished="allFormsReadyToExport['SourceForm'] = true; afterTrigger();" />
+        <WorklistForm class="carousel-item" :MEIFiles="MEIfiles" :vT="verovioToolkit" :export="exportData"
+            @save-finished="allFormsReadyToExport['WorklistForm'] = true; afterTrigger();" />-->
     </div>
 </template>
 
-<script type="module">
+<script module>
 import { Tooltip } from 'bootstrap';
 
-import Modal from './Modal.vue';
+//import PublisherForm from './MultipleFileForm/PublisherForm.vue';
+//import SourceStmtForm from './MultipleFileForm/SourceStmtForm.vue';
+import TitleStmtForm from './MultipleFileForm/TitleStmtForm.vue';
+//import WorklistForm from './MultipleFileForm/WorklistForm.vue';
 
 export default {
-    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods'],
+    inject: ['getXpathNode', 'prettifyXml'],
     components: {
+        TitleStmtForm,
+        /*SourceStmtForm,
+        PublisherForm,
+        WorklistForm,*/
         Tooltip,
-        Modal
     },
-    props: ['MEIData', 'export'],
-    emits: ["saveFinished"],
+    props: ['MEIfiles', 'exportData'],
+    emits: ["downloadFinished"],
+    mounted() {
+        console.log(this.MEIfiles);
+    },
     data() {
         return {
-            titleStmtData: [
-                {
-                    name: 'id',
-                    tag: './/mei:titleStmt//mei:title[@type="main"]',
-                    value: '',
-                    on_display: 'ID',
-                    default: 'CO-YEAR-RE-SUB-NUM',
-                    tooltip: "<pre>ID should be something similar to CO-YEAR-RE-SUB-NUM, with letters standing for:</br>-CO: Country of Origin</br>-YEAR: Year of Collection/Book</br>-RE: Region/District (ex: SA = Salamanca)</br>-SUB: Sub-Region/City</br>-NUM: Number Identifier (e.g., number of song in book, number of page in book, order, etc...)<pre>"
-                },
-                { name: 'title', tag: './/mei:titleStmt//mei:title[@type="main"]', value: '', on_display: 'Title', default: '', tooltip: "<pre>Title</pre>" },
-                { name: 'subtitle', tag: './/mei:titleStmt//mei:title[@type="subtitle"]', value: '', on_display: 'Subtitle', default: '', tooltip: "<pre>Subtitle (optional)</pre>" },
-                { name: 'composer', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="composer"]', value: '', on_display: 'Composer', default: '', tooltip: "<pre>Composer (optional)</pre>" },
-                { name: 'compiler', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="compiler"]', value: '', on_display: 'Compiler', default: '', tooltip: "<pre>Compiler (optional): who compiled the song in a collection</pre>" },
-                { name: 'informer', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="informer"]', value: '', on_display: 'Informer', default: '', tooltip: "<pre>Informer (optional): who told/sung the song</pre>" },
-                { name: 'encoder', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="encoder"]', value: '', on_display: 'Encoder', default: '', tooltip: "<pre>Encoder (optional): who encoded the song as musicXML, MEI, ABC</pre>" },
-                { name: 'editor', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="editor"]', value: '', on_display: 'Editor', default: '', tooltip: "<pre>Editor (optional): who edited the song</pre>" },
-                { name: 'geogName', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="informer"]//mei:geogName', value: '', on_display: 'Geography', default: '', tooltip: "<pre>Geography (optional) information if the song is traditional from a specific region</pre>" },
-            ],
-            showModal: false,
-            TitleStmtOntMEI: ''
+            allFormsReadyToExport: {
+                'TitleForm': false,
+                'PublisherForm': false,
+                'SourceForm': false,
+                'WorklistForm': false,
+            },
         };
     },
-    mounted() {
-        this.getInfoFromMEI();
-        const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.forEach(tooltipTriggerEl => {
-            new Tooltip(tooltipTriggerEl, {
-                customClass: 'custom-tooltip',
-                animated: 'fade',
-                placement: 'bottom',
-                trigger: 'hover'
-            });
-        });
-    },
-    watch: {
-        export: function (newVal, oldVal) {
-            if (newVal != oldVal) {
-                this.saveToMEI(false);
-            }
-        }
-    },
     methods: {
-        saveToMEI(openModal = true) {
-            
-            this.TitleStmtOntMEI = 'Finished Info';
+        afterTrigger() {
+            let checker = arr => arr.every(v => v === true);
 
-            if (openModal) {
-                this.showModal = !this.showModal;
-            } else {
-                this.$emit("saveFinished", "TitleForm");
-            }
-        },
-        getInfoFromMEI() {
-            
+            if (checker(Object.values(this.allFormsReadyToExport))) {
+
+                this.allFormsReadyToExport = {
+                    'TitleForm': false,
+                    'PublisherForm': false,
+                    'SourceForm': false,
+                    'WorklistForm': false,
+                };
+
+                /*const a = document.createElement('a');
+                const docString = this.prettifyXml(new XMLSerializer().serializeToString(this.xmlDoc));
+
+                const blob = new Blob([docString], { type: 'application/xml' });
+                a.setAttribute('href', URL.createObjectURL(blob));
+
+                let filenameNode = this.getXpathNode(this.xmlDoc, './/mei:titleStmt//mei:title[@type="main"]');
+                if (!filenameNode.getAttribute('xml:id')) {
+                    alert('ID is not set! Try setting it before downloading MEI file!')
+                }
+
+                a.setAttribute('download', filenameNode.getAttribute('xml:id') + '.mei');
+                a.click()
+                a.remove()*/
+
+                this.$emit("downloadFinished");
+            };
         }
-    }
+    },
 };
 </script>
 
-<style scoped>
-#MEI-Modal-TitleStmt {
-    max-height: 80% !important;
-}
-</style>
+<style scoped></style>

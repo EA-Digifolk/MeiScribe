@@ -83,7 +83,7 @@ export default {
         saveToMEI(openModal = true) {
             let ambitusNode = this.getXpathNode(this.MEIData, './/mei:ambitus');
             if (!ambitusNode) {
-                this.createNodesMethods('ambitus');
+                this.createNodesMethods(this.MEIData,'ambitus');
             }
             this.updateNodesMethods(this.MEIData, this.ambitusData, 'ambitus');
 

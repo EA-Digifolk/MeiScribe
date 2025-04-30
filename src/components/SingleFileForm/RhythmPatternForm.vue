@@ -83,7 +83,7 @@ export default {
         saveToMEI(openModal = true) {
             let rhythmPNode = this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]');
             if (!rhythmPNode) {
-                this.createNodesMethods('rhythmPattern');
+                this.createNodesMethods(this.MEIData,'rhythmPattern');
             }
             this.updateNodesMethods(this.MEIData, this.rhythmPatternData, 'rhythmPattern');
 

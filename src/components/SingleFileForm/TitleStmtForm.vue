@@ -102,7 +102,7 @@ export default {
             };
 
             if (!this.getXpathNode(this.MEIData, './/mei:titleStmt')) {
-                this.createNodesMethods('titleStmt');
+                this.createNodesMethods(this.MEIData,'titleStmt');
             };
             this.updateNodesMethods(this.MEIData, this.titleStmtData, 'titleStmt');
 
