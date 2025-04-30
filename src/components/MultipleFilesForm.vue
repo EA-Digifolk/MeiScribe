@@ -2,37 +2,38 @@
     <div class="carousel-inner">
         <TitleStmtForm class="carousel-item active" :MEIFiles="MEIfiles" :export="exportData"
             @save-finished="allFormsReadyToExport['TitleForm'] = true; afterTrigger();" />
-        <!--<PublisherForm class="carousel-item" :MEIFiles="MEIfiles" :export="exportData"
+        <PublisherForm class="carousel-item" :MEIFiles="MEIfiles" :export="exportData"
             @save-finished="allFormsReadyToExport['PublisherForm'] = true; afterTrigger();" />
         <SourceStmtForm class="carousel-item" :MEIFiles="MEIfiles" :export="exportData"
             @save-finished="allFormsReadyToExport['SourceForm'] = true; afterTrigger();" />
         <WorklistForm class="carousel-item" :MEIFiles="MEIfiles" :vT="verovioToolkit" :export="exportData"
-            @save-finished="allFormsReadyToExport['WorklistForm'] = true; afterTrigger();" />-->
+            @save-finished="allFormsReadyToExport['WorklistForm'] = true; afterTrigger();" />
+        <!--<AutomaticMusicForm class="carousel-item" :MEIFiles="MEIfiles" :vT="verovioToolkit" :export="exportData"
+            @save-finished="allFormsReadyToExport['AutomaticMusicForm'] = true; afterTrigger();" />-->
     </div>
 </template>
 
 <script module>
 import { Tooltip } from 'bootstrap';
 
-//import PublisherForm from './MultipleFileForm/PublisherForm.vue';
-//import SourceStmtForm from './MultipleFileForm/SourceStmtForm.vue';
+import PublisherForm from './MultipleFileForm/PublisherForm.vue';
+import SourceStmtForm from './MultipleFileForm/SourceStmtForm.vue';
 import TitleStmtForm from './MultipleFileForm/TitleStmtForm.vue';
-//import WorklistForm from './MultipleFileForm/WorklistForm.vue';
+import WorklistForm from './MultipleFileForm/WorklistForm.vue';
+//import AutomaticMusicForm from './MultipleFileForm/AutomaticMusicForm.vue';
 
 export default {
     inject: ['getXpathNode', 'prettifyXml'],
     components: {
         TitleStmtForm,
-        /*SourceStmtForm,
         PublisherForm,
-        WorklistForm,*/
+        SourceStmtForm,
+        WorklistForm,
+        //AutomaticMusicForm,
         Tooltip,
     },
     props: ['MEIfiles', 'exportData'],
     emits: ["downloadFinished"],
-    mounted() {
-        console.log(this.MEIfiles);
-    },
     data() {
         return {
             allFormsReadyToExport: {
@@ -40,6 +41,7 @@ export default {
                 'PublisherForm': false,
                 'SourceForm': false,
                 'WorklistForm': false,
+                'AutomaticMusicForm': false,
             },
         };
     },
@@ -54,7 +56,10 @@ export default {
                     'PublisherForm': false,
                     'SourceForm': false,
                     'WorklistForm': false,
+                    'AutomaticMusicForm': false,
                 };
+
+                console.log(this.MEIfiles);
 
                 /*const a = document.createElement('a');
                 const docString = this.prettifyXml(new XMLSerializer().serializeToString(this.xmlDoc));
