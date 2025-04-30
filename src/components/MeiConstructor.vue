@@ -59,12 +59,6 @@
       </div>
     </div>
 
-    <div class="container-xxl mb-5 mt-5 align-content-center" v-else-if="openMultiplesForm">
-      <button class="btn btn-primary" style="width: 95% !important" @click="exportMEIMultiple">Export MEI</button>
-      <MultipleFilesForm class="carousel-item" :MEIData="files" :export="exportDataMultiple"
-        @save-finished="afterTriggerMultiple();" />
-    </div>
-
     <!--MAIN FRAME SINGLE FILE-->
     <div class="container-xxl mb-5 mt-5 align-content-center" v-else>
       <button class="btn btn-primary" style="width: 95% !important" @click="exportMEI">Export MEI</button>
@@ -79,22 +73,8 @@
             :data-bs-slide-to="item + 1" aria-label="Slide {{item+2}}"></button>
         </div>
 
-        <div class="carousel-inner">
-          <TitleStmtForm class="carousel-item active" :MEIData="xmlDoc" :export="exportData"
-            @save-finished="allFormsReadyToExport['TitleForm'] = true; afterTrigger();" />
-          <PublisherForm class="carousel-item" :MEIData="xmlDoc" :export="exportData"
-            @save-finished="allFormsReadyToExport['PublisherForm'] = true; afterTrigger();" />
-          <SourceStmtForm class="carousel-item" :MEIData="xmlDoc" :export="exportData"
-            @save-finished="allFormsReadyToExport['SourceForm'] = true; afterTrigger();" />
-          <WorklistForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
-            @save-finished="allFormsReadyToExport['WorklistForm'] = true; afterTrigger();" />
-          <AmbitusForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
-            @save-finished="allFormsReadyToExport['AmbitusForm'] = true; afterTrigger();" />
-          <RhythmPatternForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
-            @save-finished="allFormsReadyToExport['RhythmPatternForm'] = true; afterTrigger();" />
-          <PhraseForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
-            @save-finished="allFormsReadyToExport['SegmentationForm'] = true; afterTrigger();" />
-        </div>
+        <SingleFilesForm :xmlDoc="xmlDoc" :vT="verovioToolkit" v-if="openSingleForms === true" />
+        <MultipleFilesForm v-else-if="openMultiplesForm === true" />
 
         <button class="carousel-control-prev" type="button" data-bs-target="#carouselForms" data-bs-slide="prev">
           <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -114,28 +94,16 @@
 <script module>
 import { Tooltip } from 'bootstrap';
 
-import createVerovioModule from 'verovio/wasm';
 import { VerovioToolkit } from 'verovio/esm';
+import createVerovioModule from 'verovio/wasm';
 
-import TitleStmtForm from './TitleStmtForm.vue';
-import SourceStmtForm from './SourceStmtForm.vue';
-import PublisherForm from './PublisherForm.vue';
-import WorklistForm from './WorklistForm.vue';
-import AmbitusForm from './AmbitusForm.vue';
-import RhythmPatternForm from './RhythmPatternForm.vue';
-import PhraseForm from './PhraseForm.vue';
 import MultipleFilesForm from './MultipleFilesForm.vue';
+import SingleFilesForm from './SingleFilesForm.vue';
 
 export default {
   inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods'],
   components: {
-    TitleStmtForm,
-    SourceStmtForm,
-    PublisherForm,
-    WorklistForm,
-    AmbitusForm,
-    RhythmPatternForm,
-    PhraseForm,
+    SingleFilesForm,
     MultipleFilesForm,
     Tooltip,
   },
@@ -150,16 +118,6 @@ export default {
       message: '',
       verovioToolkit: '',
       xmlDoc: '',
-      exportData: false,
-      allFormsReadyToExport: {
-        'TitleForm': false,
-        'PublisherForm': false,
-        'SourceForm': false,
-        'WorklistForm': false,
-        'AmbitusForm': false,
-        'RhythmPatternForm': false,
-        'SegmentationForm': false
-      },
       downloadIcon: "M19.99 6.21a4.49 4.49 0 0 0-8.82-.88A4.325 4.325 0 0 0 9.5 5a4.486 4.486 0 0 0-4.23 3.01A4.498 4.498 0 0 0 5.5 17H11v-5h1v9.086l-1.146-1.146-.707.707L12.5 23l2.353-2.353-.706-.707L13 21.085V17h5.5a5.497 5.497 0 0 0 1.49-10.79z",
     }
   },
@@ -275,43 +233,7 @@ export default {
         });
       }
     },
-    exportMEI() {
-      this.exportData = !this.exportData;
-    },
-    afterTrigger() {
-      let checker = arr => arr.every(v => v === true);
-
-      if (checker(Object.values(this.allFormsReadyToExport))) {
-
-        this.allFormsReadyToExport = {
-          'TitleForm': false,
-          'PublisherForm': false,
-          'SourceForm': false,
-          'WorklistForm': false,
-          'AmbitusForm': false,
-          'RhythmPatternForm': false,
-          'SegmentationForm': false
-        };
-
-        const a = document.createElement('a');
-        const docString = this.prettifyXml(new XMLSerializer().serializeToString(this.xmlDoc));
-
-        const blob = new Blob([docString], { type: 'application/xml' });
-        a.setAttribute('href', URL.createObjectURL(blob));
-
-        let filenameNode = this.getXpathNode(this.xmlDoc, './/mei:titleStmt//mei:title[@type="main"]');
-        if (!filenameNode.getAttribute('xml:id')) {
-          alert('ID is not set! Try setting it before downloading MEI file!')
-        }
-
-        a.setAttribute('download', filenameNode.getAttribute('xml:id') + '.mei');
-        a.click()
-        a.remove()
-
-        this.openSingleForms = false;
-      };
-    }
-  },
+  }
 };
 </script>
 

@@ -36,7 +36,7 @@
 <script type="module">
 import { Tooltip } from 'bootstrap';
 
-import Modal from './Modal.vue';
+import Modal from '../Modal.vue';
 
 export default {
     inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods'],

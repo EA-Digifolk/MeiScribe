@@ -60,8 +60,8 @@
 
 import { Tooltip } from 'bootstrap';
 
-import Modal from './Modal.vue';
-import MusicalScore from './MusicalScore.vue';
+import Modal from '../Modal.vue';
+import MusicalScore from '../MusicalScore.vue';
 
 export default {
     inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods', 'getAutomaticSegmentation'],

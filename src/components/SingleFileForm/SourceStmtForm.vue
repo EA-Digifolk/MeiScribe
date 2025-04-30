@@ -33,7 +33,7 @@
 </template>
 
 <script type="module">
-import Modal from './Modal.vue';
+import Modal from '../Modal.vue';
 import { Tooltip } from 'bootstrap';
 
 export default {
