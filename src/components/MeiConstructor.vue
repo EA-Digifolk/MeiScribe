@@ -73,8 +73,9 @@
             :data-bs-slide-to="item + 1" aria-label="Slide {{item+2}}"></button>
         </div>
 
-        <SingleFilesForm :xmlDoc="xmlDoc" :vT="verovioToolkit" v-if="openSingleForms === true" />
-        <MultipleFilesForm v-else-if="openMultiplesForm === true" />
+        <SingleFilesForm :xmlDoc="xmlDoc" :verovioToolkit="verovioToolkit" v-if="openSingleForms === true"
+          @download-finished="openSingleForms = false;" />
+        <!--<MultipleFilesForm v-else-if="openMultiplesForm === true" />-->
 
         <button class="carousel-control-prev" type="button" data-bs-target="#carouselForms" data-bs-slide="prev">
           <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -207,7 +208,6 @@ export default {
       return [MEIData, vT];
     },
     startProcess() {
-
       if (this.abcString !== '') {
         this.message = 'Loading ABC from abcString';
         this.verovioToolkit.loadData(this.abcString);

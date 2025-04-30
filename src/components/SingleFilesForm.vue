@@ -41,6 +41,7 @@ export default {
         Tooltip,
     },
     props: ['xmlDoc', 'verovioToolkit'],
+    emits: ["downloadFinished"],
     data() {
         return {
             exportData: false,
@@ -89,7 +90,8 @@ export default {
                 a.click()
                 a.remove()
 
-                this.openSingleForms = false;
+                //this.openSingleForms = false;
+                this.$emit("downloadFinished");
             };
         }
     },
