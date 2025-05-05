@@ -84,6 +84,3 @@ export const getAutomaticRhythmPattern = () => {
 
 };
 
-export const getAutomaticSegmentation = () => {
-
-};
