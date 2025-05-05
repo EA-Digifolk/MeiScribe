@@ -2,9 +2,9 @@
     <div class="card w-100">
         <div class="card-header">
             <h4 class="w-100">Ambitus, Rhythm Pattern and Segmentation Form</h4>
-            <button href="#" class="btn-save-mei btn btn-primary ml-1" @click="saveToMEI"
+            <!--<button href="#" class="btn-save-mei btn btn-primary ml-1" @click="saveToMEI"
                 title="Apply Information To MEI File" data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
-                data-bs-placement="bottom" data-bs-html="true">Apply To MEI</button>
+                data-bs-placement="bottom" data-bs-html="true">Apply To MEI</button>-->
         </div>
         <div class="card-body container">
             <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
@@ -90,7 +90,6 @@ export default {
                     { name: 'lowest', tag: './/mei:ambNote[@type="lowest"]', value: lowAmb, default: lowAmb },
                     { name: 'highest', tag: './/mei:ambNote[@type="highest"]', value: highAmb, default: highAmb },
                 ], 'ambitus');
-                console.log(this.getXpathNode(file['xmlDoc'], './/mei:ambitus'))
             });
         },
         calculateRhythmPattern() {
