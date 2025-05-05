@@ -80,7 +80,7 @@ export const getAutomaticMeterTempo = (meiTree) => {
     return [meter, tempo];
 };
 
-export const getAutomaticRhythmPattern = () => {
+export const getAutomaticRhythmPattern = (vT, meiTree) => {
 
 };
 
