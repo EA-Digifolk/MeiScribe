@@ -29,7 +29,11 @@
                                     title="Edit Information" data-bs-customClass="custom-tooltip"
                                     data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" />
                             </div>
-                            <div class="col col-sm-2 card-text" style="text-align: right">
+                            <button class="col col-sm-1 btn btn-primary p-0"
+                                title="Apply and Automatic Key and Mode Detection Algorithm"
+                                data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top"
+                                data-bs-html="true" @click="calculateModeKey">Auto K/M</button>
+                            <div class="col col-sm-1 card-text" style="text-align: right">
                                 <p class="card-text" :title="worklistData[2].tooltip"
                                     data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
                                     data-bs-placement="top" data-bs-html="true">{{ worklistData[2].on_display }}</p>
@@ -48,7 +52,6 @@
                                     data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" />
                             </div>
                         </div>
-
                         <div class="w-100 row" v-else-if="item.name === 'meter'">
                             <div class="col col-sm-2 card-text" style="text-align: right">
                                 <p class="card-text" :title="item.tooltip" data-bs-customClass="custom-tooltip"
@@ -66,7 +69,11 @@
                                     title="Edit Information" data-bs-customClass="custom-tooltip"
                                     data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true" />
                             </div>
-                            <div class="col col-sm-2 card-text" style="text-align: right">
+                            <button class="col col-sm-1 btn btn-primary p-0"
+                                title="Apply and Automatic Meter and Tempo Detection Algorithm"
+                                data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top"
+                                data-bs-html="true" @click="calculateMeterTempo">Auto M/T</button>
+                            <div class="col col-sm-1 card-text" style="text-align: right">
                                 <p class="card-text" :title="worklistData[4].tooltip"
                                     data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
                                     data-bs-placement="top" data-bs-html="true">{{ worklistData[4].on_display }}</p>
@@ -231,7 +238,7 @@ import { Tooltip } from 'bootstrap';
 import Modal from '../Modal.vue';
 
 export default {
-    inject: ['getXpathNode', 'prettifyXml', 'capitalizeFirstLetter', 'createNodesMethods', 'updateNodesMethods'],
+    inject: ['getXpathNode', 'prettifyXml', 'capitalizeFirstLetter', 'createNodesMethods', 'updateNodesMethods', 'getAutomaticModeKey', 'getAutomaticMeterTempo'],
     components: {
         Tooltip,
         Modal
@@ -277,6 +284,40 @@ export default {
         });
     },
     methods: {
+        calculateModeKey() {
+
+            this.worklistData[1]['select'] = false;
+            this.worklistData[2]['select'] = false;
+
+            this.MEIFiles.forEach((file) => {
+                let [key, mode, score] = this.getAutomaticModeKey(file['vT'], file['xmlDoc']);
+                if (!this.getXpathNode(file['xmlDoc'], './/mei:work')) {
+                    this.createNodesMethods(file['xmlDoc'], 'worklist');
+                };
+                this.updateNodesMethods(file['xmlDoc'], [
+                    { name: 'key', tag: './/mei:workList//mei:key', value: key, default: key },
+                    { name: 'mode', tag: './/mei:workList//mei:key', value: mode, default: mode },
+                ], 'worklist');
+            });
+
+        },
+        calculateMeterTempo() {
+
+            this.worklistData[3]['select'] = false;
+            this.worklistData[4]['select'] = false;
+
+            this.MEIFiles.forEach((file) => {
+                let [meter, tempo] = this.getAutomaticMeterTempo(file['xmlDoc']);
+                if (!this.getXpathNode(file['xmlDoc'], './/mei:work')) {
+                    this.createNodesMethods(file['xmlDoc'], 'worklist');
+                };
+                this.updateNodesMethods(file['xmlDoc'], [
+                    { name: 'meter', tag: './/mei:workList//mei:meter', value: meter, default: meter },
+                    { name: 'tempo', tag: './/mei:workList//mei:tempo', value: tempo, default: tempo },
+                ], 'worklist');
+            });
+
+        },
         saveToMEI(openModal = true) {
 
             this.MEIFiles.forEach((file) => {

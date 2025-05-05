@@ -7,7 +7,8 @@ import "bootstrap/dist/css/bootstrap.css";
 import SvgIcon from "vue3-icon";
 
 import { getXpathNode, createNodesMethods, updateNodesMethods } from './extra_methods/mei_methods.js';
-import { getAutomaticAmbitus, getAutomaticModeKey, getAutomaticRhythmPattern, getAutomaticSegmentation } from './extra_methods/automatic_functions.js';
+import { getAutomaticAmbitus, getAutomaticMeterTempo, getAutomaticRhythmPattern, getAutomaticSegmentation } from './extra_methods/automatic_functions.js';
+import { getAutomaticModeKey } from './extra_methods/key_mode_detection.js'
 
 const app = createApp(App)
 
@@ -45,9 +46,13 @@ app.provide('createNodesMethods', createNodesMethods);
 app.provide('updateNodesMethods', updateNodesMethods);
 
 app.provide('getAutomaticAmbitus', getAutomaticAmbitus);
-app.provide('getAutomaticModeKey', getAutomaticModeKey);
+
+app.provide('getAutomaticMeterTempo', getAutomaticMeterTempo);
 app.provide('getAutomaticRhythmPattern', getAutomaticRhythmPattern);
 app.provide('getAutomaticSegmentation', getAutomaticSegmentation);
+
+app.provide('getAutomaticModeKey', getAutomaticModeKey);
+
 
 app.provide(/* key */ 'message', /* value */ 'hello!')
 
