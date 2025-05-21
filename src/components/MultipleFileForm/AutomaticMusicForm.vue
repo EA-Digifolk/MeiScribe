@@ -1,7 +1,7 @@
 <template>
     <div class="card w-100">
         <div class="card-header">
-            <h4 class="w-100">Ambitus, Rhythm Pattern and Segmentation Form</h4>
+            <h4 class="w-100">Ambitus, Structural Patterns and Segmentation</h4>
             <!--<button href="#" class="btn-save-mei btn btn-primary ml-1" @click="saveToMEI"
                 title="Apply Information To MEI File" data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
                 data-bs-placement="bottom" data-bs-html="true">Apply To MEI</button>-->
@@ -52,6 +52,8 @@ export default {
         return {
             automaticInfoData: [
                 { name: 'ambitus', on_display: 'Ambitus', function: this.calculateAmbitus, tooltip: 'Calculates Lowest and Highest Notes of Score in midi pitch' },
+                { name: 'pitch pattern', on_display: 'Pitch Pattern', function: this.calculateRhythmPattern, tooltip: `<pre>Calculates the Rhythm Pattern string.\n rhythm_pattern (str): Rhythm Pattern\n- the string should contain the number of each note of the rhythm, i.e., 8 for 8th notes, 4 for quarter notes, etc.\n- each number should be separated by a space\n- if the notes should be beamed, they should be surrounded by brackets with a b just next to the first bracket, i.e., [b 8 8]\n- Example of a rhythm_pattern: '[b 8 8] 4 [b 8 16 16]'</pre>` },
+                { name: 'interval pattern', on_display: 'Intervall Pattern', function: this.calculateRhythmPattern, tooltip: `<pre>Calculates the Rhythm Pattern string.\n rhythm_pattern (str): Rhythm Pattern\n- the string should contain the number of each note of the rhythm, i.e., 8 for 8th notes, 4 for quarter notes, etc.\n- each number should be separated by a space\n- if the notes should be beamed, they should be surrounded by brackets with a b just next to the first bracket, i.e., [b 8 8]\n- Example of a rhythm_pattern: '[b 8 8] 4 [b 8 16 16]'</pre>` },
                 { name: 'rhythm pattern', on_display: 'Rhythm Pattern', function: this.calculateRhythmPattern, tooltip: `<pre>Calculates the Rhythm Pattern string.\n rhythm_pattern (str): Rhythm Pattern\n- the string should contain the number of each note of the rhythm, i.e., 8 for 8th notes, 4 for quarter notes, etc.\n- each number should be separated by a space\n- if the notes should be beamed, they should be surrounded by brackets with a b just next to the first bracket, i.e., [b 8 8]\n- Example of a rhythm_pattern: '[b 8 8] 4 [b 8 16 16]'</pre>` },
                 { name: 'phrases', on_display: 'Phrases', function: this.calculateSegmentation, tooltip: 'Calculates Segmentation of song (i.e., beginnings and endings for each phrase in a song).' },
             ],

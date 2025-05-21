@@ -1,15 +1,20 @@
 <template>
     <div class="card w-100">
         <div class="card-header">
-            <h4 class="w-100">Phrases and Segmentation</h4> <button href="#" class="btn-save-mei btn btn-primary ml-1"
+            <h4 class="w-100">Segmentation of Phrase Structure</h4> <button href="#" class="btn-save-mei btn btn-primary ml-1"
                 @click="saveToMEI" title="Apply Information To MEI File" data-bs-customClass="custom-tooltip"
                 data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true">Apply To MEI</button>
         </div>
         <div class="card-body container">
             <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
-                <div class="w-100" @click="cleanPaintSVG"><button class="mb-3" @click="addPhrase"
+                <div class="w-100" @click="cleanPaintSVG">
+                    <button class="mb-3 ml-3" @click="addPhrase"
                         title="Add a New Phrase" data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
-                        data-bs-placement="bottom" data-bs-html="true">Add</button></div>
+                        data-bs-placement="bottom" data-bs-html="true">Add</button>
+                    <button class="mb-3 btn-automatic" @click="addPhrase"
+                        title="Add a New Phrase" data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
+                        data-bs-placement="bottom" data-bs-html="true">Automatic Segmentation</button>
+                </div>
                 <div v-for="item in phraseSegmentData[0].value" class="row phrase-sel">
                     <div class="col col-xs-1" title="Number of the Phrase (min: 1)" data-bs-customClass="custom-tooltip"
                         data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true">N</div>
@@ -194,6 +199,11 @@ export default {
     margin: .1em .5em .1em 1.5em;
     padding: .2em;
     /*max-width: 5% !important;*/
+}
+
+.btn-automatic {
+    margin-left: 1em;
+    background-color: grey;
 }
 
 option:hover {
