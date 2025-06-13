@@ -98,7 +98,14 @@ const createNodesTitleStmt = (meiTree) => {
             } else {
                 node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'persName');
                 node.setAttribute('role', item.name);
-                getXpathNode(meiTree, './/mei:titleStmt//mei:respStmt').append(node);
+                try {
+                    getXpathNode(meiTree, './/mei:titleStmt//mei:respStmt').append(node);
+                } catch (error) {
+                    let nodeRespStmt = document.createElementNS('http://www.music-encoding.org/ns/mei', 'respStmt');
+                    nodeRespStmt.append(node);
+                    getXpathNode(meiTree, './/mei:titleStmt').append(nodeRespStmt);
+                }
+                
             }
         }
     });

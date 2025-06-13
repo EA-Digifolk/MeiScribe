@@ -26,7 +26,11 @@
                                         :value="k">{{ k }}</option>
                                 </select>
                             </div>
-                            <div class="col col-sm-2 card-text" style="text-align: right">
+                            <button class="col col-sm-1 btn btn-primary p-0"
+                                title="Apply and Automatic Key and Mode Detection Algorithm"
+                                data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top"
+                                data-bs-html="true" @click="calculateModeKey">Auto K/M</button>
+                            <div class="col col-sm-1 card-text" style="text-align: right">
                                 <p class="card-text" :title="worklistData[4].tooltip"
                                     data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
                                     data-bs-placement="top" data-bs-html="true">{{ worklistData[4].on_display }}</p>
@@ -41,7 +45,6 @@
                                 </datalist>
                             </div>
                         </div>
-
                         <div class="w-100 row" v-else-if="item.name === 'meter'">
                             <div class="col col-sm-2 card-text" style="text-align: right">
                                 <p class="card-text" :title="item.tooltip" data-bs-customClass="custom-tooltip"
@@ -56,7 +59,11 @@
                                         }}</option>
                                 </datalist>
                             </div>
-                            <div class="col col-sm-2 card-text" style="text-align: right">
+                            <button class="col col-sm-1 btn btn-primary p-0"
+                                title="Apply and Automatic Meter and Tempo Detection Algorithm"
+                                data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top"
+                                data-bs-html="true" @click="calculateMeterTempo">Auto M/T</button>
+                            <div class="col col-sm-1 card-text" style="text-align: right">
                                 <p class="card-text" :title="worklistData[6].tooltip"
                                     data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
                                     data-bs-placement="top" data-bs-html="true">{{ worklistData[6].on_display }}</p>
@@ -246,7 +253,7 @@ export default {
             let workListNode = this.getXpathNode(this.MEIData, './/mei:work');
 
             if (!workListNode) {
-                this.createNodesMethods(this.MEIData,'worklist');
+                this.createNodesMethods(this.MEIData, 'worklist');
             };
             this.updateNodesMethods(this.MEIData, this.worklistData, 'worklist');
 

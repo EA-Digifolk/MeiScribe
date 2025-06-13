@@ -74,9 +74,9 @@
 
         <SingleFilesForm :xmlDoc="xmlDoc" :verovioToolkit="verovioToolkit" :exportData="exportData"
           v-if="openSingleForms === true"
-          @download-finished="openSingleForms = false; verovioToolkit = ''; xmlDoc = '';" />
+          @download-finished="resetWindow()" />
         <MultipleFilesForm :MEIfiles="files" :exportData="exportData" v-else-if="openMultiplesForm === true"
-          @download-finished="openMultiplesForm = false; files = [];" />
+          @download-finished="resetWindow()" />
 
         <button class="carousel-control-prev" type="button" data-bs-target="#carouselForms" data-bs-slide="prev">
           <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -127,7 +127,7 @@ export default {
     Tooltip,
   },
   data() {
-    return initialState()
+    return initialState();
   },
   mounted() {
     this.startVerovio();
@@ -138,7 +138,7 @@ export default {
     }
   },
   methods: {
-    resetWindow: function (){
+    resetWindow() {
         Object.assign(this.$data, initialState());
         this.startVerovio();
     },
@@ -177,7 +177,7 @@ export default {
         const data = await response.text();
 
         let filenameS = this.urlFile.split('/');
-        this.files.append({ 'filename': filenameS[filenameS.length - 1], 'fileData': data, 'url': this.urlFile });
+        this.files.push({ 'filename': filenameS[filenameS.length - 1], 'fileData': data, 'url': this.urlFile });
       }
     },
     createALLMEICamps(meiTree) {
@@ -201,7 +201,7 @@ export default {
         vT.loadData(file["fileData"]);
         MEIData = vT.getMEI();
         this.message = '';
-      } else if (file["filename"].endsWith('.musicxml')) {
+      } else if (file["filename"].endsWith('.musicxml') || file["filename"].endsWith('.mxl')) {
         this.message = 'Loading MusicXML';
         vT.loadData(file["fileData"]);
         MEIData = vT.getMEI();

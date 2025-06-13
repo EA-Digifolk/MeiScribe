@@ -56,6 +56,9 @@ const props = defineProps({
 
 .modal-body {
   margin: 20px 0;
+  max-height: 80vh;
+  max-width: 90%;
+  overflow-y: scroll;
 }
 
 .modal-default-button {

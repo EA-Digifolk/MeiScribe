@@ -1,7 +1,7 @@
 <template>
     <div class="card w-100">
         <div class="card-header">
-            <h4 class="w-100">Rhythmic Patterns</h4> <button href="#" class="btn-save-mei btn btn-primary ml-1"
+            <h4 class="w-100">Structural Patterns</h4> <button href="#" class="btn-save-mei btn btn-primary ml-1"
                 @click="saveToMEI" title="Apply Information To MEI File" data-bs-customClass="custom-tooltip"
                 data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true">Apply To MEI</button>
         </div>
