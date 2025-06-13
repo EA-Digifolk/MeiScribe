@@ -198,7 +198,7 @@ import Modal from '../Modal.vue';
 import MusicalScore from '../MusicalScore.vue';
 
 export default {
-    inject: ['getXpathNode', 'prettifyXml', 'capitalizeFirstLetter', 'createNodesMethods', 'updateNodesMethods'],
+    inject: ['getXpathNode', 'prettifyXml', 'capitalizeFirstLetter', 'createNodesMethods', 'updateNodesMethods', 'getAutomaticModeKey', 'getAutomaticMeterTempo'],
     components: {
         MusicalScore,
         Tooltip,
@@ -212,10 +212,10 @@ export default {
                 { name: 'title', tag: './/mei:workList//mei:title', value: '', on_display: 'Title', default: '', tooltip: 'title of song' },
                 { name: 'author', tag: './/mei:workList//mei:author', value: '', on_display: 'Author', default: '', tooltip: 'author/informant of song' },
                 { name: 'lyrics', tag: './/mei:workList//mei:head', value: '', on_display: 'Lyrics', default: '', tooltip: 'complete lyrics of song' },
-                { name: 'key', tag: './/mei:workList//mei:key', value: '', on_display: 'Key', default: 'C', tooltip: 'key of song (e.g., C, E Flat)' },
-                { name: 'mode', tag: './/mei:workList//mei:key', value: '', on_display: 'Mode', default: 'Major', tooltip: 'mode of song (e.g., Major, Minor)' },
-                { name: 'meter', tag: './/mei:workList//mei:meter', value: '', on_display: 'Meter', default: 'Binary', tooltip: 'meter of song [enum: Binary, Ternary, Free, Polyrhythmic]' },
-                { name: 'tempo', tag: './/mei:workList//mei:tempo', value: '', on_display: 'Tempo', default: '', tooltip: 'tempo indication of song (e.g., Allegro)' },
+                { name: 'key', tag: './/mei:workList//mei:key', value: '', on_display: 'Key', default: 'C', automatic: false, tooltip: 'key of song (e.g., C, E Flat)' },
+                { name: 'mode', tag: './/mei:workList//mei:key', value: '', on_display: 'Mode', default: 'Major', automatic: false, tooltip: 'mode of song (e.g., Major, Minor)' },
+                { name: 'meter', tag: './/mei:workList//mei:meter', value: '', on_display: 'Meter', default: 'Binary', automatic: false, tooltip: 'meter of song [enum: Binary, Ternary, Free, Polyrhythmic]' },
+                { name: 'tempo', tag: './/mei:workList//mei:tempo', value: '', on_display: 'Tempo', default: '', automatic: false, tooltip: 'tempo indication of song (e.g., Allegro)' },
                 { name: 'language', tag: './/mei:workList//mei:langUsage//mei:language', value: '', on_display: 'Language', default: 'en', tooltip: 'language of lyrics' },
                 { name: 'notes', tag: './/mei:workList//mei:annot', value: '', on_display: 'Notes', default: '', tooltip: 'optional annotations' },
                 { name: 'genre', tag: './/mei:workList//mei:term[@type="genre"]', value: '', on_display: 'Genre', default: 'Dance', tooltip: 'genre of song (e.g., Children Song, Work Song, Dance, Lullaby)' },
@@ -249,6 +249,28 @@ export default {
         });
     },
     methods: {
+        calculateModeKey() {
+            let [key, mode, score] = this.getAutomaticModeKey(this.vT, this.MEIData);
+
+            this.worklistData[3].value = 'G'; //key; 
+            this.worklistData[3].default = 'G'; //key; 
+            this.worklistData[3].automatic = true;
+
+            this.worklistData[4].value = 'Mixolydian'; //mode;
+            this.worklistData[4].default = 'Mixolydian'; //mode;
+            this.worklistData[4].automatic = true;
+        },
+        calculateMeterTempo() {
+            let [meter, tempo] = this.getAutomaticMeterTempo(this.MEIData);
+
+            this.worklistData[5].value = meter;
+            this.worklistData[5].default = meter;
+            this.worklistData[5].automatic = true;
+
+            this.worklistData[6].value = "Lento";//tempo;
+            this.worklistData[6].default = "Lento";//tempo;
+            this.worklistData[6].automatic = true;
+        },
         saveToMEI(openModal = true) {
             let workListNode = this.getXpathNode(this.MEIData, './/mei:work');
 

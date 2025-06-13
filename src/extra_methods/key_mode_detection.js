@@ -15,6 +15,11 @@ const MODE_TEMPLATES = {
     'Locrian': [0.15153131, 0.1875475, 0.132124, 0.02308868, 0.12832829, 0.05823564, 0.00357143, 0.02197802, 0.12250054, 0.12517042, 0.03309778, 0.01282639],
 };
 
+const KRUM_TEMPLATES = {
+    'Major': [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88],
+    'Minor': [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17]
+};
+
 const rotateArray = (arr, n) => {
     return arr.slice(n).concat(arr.slice(0, n));
 };
@@ -72,7 +77,7 @@ const findBestMode = (pitchClassDistribution) => {
     pitchClassDistribution = normalize(pitchClassDistribution).map((item) => prettyRound(item, 8));
     let bestMatch = { root: null, mode: null, score: -Infinity };
 
-    for (const [mode, profile] of Object.entries(MODE_TEMPLATES)) {
+    for (const [mode, profile] of Object.entries(KRUM_TEMPLATES)) {
         for (let root = 0; root < 12; root++) {
             const rotatedProfile = rotateArray(profile, root);
             const score = pearsonCorrelation(pitchClassDistribution, rotatedProfile);
