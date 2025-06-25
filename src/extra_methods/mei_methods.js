@@ -418,6 +418,9 @@ const updateNodesWorklist = (meiTree, data) => {
             } else if (item.name == 'mode') {
                 node.setAttribute('mode', item.value.replace(/\s+/g, ' ').trim());
                 node.setAttribute('automatic', item.automatic);
+                if (item.automatic) {
+                    node.setAttribute('confidence', item.confidence);
+                }
             } else if (item.name == 'language') {
                 node.setAttribute('xml:lang', item.value.replace(/\s+/g, ' ').trim());
             } else if (item.name === 'lyrics' || item.name === 'notes') {

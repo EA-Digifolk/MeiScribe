@@ -10,8 +10,8 @@
             @save-finished="allFormsReadyToExport['WorklistForm'] = true; afterTrigger();" />
         <AmbitusForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
             @save-finished="allFormsReadyToExport['AmbitusForm'] = true; afterTrigger();" />
-        <RhythmPatternForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
-            @save-finished="allFormsReadyToExport['RhythmPatternForm'] = true; afterTrigger();" />
+        <StructuralPatternsForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
+            @save-finished="allFormsReadyToExport['StructuralPatternsForm'] = true; afterTrigger();" />
         <PhraseForm class="carousel-item" :MEIData="xmlDoc" :vT="verovioToolkit" :export="exportData"
             @save-finished="allFormsReadyToExport['SegmentationForm'] = true; afterTrigger();" />
     </div>
@@ -23,7 +23,7 @@ import { Tooltip } from 'bootstrap';
 import AmbitusForm from './SingleFileForm/AmbitusForm.vue';
 import PhraseForm from './SingleFileForm/PhraseForm.vue';
 import PublisherForm from './SingleFileForm/PublisherForm.vue';
-import RhythmPatternForm from './SingleFileForm/RhythmPatternForm.vue';
+import StructuralPatternsForm from './SingleFileForm/StructuralPatternsForm.vue';
 import SourceStmtForm from './SingleFileForm/SourceStmtForm.vue';
 import TitleStmtForm from './SingleFileForm/TitleStmtForm.vue';
 import WorklistForm from './SingleFileForm/WorklistForm.vue';
@@ -36,7 +36,7 @@ export default {
         PublisherForm,
         WorklistForm,
         AmbitusForm,
-        RhythmPatternForm,
+        StructuralPatternsForm,
         PhraseForm,
         Tooltip,
     },
@@ -50,7 +50,7 @@ export default {
                 'SourceForm': false,
                 'WorklistForm': false,
                 'AmbitusForm': false,
-                'RhythmPatternForm': false,
+                'StructuralPatternsForm': false,
                 'SegmentationForm': false
             },
         };
@@ -67,7 +67,7 @@ export default {
                     'SourceForm': false,
                     'WorklistForm': false,
                     'AmbitusForm': false,
-                    'RhythmPatternForm': false,
+                    'StructuralPatternsForm': false,
                     'SegmentationForm': false
                 };
 

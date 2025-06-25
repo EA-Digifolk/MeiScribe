@@ -255,10 +255,12 @@ export default {
             this.worklistData[3].value = 'G'; //key; 
             this.worklistData[3].default = 'G'; //key; 
             this.worklistData[3].automatic = true;
+            this.worklistData[3].confidence = '80%';
 
             this.worklistData[4].value = 'Mixolydian'; //mode;
             this.worklistData[4].default = 'Mixolydian'; //mode;
             this.worklistData[4].automatic = true;
+            this.worklistData[4].confidence = '80%';
         },
         calculateMeterTempo() {
             let [meter, tempo] = this.getAutomaticMeterTempo(this.MEIData);
