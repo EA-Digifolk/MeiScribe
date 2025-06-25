@@ -80,7 +80,44 @@ export const getAutomaticMeterTempo = (meiTree) => {
     return [meter, tempo];
 };
 
-export const getAutomaticRhythmPattern = (vT, meiTree) => {
+/**
+ * Get Structural Patterns - Pitch Pattern
+ * @param {*} vT 
+ * @param {*} meiTree 
+ */
+export const getAutomaticStructuralPattern_P = (vT) => {
+    let midiPitches = vT.getDescriptiveFeatures()['pitchesIds'].map((element, _) => {
+        return vT.getMIDIValuesForElement(element[0])['pitch'];
+    });
+
+    // Initialize histogram with 12 bins (for 12 pitch classes)
+    let histogram = Array(12).fill(0);
+
+    // Count occurrences
+    midiPitches.forEach((element,_) => {
+        histogram[element % 12]++;
+    });
+
+    return histogram;
+};
+
+/**
+ * Get Structural Patterns - Interval Pattern
+ * @param {*} vT 
+ * @param {*} meiTree 
+ */
+export const getAutomaticStructuralPattern_I = (vT, meiTree) => {
 
 };
+
+/**
+ * Get Structural Patterns - Rhythm Pattern
+ * @param {*} vT 
+ * @param {*} meiTree 
+ */
+export const getAutomaticStructuralPattern_R = (vT, meiTree) => {
+
+};
+
+
 

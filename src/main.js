@@ -7,7 +7,7 @@ import "bootstrap/dist/css/bootstrap.css";
 import SvgIcon from "vue3-icon";
 
 import { getXpathNode, createNodesMethods, updateNodesMethods } from './extra_methods/mei_methods.js';
-import { getAutomaticAmbitus, getAutomaticMeterTempo, getAutomaticRhythmPattern,  } from './extra_methods/automatic_functions.js';
+import { getAutomaticAmbitus, getAutomaticMeterTempo, getAutomaticStructuralPattern_P, getAutomaticStructuralPattern_I, getAutomaticStructuralPattern_R  } from './extra_methods/automatic_functions.js';
 import { getAutomaticModeKey } from './extra_methods/key_mode_detection.js'
 import { getAutomaticSegmentation } from './extra_methods/segmentation_detection.js'
 
@@ -49,7 +49,10 @@ app.provide('updateNodesMethods', updateNodesMethods);
 app.provide('getAutomaticAmbitus', getAutomaticAmbitus);
 
 app.provide('getAutomaticMeterTempo', getAutomaticMeterTempo);
-app.provide('getAutomaticRhythmPattern', getAutomaticRhythmPattern);
+
+app.provide('getAutomaticStructuralPattern_P', getAutomaticStructuralPattern_P);
+app.provide('getAutomaticStructuralPattern_I', getAutomaticStructuralPattern_I);
+app.provide('getAutomaticStructuralPattern_R', getAutomaticStructuralPattern_R);
 
 app.provide('getAutomaticModeKey', getAutomaticModeKey);
 app.provide('getAutomaticSegmentation', getAutomaticSegmentation);

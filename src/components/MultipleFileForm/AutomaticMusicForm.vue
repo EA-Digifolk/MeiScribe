@@ -41,7 +41,7 @@ import Modal from '../Modal.vue';
 import { Tooltip } from 'bootstrap';
 
 export default {
-    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods', 'getAutomaticAmbitus', 'getAutomaticRhythmPattern', 'getAutomaticSegmentation'],
+    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods', 'getAutomaticAmbitus', 'getAutomaticStructuralPattern_R', 'getAutomaticSegmentation'],
     components: {
         Tooltip,
         Modal
@@ -97,7 +97,7 @@ export default {
         calculateRhythmPattern() {
             console.log('RHYTHM');
             this.MEIFiles.forEach((file) => {
-                this.getAutomaticRhythmPattern(file['vT'], file['xmlDoc']);
+                this.getAutomaticStructuralPattern_R(file['vT'], file['xmlDoc']);
             });
         },
         calculateSegmentation() {
