@@ -106,8 +106,24 @@ export const getAutomaticStructuralPattern_P = (vT) => {
  * @param {*} vT 
  * @param {*} meiTree 
  */
-export const getAutomaticStructuralPattern_I = (vT, meiTree) => {
+export const getAutomaticStructuralPattern_I = (vT) => {
+    let midiPitches = vT.getDescriptiveFeatures()['pitchesIds'].map((element, _) => {
+        return vT.getMIDIValuesForElement(element[0])['pitch'];
+    });
 
+    let intervals = [];
+    for (let i = 1; i < midiPitches.length; i++) {
+        intervals.push(midiPitches[i] - midiPitches[i - 1]);
+    }
+
+    let histogram = Array(25).fill(0);
+
+    intervals.forEach((element,_) => {
+        console.log(element, element % 13 + 12)
+        histogram[element % 13 + 12]++;
+    });
+
+    return histogram;
 };
 
 /**
@@ -115,7 +131,7 @@ export const getAutomaticStructuralPattern_I = (vT, meiTree) => {
  * @param {*} vT 
  * @param {*} meiTree 
  */
-export const getAutomaticStructuralPattern_R = (vT, meiTree) => {
+export const getAutomaticStructuralPattern_R = (vT) => {
 
 };
 

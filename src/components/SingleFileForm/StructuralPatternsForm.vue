@@ -13,11 +13,24 @@
                             data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">{{ item.on_display }}
                         </p>
                     </div>
-                    <div class="col col-sm-10 card-text"> 
-                        <div v-if="item.name == 'pitch pattern'" class="w-100 p-1 row mb-1">
-                            <div v-for="pc in item.value" class="col col-sm-1">{{pc}}</div>
+                    <div class="col col-sm-10 card-text p-0 m-0">
+                        <div v-if="item.name == 'pitch pattern'" class="row p-1 mb-1">
+                            <div v-for="[key, pc] in Object.entries(item.value)" class="col col-sm-1">
+                                <div class="row p-0 label-input-histogram">
+                                    <label class="col-sm-5 p-0" :for="'pc-' + key">{{ key }}</label>
+                                    <input class="col-sm-7 p-0" type="number" :value="pc" :name="'pc-' + key"/>
+                                </div>
+                            </div>
                         </div>
-                        <input v-else class="w-100 p-1" type="text" :value="item.value" :placeholder="item.default" /> 
+                        <div v-else-if="item.name == 'interval pattern'" class="row p-1 mb-1">
+                            <div v-for="[key, pc] in Object.entries(item.value)" class="col col-sm-1">
+                                <div class="row p-0 label-input-histogram">
+                                    <label class="col-sm-5 p-0" :for="'pc-' + key">{{ key-12 }}</label>
+                                    <input class="col-sm-7 p-0" type="number" :value="pc" :name="'pc-' + key"/>
+                                </div>
+                            </div>
+                        </div>
+                        <input v-else class="w-100 p-1" type="text" :value="item.value" :placeholder="item.default" />
                     </div>
                 </li>
                 <div class="row" id="pattern-canvas"></div>
@@ -47,7 +60,7 @@ import { Tooltip } from 'bootstrap';
 import * as music21 from 'music21j';
 
 export default {
-    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods', 'getAutomaticStructuralPattern_P', 'getAutomaticStructuralPattern_I', 'getAutomaticStructuralPattern_R', ],
+    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods', 'getAutomaticStructuralPattern_P', 'getAutomaticStructuralPattern_I', 'getAutomaticStructuralPattern_R',],
     components: {
         Tooltip,
         Modal,
@@ -107,7 +120,8 @@ export default {
                 if (node) {
                 } else {
                     this.structuralPatternsData[0].value = this.getAutomaticStructuralPattern_P(this.vT);
-                    //this.getAutomaticStructuralPattern_R()
+                    this.structuralPatternsData[1].value = this.getAutomaticStructuralPattern_I(this.vT);
+                    this.structuralPatternsData[2].value = this.getAutomaticStructuralPattern_R(this.vT);
                 }
             });
         }
@@ -129,5 +143,13 @@ export default {
 
 .logo.vue:hover {
     filter: drop-shadow(0 0 2em #42b883aa);
+}
+
+.label-input-histogram {
+    background-color: gray;
+}
+
+.label-input-histogram > input {
+    border-radius: 0;
 }
 </style>
