@@ -132,7 +132,7 @@ export const getAutomaticStructuralPattern_I = (vT) => {
  * @param {*} meiTree 
  */
 export const getAutomaticStructuralPattern_R = (vT) => {
-
+    
 };
 
 

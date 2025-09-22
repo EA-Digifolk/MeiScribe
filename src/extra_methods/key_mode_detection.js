@@ -144,7 +144,7 @@ export const getAutomaticModeKey = (vT, xmlDoc) => {
     let signature = getXpathNode(xmlDoc, './/mei:keySig').getAttribute('sig');
     let root = getRootFromSignature(signature);
     let pcHistogram = getPitchClassDistribution(midiPitches);
-    //pcHistogram[midiPitches[midiPitches.length - 1]%12] += (pcHistogram.reduce((a, b) => a + b) / pcHistogram.length);
+    pcHistogram[midiPitches[midiPitches.length - 1]%12] += (pcHistogram.reduce((a, b) => a + b) / pcHistogram.length);
 
     let [best_find, all_matches] = findBestMode_root(pcHistogram, root);
     let note_root = pitchClassToNoteSharp[best_find.root];
@@ -152,6 +152,8 @@ export const getAutomaticModeKey = (vT, xmlDoc) => {
     if (signature && signature != 0 && signature.endsWith('f')) {
         note_root = pitchClassToNoteFlat[best_find.root];
     };
+
+    console.log(all_matches);
 
     return [note_root, best_find.mode, best_find.score];
 };

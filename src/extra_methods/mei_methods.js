@@ -53,7 +53,9 @@ const MEICAMPS = {
         { name: 'lowest', tag: './/mei:ambNote[@type="lowest"]' },
         { name: 'highest', tag: './/mei:ambNote[@type="highest"]' },
     ],
-    'rhythmPattern': [
+    'structuralPatterns': [
+        { name: 'melodic pattern', tag: './/mei:supplied[@type="melodic pattern"]' },
+        { name: 'interval pattern', tag: './/mei:supplied[@type="interval pattern"]' },
         { name: 'rhythm pattern', tag: './/mei:supplied[@type="rhythm pattern"]' },
     ],
     'segmentation': [
@@ -105,7 +107,7 @@ const createNodesTitleStmt = (meiTree) => {
                     nodeRespStmt.append(node);
                     getXpathNode(meiTree, './/mei:titleStmt').append(nodeRespStmt);
                 }
-                
+
             }
         }
     });
@@ -282,11 +284,11 @@ const createNodesAmbitus = (meiTree) => {
 };
 
 /**
- * Create Nodes for Rhythm Pattern
+ * Create Nodes for Structural Patterns
  * @param {*} meiTree 
  * @returns 
  */
-const createNodesRhythm = (meiTree) => {
+const createNodesPatterns = (meiTree) => {
     let rhythmPNode = getXpathNode(meiTree, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]');
     if (!rhythmPNode) {
         rhythmPNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'supplied');
@@ -330,7 +332,7 @@ export const createNodesMethods = (meiTree, info = 'titleStmt') => {
         case 'sourceStmt': return createNodesSourceStmt(meiTree);
         case 'worklist': return createNodesWorklist(meiTree);
         case 'ambitus': return createNodesAmbitus(meiTree);
-        case 'rhythmPattern': return createNodesRhythm(meiTree);
+        case 'structuralPattern': return createNodesPatterns(meiTree);
         case 'segmentation': return createNodesSegmentation(meiTree);
     }
 };
@@ -459,12 +461,12 @@ const updateNodesAmbitus = (meiTree, data) => {
 };
 
 /**
- * Update Rhythm Pattern with data
+ * Update Structural Patterns with data
  * @param {*} meiTree 
  * @param {*} data 
  * @returns 
  */
-const updateNodesRhythm = (meiTree, data) => {
+const updateNodesPatterns = (meiTree, data) => {
 
     let rhythmPNode = getXpathNode(meiTree, data[0].tag);
     if (!rhythmPNode) {
@@ -473,7 +475,7 @@ const updateNodesRhythm = (meiTree, data) => {
 
     if (rhythmPNode && rhythmPNode.children.length > 0) {
         rhythmPNode.replaceChildren();
-    } 
+    }
 
     let pattern = data[0].value.split(']');
     for (let i in pattern) {
@@ -549,7 +551,7 @@ export const updateNodesMethods = (meiTree, data, info = 'titleStmt') => {
         case 'sourceStmt': return updateNodesSourceStmt(meiTree, data);
         case 'worklist': return updateNodesWorklist(meiTree, data);
         case 'ambitus': return updateNodesAmbitus(meiTree, data);
-        case 'rhythmPattern': return updateNodesRhythm(meiTree, data);
+        case 'structuralPattern': return updateNodesPatterns(meiTree, data);
         case 'segmentation': return updateNodesSegmentation(meiTree, data);
     }
 };
