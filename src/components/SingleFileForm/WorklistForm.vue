@@ -270,15 +270,15 @@ export default {
         calculateModeKey() {
             let [key, mode, score] = this.getAutomaticModeKey(this.vT, this.MEIData);
 
-            this.worklistData[3].value = 'G'; //key; 
-            this.worklistData[3].default = 'G'; //key; 
+            this.worklistData[3].value = key; 
+            this.worklistData[3].default = key; 
             this.worklistData[3].automatic = true;
-            this.worklistData[3].confidence = '80%';
+            this.worklistData[3].confidence = score;
 
-            this.worklistData[4].value = 'Mixolydian'; //mode;
-            this.worklistData[4].default = 'Mixolydian'; //mode;
+            this.worklistData[4].value = mode;
+            this.worklistData[4].default = mode;
             this.worklistData[4].automatic = true;
-            this.worklistData[4].confidence = '80%';
+            this.worklistData[4].confidence = score;
         },
         calculateMeterTempo() {
             let [meter, tempo] = this.getAutomaticMeterTempo(this.MEIData);
@@ -323,7 +323,7 @@ export default {
                         if (lang) {
                             item.value = lang.replace(/\s+/g, ' ').trim();
                         }
-                    } else if (item.name === 'lyrics' || item.name === 'notes') {
+                    } else if (item.name === 'lyrics' || item.name === 'notes' || item.name === 'key') {
                         item.value = node.textContent;
                     } else {
                         item.value = this.capitalizeFirstLetter(node.textContent).replace(/\s+/g, ' ').trim();

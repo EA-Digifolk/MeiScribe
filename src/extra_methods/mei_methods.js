@@ -423,7 +423,7 @@ const updateNodesWorklist = (meiTree, data) => {
                 }
             } else if (item.name == 'language') {
                 node.setAttribute('xml:lang', item.value.replace(/\s+/g, ' ').trim());
-            } else if (item.name === 'lyrics' || item.name === 'notes') {
+            } else if (item.name === 'lyrics' || item.name === 'notes' || item.name === 'key') {
                 node.textContent = item.value;
             } else {
                 node.textContent = item.value.replace(/\s+/g, ' ').trim();
@@ -467,9 +467,13 @@ const updateNodesAmbitus = (meiTree, data) => {
 const updateNodesRhythm = (meiTree, data) => {
 
     let rhythmPNode = getXpathNode(meiTree, data[0].tag);
-    if (rhythmPNode.children.length > 0) {
+    if (!rhythmPNode) {
+        return meiTree;
+    }
+
+    if (rhythmPNode && rhythmPNode.children.length > 0) {
         rhythmPNode.replaceChildren();
-    };
+    } 
 
     let pattern = data[0].value.split(']');
     for (let i in pattern) {
