@@ -91,6 +91,22 @@ const findBestMode = (pitchClassDistribution) => {
 };
 
 
+const findBestMode_root = (pitchClassDistribution, root = 0) => {
+    pitchClassDistribution = normalize(pitchClassDistribution).map((item) => prettyRound(item, 8));
+
+    const modeRotations = [0, 2, 4, 5, 7, 9, 11, 0, 9];
+    let matches = Object.entries({...MODE_TEMPLATES, ...KRUM_TEMPLATES}).map((item, index) => {
+        const [mode, profile] = item;
+        const rotatedProfile = rotateArray(profile, root+modeRotations[index]);
+        const score = pearsonCorrelation(pitchClassDistribution, rotatedProfile);
+        return { 'root':(root+modeRotations[index])%12, 'mode':mode, 'score':score }
+    });
+    
+    matches = matches.sort((a,b) => b.score - a.score);
+    console.log(matches);
+
+    return matches[0], matches; // { root: 0–11, mode: 'dorian', score: 0.85 }
+};
 
 
 /**
@@ -112,7 +128,7 @@ const getPitchClassDistribution = (midiPitches) => {
  * @param {*} low 
  * @returns 
  */
-export const getAutomaticModeKey = (vT, xmlDoc) => {
+export const getAutomaticModeKey_Krum = (vT, xmlDoc) => {
 
     let midiPitches = vT.getDescriptiveFeatures()['pitchesIds'].map((element, _) => {
         return vT.getMIDIValuesForElement(element[0])['pitch'];
@@ -126,5 +142,65 @@ export const getAutomaticModeKey = (vT, xmlDoc) => {
         note_root = pitchClassToNoteFlat[best_find.root];
     };
 
+    return [note_root, best_find.mode, best_find.score];
+};
+
+
+/**
+ * @param {*} signature
+ * @returns corresponding major root note from signature
+ * 0 - C; 1 - C#/Db; 2 - D; 3 - Eb; 4 - E; 5 - F; 6 - F#;Gb; 7 - G; 8 - Ab; 9 - A; 10 - Bb; 11 - B/Cb;
+ */
+const getRootFromSignature = (signature) => {
+
+    switch (signature) {
+        case '1f':
+            return 5; break;
+        case '2f':
+            return 10; break;
+        case '3f':
+            return 3; break;
+        case '4f':
+            return 8; break;
+        case '5f':
+        case '7s':
+            return 1; break;
+        case '6f':
+        case '6s':
+            return 6; break;
+        case '7f':
+        case '5s':
+            return 11; break;
+        case '4s':
+            return 4; break;
+        case '3s':
+            return 9; break;
+        case '2s':
+            return 2; break;
+        case '1s':
+            return 7; break;
+        default:
+            return 0; break;
+    }
+}
+
+export const getAutomaticModeKey = (vT, xmlDoc) => {
+
+    let midiPitches = vT.getDescriptiveFeatures()['pitchesIds'].map((element, _) => {
+        return vT.getMIDIValuesForElement(element[0])['pitch'];
+    });
+
+    
+    let signature = getXpathNode(xmlDoc, './/mei:keySig').getAttribute('sig');
+    let root = getRootFromSignature(signature);
+    let pcHistogram = getPitchClassDistribution(midiPitches);
+    let best_find, all_matches = findBestMode_root(pcHistogram, root);
+    let note_root = pitchClassToNoteSharp[best_find.root];
+
+    if (signature && signature != 0 && signature.endsWith('f')) {
+        note_root = pitchClassToNoteFlat[best_find.root];
+    };
+
+    console.log([note_root, best_find.mode, best_find.score]);
     return [note_root, best_find.mode, best_find.score];
 };
