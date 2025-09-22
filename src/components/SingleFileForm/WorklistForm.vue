@@ -110,7 +110,7 @@
                             </div>
                             <div class="col col-sm-4 card-text">
                                 <input class="w-100" type="text" list="countryList" v-model="item.value"
-                                    :placeholder="item.default" />
+                                    :placeholder="item.default" @change="setDefaultLanguage"/>
                                 <datalist id="countryList">
                                     <option
                                         v-for="k in ['Brazil', 'Colombia', 'Ireland', 'Mexico', 'Portugal', 'Spain',]"
@@ -249,6 +249,24 @@ export default {
         });
     },
     methods: {
+        setDefaultLanguage(event) {
+            switch(event.target.value){
+                case 'Portugal':
+                    this.worklistData[7].value = 'pt';
+                    break;
+                case 'Colombia':
+                case 'Mexico':
+                case 'Spain':
+                    this.worklistData[7].value = 'es';
+                    break;
+                case 'Italy':
+                    this.worklistData[7].value = 'it';
+                    break;
+                default:
+                    this.worklistData[7].value = 'en';
+                    break;
+            }
+        },
         calculateModeKey() {
             let [key, mode, score] = this.getAutomaticModeKey(this.vT, this.MEIData);
 

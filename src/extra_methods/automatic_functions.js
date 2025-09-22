@@ -119,7 +119,7 @@ export const getAutomaticStructuralPattern_I = (vT) => {
     let histogram = Array(25).fill(0);
 
     intervals.forEach((element,_) => {
-        console.log(element, element % 13 + 12)
+        //console.log(element, element % 13 + 12)
         histogram[element % 13 + 12]++;
     });
 
