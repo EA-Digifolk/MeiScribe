@@ -22,7 +22,7 @@
                     v-for="item in structuralPatternsData">
                     <div class="row justify-content-center align-items-center mb-1 pt-2">
                         <div class="col col-sm-11">{{ item.on_display }}</div>
-                        <button class="col col-sm-1">AUTO</button>
+                        <button class="col col-sm-1" @click="calculateAutomatic(item.on_display)">AUTO</button>
                     </div>
                     <div v-if="item.name == 'pitch pattern'" class="row row-cols-12 p-1 mb-1">
                         <div v-for="[key, pc] in Object.entries(item.value)" class="col col-sm-1">
@@ -140,6 +140,21 @@ export default {
                     this.numberNotes = this.structuralPatternsData[0].value.reduce((partialSum, a) => partialSum + a, 0);
                 }
             });
+        },
+        calculateAutomatic(pattern) {
+            switch(pattern) {
+                case 'Pitch Pattern': 
+                    this.structuralPatternsData[0].value = this.getAutomaticStructuralPattern_P(this.vT);
+                    break;
+                case 'Intervallic Pattern':
+                    this.structuralPatternsData[1].value = this.getAutomaticStructuralPattern_I(this.vT);
+                    break;
+                case 'Rhythm Pattern':
+                default:
+                    this.structuralPatternsData[2].value = this.getAutomaticStructuralPattern_R(this.vT);
+                    break;
+            }
+            this.numberNotes = this.structuralPatternsData[0].value.reduce((partialSum, a) => partialSum + a, 0);      
         }
     },
 };
