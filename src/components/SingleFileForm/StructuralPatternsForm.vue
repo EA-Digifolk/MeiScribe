@@ -20,24 +20,30 @@
             <div id="pattern-editor-forms" class="row mb-3">
                 <div class="card card-body col col-sm-12 p-4 pt-0 pb-0" v-show="item.show_colapsible"
                     v-for="item in structuralPatternsData">
-                    <div class="row justify-content-center mb-1 pt-2">{{ item.on_display }}</div>
+                    <div class="row justify-content-center align-items-center mb-1 pt-2">
+                        <div class="col col-sm-11">{{ item.on_display }}</div>
+                        <button class="col col-sm-1">AUTO</button>
+                    </div>
                     <div v-if="item.name == 'pitch pattern'" class="row row-cols-12 p-1 mb-1">
                         <div v-for="[key, pc] in Object.entries(item.value)" class="col col-sm-1">
-                            <vue3-slider class="row p-0" color="#FFBF65" track-color="#0065A2" orientation="vertical" :name="'pc-' + key"
-                                v-model="item.value[key]" width="5em" height="2em" :max="numberNotes"/>
+                            <vue3-slider class="row p-0" color="#FFBF65" track-color="#0065A2" orientation="vertical"
+                                :name="'pc-' + key" v-model="item.value[key]" width="5em" height="2em"
+                                :max="numberNotes" />
                             <em class="row p-0 label-input-histogram"><small :for="'pc-' + key">{{ pc }}</small></em>
                             <strong class="row p-0"><small :for="'pc-' + key">{{ key }}</small></strong>
                         </div>
                     </div>
                     <div v-else-if="item.name == 'interval pattern'" class="row p-1 mb-1">
                         <div v-for="[key, pc] in Object.entries(item.value)" class="col col-25 ">
-                            <vue3-slider class="row p-0" color="#FFBF65" track-color="#0065A2" orientation="vertical" :name="'pc-' + key"
-                                v-model="item.value[key]" width="5em" :max="numberNotes"/>
+                            <vue3-slider class="row p-0" color="#FFBF65" track-color="#0065A2" orientation="vertical"
+                                :name="'pc-' + key" v-model="item.value[key]" width="5em" :max="numberNotes" />
                             <em class="row p-0 label-input-histogram"><small :for="'pc-' + key">{{ pc }}</small></em>
                             <strong class="row p-0"><small :for="'pc-' + key">{{ key - 12 }}</small></strong>
                         </div>
                     </div>
-                    <input v-else class="w-100 p-1" type="text" :value="item.value" :placeholder="item.default" />
+                    <div v-else class="row p-1 mb-1">
+                        TODO
+                    </div>
                 </div>
             </div>
         </div>
