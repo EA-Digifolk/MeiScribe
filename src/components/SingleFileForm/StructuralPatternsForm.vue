@@ -6,34 +6,39 @@
                 data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true">Apply To MEI</button>
         </div>
         <div class="card-body container">
-            <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
-                <li class="row mb-1" v-for="item in structuralPatternsData">
-                    <div class="col col-sm-2 card-text" style="text-align: right">
-                        <p class="card-text" :title="item.tooltip" data-bs-customClass="custom-tooltip"
-                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">{{ item.on_display }}
+            <div id="buttons-open-forms" class="row mb-3">
+                <div class="col col-sm-3 card-text card card-body m-1" v-for="item in structuralPatternsData">
+                    <div class="row align-items-center p-1">
+                        <p class="col col-sm-7 mb-0" :title="item.tooltip" data-bs-customClass="custom-tooltip"
+                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">{{ item.on_display
+                            }}
                         </p>
+                        <button class="col col-sm-5" @click="item.show_colapsible = !item.show_colapsible">OPEN</button>
                     </div>
-                    <div class="col col-sm-10 card-text p-0 m-0">
-                        <div v-if="item.name == 'pitch pattern'" class="row p-1 mb-1">
-                            <div v-for="[key, pc] in Object.entries(item.value)" class="col col-sm-1">
-                                <div class="row p-0 label-input-histogram">
-                                    <label class="col-sm-5 p-0" :for="'pc-' + key">{{ key }}</label>
-                                    <input class="col-sm-7 p-0" type="number" :value="pc" :name="'pc-' + key"/>
-                                </div>
-                            </div>
+                </div>
+            </div>
+            <div id="pattern-editor-forms" class="row mb-3">
+                <div class="card card-body col col-sm-12 p-4 pt-0 pb-0" v-show="item.show_colapsible"
+                    v-for="item in structuralPatternsData">
+                    <div class="row justify-content-center mb-1 pt-2">{{ item.on_display }}</div>
+                    <div v-if="item.name == 'pitch pattern'" class="row row-cols-12 p-1 mb-1">
+                        <div v-for="[key, pc] in Object.entries(item.value)" class="col col-sm-1">
+                            <vue3-slider class="row p-0" color="#FFBF65" track-color="#0065A2" orientation="vertical" :name="'pc-' + key"
+                                v-model="item.value[key]" width="5em" height="2em" :max="numberNotes"/>
+                            <em class="row p-0 label-input-histogram"><small :for="'pc-' + key">{{ pc }}</small></em>
+                            <strong class="row p-0"><small :for="'pc-' + key">{{ key }}</small></strong>
                         </div>
-                        <div v-else-if="item.name == 'interval pattern'" class="row p-1 mb-1">
-                            <div v-for="[key, pc] in Object.entries(item.value)" class="col col-sm-1">
-                                <div class="row p-0 label-input-histogram">
-                                    <label class="col-sm-5 p-0" :for="'pc-' + key">{{ key-12 }}</label>
-                                    <input class="col-sm-7 p-0" type="number" :value="pc" :name="'pc-' + key"/>
-                                </div>
-                            </div>
-                        </div>
-                        <input v-else class="w-100 p-1" type="text" :value="item.value" :placeholder="item.default" />
                     </div>
-                </li>
-                <div class="row" id="pattern-canvas"></div>
+                    <div v-else-if="item.name == 'interval pattern'" class="row p-1 mb-1">
+                        <div v-for="[key, pc] in Object.entries(item.value)" class="col col-25 ">
+                            <vue3-slider class="row p-0" color="#FFBF65" track-color="#0065A2" orientation="vertical" :name="'pc-' + key"
+                                v-model="item.value[key]" width="5em" :max="numberNotes"/>
+                            <em class="row p-0 label-input-histogram"><small :for="'pc-' + key">{{ pc }}</small></em>
+                            <strong class="row p-0"><small :for="'pc-' + key">{{ key - 12 }}</small></strong>
+                        </div>
+                    </div>
+                    <input v-else class="w-100 p-1" type="text" :value="item.value" :placeholder="item.default" />
+                </div>
             </div>
         </div>
         <MusicalScore id="RhythmPatternForm" :vT="vT" />
@@ -52,6 +57,8 @@
 
 <script type="module">
 
+import slider from "vue3-slider";
+
 import Modal from '../Modal.vue';
 import MusicalScore from '../MusicalScore.vue';
 
@@ -64,17 +71,19 @@ export default {
     components: {
         Tooltip,
         Modal,
-        MusicalScore
+        MusicalScore,
+        "vue3-slider": slider
     },
     props: ['MEIData', 'vT', 'export'],
     emits: ["saveFinished"],
     data() {
         return {
             structuralPatternsData: [
-                { name: 'pitch pattern', tag: './/mei:supplied[@type="pitch pattern"]', value: Array(12).fill(0), on_display: 'Pitch Pattern', default: Array(12).fill(0), tooltip: `<pre></pre>` },
-                { name: 'interval pattern', tag: './/mei:supplied[@type="interval pattern"]', value: '', on_display: 'Intervallic Pattern', default: '', tooltip: `<pre></pre>` },
-                { name: 'rhythm pattern', tag: './/mei:supplied[@type="rhythm pattern"]', value: '', on_display: 'Rhythm Pattern', default: '', tooltip: `<pre></pre>` },
+                { name: 'pitch pattern', tag: './/mei:supplied[@type="pitch pattern"]', value: Array(12).fill(0), on_display: 'Pitch Pattern', show_colapsible: false, default: Array(12).fill(0), tooltip: `<pre></pre>` },
+                { name: 'interval pattern', tag: './/mei:supplied[@type="interval pattern"]', value: '', on_display: 'Intervallic Pattern', show_colapsible: false, default: '', tooltip: `<pre></pre>` },
+                { name: 'rhythm pattern', tag: './/mei:supplied[@type="rhythm pattern"]', value: '', on_display: 'Rhythm Pattern', show_colapsible: false, default: '', tooltip: `<pre></pre>` },
             ],
+            numberNotes: 100,
             showModal: false,
             StructuralPatternsOntMEI: ''
         }
@@ -122,6 +131,7 @@ export default {
                     this.structuralPatternsData[0].value = this.getAutomaticStructuralPattern_P(this.vT);
                     this.structuralPatternsData[1].value = this.getAutomaticStructuralPattern_I(this.vT);
                     this.structuralPatternsData[2].value = this.getAutomaticStructuralPattern_R(this.vT);
+                    this.numberNotes = this.structuralPatternsData[0].value.reduce((partialSum, a) => partialSum + a, 0);
                 }
             });
         }
@@ -130,26 +140,11 @@ export default {
 </script>
 
 <style scoped>
-.logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-}
-
-.logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-}
-
-.logo.vue:hover {
-    filter: drop-shadow(0 0 2em #42b883aa);
+.pattern-editor-forms>* {
+    grid-template-columns: repeat(25, 1fr);
 }
 
 .label-input-histogram {
-    background-color: gray;
-}
-
-.label-input-histogram > input {
-    border-radius: 0;
+    background-color: lightgray;
 }
 </style>
