@@ -120,7 +120,7 @@ function initialState() {
 }
 
 export default {
-  inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods'],
+  inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'createExpansionsInMEI'],
   components: {
     SingleFilesForm,
     MultipleFilesForm,
@@ -188,6 +188,8 @@ export default {
       this.createNodesMethods(meiTree, 'ambitus');
       this.createNodesMethods(meiTree, 'rhythmPattern');
       this.createNodesMethods(meiTree, 'segmentation');
+      meiTree = this.createExpansionsInMEI(meiTree);
+
       return meiTree;
     },
     importSingleFile(file) {

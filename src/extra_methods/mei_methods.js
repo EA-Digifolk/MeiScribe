@@ -555,3 +555,81 @@ export const updateNodesMethods = (meiTree, data, info = 'titleStmt') => {
         case 'segmentation': return updateNodesSegmentation(meiTree, data);
     }
 };
+
+/**
+ * Update MEI with sections and endings expansions to be used with Verovio
+ * 
+ * @param {*} meiString
+ */
+export const createExpansionsInMEI = (meiTree) => {
+
+    const meiNS = "http://www.music-encoding.org/ns/mei";
+
+    const body = meiTree.querySelector("body");
+    if (!body) {
+        console.warn("No <body> element found in MEI");
+        return meiTree;
+    }
+
+    const children = Array.from(body.children);
+    const newBodyChildren = [];
+    let buffer = [];
+    let lastEndingN = null;
+    let sectionCounter = 1;
+    let endingCounter = 1;
+
+    children.forEach((child) => {
+        if (child.localName === "ending") {
+            // Ensure xml:id
+            if (!child.hasAttribute("xml:id")) {
+                child.setAttributeNS(null, "xml:id", `ending-${endingCounter}`);
+            }
+
+            // If we have buffered measures before this ending, wrap them in a section
+            if (buffer.length > 0) {
+                const section = meiTree.createElementNS(meiNS, "section");
+                const label =
+                    lastEndingN !== null
+                        ? `between-ending-${lastEndingN}-and-${child.getAttribute("n") || sectionCounter}`
+                        : `before-ending-${child.getAttribute("n") || sectionCounter}`;
+                section.setAttribute("label", label);
+                buffer.forEach((m) => section.appendChild(m));
+                newBodyChildren.push(section);
+                buffer = [];
+                sectionCounter++;
+            }
+
+            // Keep the ending as-is
+            newBodyChildren.push(child);
+            lastEndingN = child.getAttribute("n") || lastEndingN || sectionCounter;
+            endingCounter++;
+        } else if (child.localName === "measure") {
+            buffer.push(child);
+        } else {
+            // Pass through non-measure, non-ending elements
+            newBodyChildren.push(child);
+        }
+    });
+
+    // Wrap any leftover measures after the last ending
+    if (buffer.length > 0) {
+        const section = meiTree.createElementNS(meiNS, "section");
+        const label =
+            lastEndingN !== null
+                ? `after-ending-${lastEndingN}`
+                : `final-section`;
+        section.setAttribute("label", label);
+        buffer.forEach((m) => section.appendChild(m));
+        newBodyChildren.push(section);
+    }
+
+    // Replace existing body children
+    while (body.firstChild) {
+        body.removeChild(body.firstChild);
+    }
+    newBodyChildren.forEach((el) => body.appendChild(el));
+    
+    console.log(meiTree);
+
+    return meiTree;
+};

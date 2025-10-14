@@ -67,7 +67,9 @@ const createPhraseStructure = (boundaryTimes, notes) => {
 
 export const getAutomaticSegmentation = (vT) => {
 
-    let midiDataC = vT.getDescriptiveFeatures()['pitchesIds'].map((element, _) => {
+    console.log(vT.renderToExpansionMap())
+
+    /*let midiDataC = vT.getDescriptiveFeatures()['pitchesIds'].map((element, _) => {
         let midiVals = vT.getMIDIValuesForElement(element[0]);
         return { index: element[0], pitch: midiVals.pitch, time: midiVals.time, duration: midiVals.duration }
     });
@@ -76,6 +78,6 @@ export const getAutomaticSegmentation = (vT) => {
     // Get boundaries based on the MIDI data
     const boundaries = calculateBoundaryScores(midiDataC);
 
-    console.log("Detected boundaries:", boundaries);
+    console.log("Detected boundaries:", boundaries);*/
 
 };

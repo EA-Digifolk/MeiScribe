@@ -11,7 +11,7 @@
                     <button class="mb-3 ml-3" @click="addPhrase"
                         title="Add a New Phrase" data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
                         data-bs-placement="bottom" data-bs-html="true">Add</button>
-                    <button class="mb-3 btn-automatic" @click="addPhrase"
+                    <button class="mb-3 btn-automatic" @click="getAutomaticPhrases"
                         title="Add a New Phrase" data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
                         data-bs-placement="bottom" data-bs-html="true">Automatic Segmentation</button>
                 </div>
@@ -122,6 +122,9 @@ export default {
             } else {
                 this.$emit("saveFinished", "SegmentationForm");
             }
+        },
+        getAutomaticPhrases() {
+            this.getAutomaticSegmentation(this.vT);
         },
         getInfoFromMEI() {
             this.noteIDS = this.vT.getDescriptiveFeatures()['pitchesIds'].flat().flat();
