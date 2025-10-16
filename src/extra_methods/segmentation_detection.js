@@ -28,7 +28,7 @@ const calculateBoundaryScores = (midiData) => {
         const boundaryScore = pitchInterval * 0.5 + ioi * 0.5;
 
         // Store the boundary score for the current note
-        boundaryScores.push({ time: currentNote.time, score: boundaryScore });
+        boundaryScores.push({ index: currentNote.index, time: currentNote.time, score: boundaryScore });
     };
 
     // Flag points as boundaries where the score exceeds the threshold
@@ -65,54 +65,56 @@ const createPhraseStructure = (boundaryTimes, notes) => {
     return phrases;
 };
 
-/**
- * Get MIDI data per playback order, according to the <expansion> plist
- * @param {Object} vT - Verovio Toolkit instance
- * @param {Document} meiDoc - MEI DOM
- * @returns {Object} MIDI data keyed by expansion order (section/ending IDs)
- */
-/**
- * Get MIDI data per expansion order using the <expansion> plist,
- * safely handling xml:id and MEI namespaces.
- *
- * @param {Object} vT - Verovio Toolkit instance
- * @param {Document} meiDoc - MEI DOM
- * @returns {Object} MIDI data keyed by expansion order (section/ending IDs)
- */
 function getMidiDataByExpansionAllSections(vT, meiDoc) {
     const NS_XML = "http://www.w3.org/XML/1998/namespace";
     const expansion = meiDoc.querySelector("expansion");
-    console.log(expansion);
+    //console.log("Expansion found:", expansion);
     if (!expansion) return {};
 
-    const plist = expansion.getAttribute("plist").split(" ");
+    const plist = expansion.getAttribute("plist").split(" ").map(s => s.trim());
+    //console.log("Plist items:", plist);
+
     const midiDataBySection = {};
 
     plist.forEach(idRef => {
         const sectionId = idRef.replace("#", "");
+        //console.log("Looking for section:", sectionId);
 
-        // Find element by xml:id
-        const allElements = meiDoc.querySelectorAll("*");
+        // Search for element by xml:id attribute
         let sectionEl = null;
+        const allElements = Array.from(meiDoc.getElementsByTagName("*"));
+
         for (let el of allElements) {
-            if (el.getAttributeNS(NS_XML, "id") === sectionId) {
+            const xmlId = el.getAttributeNS(NS_XML, "id") || el.getAttribute("xml:id");
+            if (xmlId === sectionId) {
                 sectionEl = el;
                 break;
             }
         }
-        if (!sectionEl) return;
 
-        // Collect all notes recursively using querySelectorAll
-        const notes = sectionEl.querySelectorAll("note");
-        midiDataBySection[sectionId] = [];
+        if (!sectionEl) {
+            console.warn("Section not found:", sectionId);
+            return;
+        }
+
+        //console.log(`Found element: <${sectionEl.tagName}> with id="${sectionId}"`);
+
+        // Collect all notes recursively
+        const notes = Array.from(sectionEl.getElementsByTagName("note"));
+        //console.log(`Found ${notes.length} notes in ${sectionId}`);
+
+        midiDataBySection[sectionId] = {
+            type: sectionEl.tagName.toLowerCase(),
+            notes: []
+        };
 
         for (let noteEl of notes) {
-            const noteId = noteEl.getAttributeNS(NS_XML, "id");
+            const noteId = noteEl.getAttributeNS(NS_XML, "id") || noteEl.getAttribute("xml:id");
             if (!noteId) continue;
 
             const midiVals = vT.getMIDIValuesForElement(noteId);
             if (midiVals) {
-                midiDataBySection[sectionId].push({
+                midiDataBySection[sectionId].notes.push({
                     index: noteId,
                     pitch: midiVals.pitch,
                     time: midiVals.time,
@@ -120,28 +122,65 @@ function getMidiDataByExpansionAllSections(vT, meiDoc) {
                 });
             }
         }
+
+        //console.log(`Collected ${midiDataBySection[sectionId].notes.length} MIDI notes for ${sectionId}`);
     });
 
     return midiDataBySection;
 };
 
+/**
+ * Flatten MIDI data according to expansion plist order
+ * Works with { type: "ending"|"section", notes: [...] } structure
+ *
+ * @param {Object} midiDataBySection - { "section-1": {type, notes}, "ending-1": {...}, ... }
+ * @param {Document} meiDoc - MEI DOM containing <expansion> with plist
+ * @returns {Array} flattened MIDI data in playback order
+ */
+function flattenMidiByExpansion(midiDataBySection, meiDoc) {
+    const expansion = meiDoc.querySelector("expansion");
+    if (!expansion) return [];
 
+    const plist = expansion.getAttribute("plist").split(" ");
+    const flatMidi = [];
+    let currentTime = 0;
 
+    plist.forEach((idRef) => {
+        const sectionId = idRef.replace("#", "");
+        const sectionData = midiDataBySection[sectionId];
+        if (!sectionData || !Array.isArray(sectionData.notes)) return;
+
+        // Append notes, shifting times so playback is continuous
+        sectionData.notes.forEach((note) => {
+            flatMidi.push({
+                ...note,
+                time: note.time + currentTime,
+            });
+        });
+
+        // Update currentTime to end of this section/ending
+        const notes = sectionData.notes;
+        if (notes.length > 0) {
+            const lastNote = notes[notes.length - 1];
+            currentTime += lastNote.time + lastNote.duration;
+        }
+    });
+
+    return flatMidi;
+};
+
+export const getNotesExpanded = (vT, meiTree) => {
+    let midiDataBySection = getMidiDataByExpansionAllSections(vT, meiTree);
+    return flattenMidiByExpansion(midiDataBySection, meiTree);
+};
 
 export const getAutomaticSegmentation = (vT, meiTree) => {
 
-    console.log('HERE')
-    console.log(getMidiDataByExpansionAllSections(vT, meiTree));
-
-    /*let midiDataC = vT.getDescriptiveFeatures()['pitchesIds'].map((element, _) => {
-        let midiVals = vT.getMIDIValuesForElement(element[0]);
-        return { index: element[0], pitch: midiVals.pitch, time: midiVals.time, duration: midiVals.duration }
-    });
-    console.log(midiDataC);
+    let midiDataC = getNotesExpanded(vT, meiTree);
 
     // Get boundaries based on the MIDI data
     const boundaries = calculateBoundaryScores(midiDataC);
 
-    console.log("Detected boundaries:", boundaries);*/
+    console.log("Detected boundaries:", boundaries);
 
 };

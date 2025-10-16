@@ -18,7 +18,7 @@
                 </li>
             </div>
         </div>
-        <MusicalScore id="AmbitusForm" :vT="vT" :showMidiPitch="true" />
+        <MusicalScore id="AmbitusForm" :vT="vT" :meiTree="MEIData" :showMidiPitch="true" />
         <Teleport to="body">
             <modal :show="showModal" @close="showModal = false">
                 <template #header>

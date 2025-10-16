@@ -178,7 +178,7 @@
             </div>
         </div>
         <button class="btn-show-score btn btn-primary mb-3" @click="showScore = !showScore">Show Score</button>
-        <MusicalScore id="WorkListForm" :vT="vT" v-if="showScore" />
+        <MusicalScore id="WorkListForm" :vT="vT" :meiTree="MEIData" v-if="showScore" />
         <Teleport to="body">
             <modal :show="showModal" @close="showModal = false">
                 <template #header>

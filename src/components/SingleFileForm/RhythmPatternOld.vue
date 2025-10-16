@@ -19,7 +19,7 @@
                 <div class="row" id="pattern-canvas"></div>
             </div>
         </div>
-        <MusicalScore id="RhythmPatternForm" :vT="vT" />
+        <MusicalScore id="RhythmPatternForm" :vT="vT" :meiTree="MEIData"/>
         <Teleport to="body">
             <modal :show="showModal" @close="showModal = false">
                 <template #header>
