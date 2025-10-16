@@ -559,84 +559,205 @@ export const updateNodesMethods = (meiTree, data, info = 'titleStmt') => {
 /**
  * Split an existing top-level <section> so it closes before the first <measure>,
  * then wrap measures outside <ending> into deterministic <section> blocks
- * for Verovio expansion maps. Keeps <ending> elements untouched but can optionally
- * rename them deterministically as ending-1, ending-2, ….
+ * for Verovio expansion maps. Handles repetitions by duplicating sections before endings.
+ *
+ * Detects repeat sections using left="rptstart" and right="rptend" attributes on measures.
+ * 
+ * Expected expansion for: measure(0) + [measures(1-7) + ending(1:8)]x2 with ending(2:9)
+ * Results in: section-0(0) → section-1(1-7) → ending-1(8) → section-1(1-7) → ending-2(9)
  *
  * @param {Document} meiTree - MEI XML DOM document (not a string)
  * @param {boolean} [renameEndings=false] - If true, rename <ending> xml:id attributes deterministically
  */
-export const createExpansionsInMEI = (meiTree, renameEndings=false) => {
+export const createExpansionsInMEI = (meiTree, renameEndings = false) => {
     const NS_MEI = "http://www.music-encoding.org/ns/mei";
     const score = meiTree.querySelector("score");
-    if (!score) return;
+    if (!score) return meiTree;
 
     const originalSection = score.querySelector("section");
-    if (!originalSection) return;
+    if (!originalSection) return meiTree;
 
     // Rename original section
     originalSection.setAttribute("xml:id", "all");
 
-    let sectionCounter = 1;
+    let sectionCounter = 0;
     let endingCounter = 1;
-    const expansionPlist = [];
 
-    // Step 1: Collect all children and clear original section
+    // Step 1: Collect all element children
     const children = Array.from(originalSection.childNodes).filter(n => n.nodeType === 1);
-    originalSection.innerHTML = "";
+    
+    // Early return if no children
+    if (children.length === 0) return meiTree;
 
-    let currentInnerSection = null;
+    // Step 2: Parse structure and identify repeat boundaries
+    const groups = [];
+    let currentGroup = { type: 'section', nodes: [] };
+    let repeatSectionGroup = null; // Track the section that contains rptstart to rptend
 
-    const appendInnerSection = () => {
-        if (currentInnerSection && currentInnerSection.childNodes.length > 0) {
-            originalSection.appendChild(currentInnerSection);
-            expansionPlist.push(`#${currentInnerSection.getAttribute("xml:id")}`);
-            currentInnerSection = null;
-        }
-    };
+    children.forEach((node, idx) => {
+        const tagName = node.localName || node.tagName.toLowerCase();
 
-    // Step 2: Process children
-    children.forEach(node => {
-        if (node.tagName === "ending") {
-            appendInnerSection();
-
-            // Optionally rename endings
-            if (renameEndings) {
-                node.setAttribute("xml:id", `ending-${endingCounter++}`);
-            } else {
-                if (!node.hasAttribute("xml:id")) {
-                    node.setAttribute("xml:id", `ending-${endingCounter++}`);
+        if (tagName === "ending") {
+            // Finish current section group
+            if (currentGroup.nodes.length > 0) {
+                groups.push(currentGroup);
+                currentGroup = { type: 'section', nodes: [] };
+            }
+            
+            // Add ending as its own group
+            groups.push({ type: 'ending', node: node });
+            
+        } else if (tagName === "measure") {
+            // Check for repeat markers
+            const leftAttr = node.getAttribute("left");
+            const rightAttr = node.getAttribute("right");
+            
+            if (leftAttr === "rptstart") {
+                // Start of repeat section - close current group if it has content
+                if (currentGroup.nodes.length > 0) {
+                    groups.push(currentGroup);
+                }
+                // Start new group for repeatable section
+                currentGroup = { type: 'section', nodes: [], isRepeatable: true };
+            }
+            
+            currentGroup.nodes.push(node);
+            
+            if (rightAttr === "rptend") {
+                // End of repeat section - this group is complete
+                if (currentGroup.nodes.length > 0) {
+                    groups.push(currentGroup);
+                    currentGroup = { type: 'section', nodes: [] };
                 }
             }
-
-            originalSection.appendChild(node);
-            expansionPlist.push(`#${node.getAttribute("xml:id")}`);
-        } else if (node.tagName === "measure" || node.tagName === "pb" || node.tagName === "sb" || node.tagName === "repeat") {
-            if (!currentInnerSection) {
-                currentInnerSection = meiTree.createElementNS(NS_MEI, "section");
-                currentInnerSection.setAttribute("xml:id", `section-${sectionCounter++}`);
-            }
-            currentInnerSection.appendChild(node);
+            
+        } else if (["pb", "sb", "repeat"].includes(tagName)) {
+            currentGroup.nodes.push(node);
         } else {
-            // Other elements: append directly
-            appendInnerSection();
-            originalSection.appendChild(node);
+            // Other elements (supplied, etc.)
+            if (currentGroup.nodes.length > 0) {
+                groups.push(currentGroup);
+                currentGroup = { type: 'section', nodes: [] };
+            }
+            groups.push({ type: 'other', node: node });
         }
     });
 
-    appendInnerSection();
+    // Don't forget last group
+    if (currentGroup.nodes.length > 0) {
+        groups.push(currentGroup);
+    }
 
-    // Step 3: Create expansion element
-    const expansion = meiTree.createElementNS(NS_MEI, "expansion");
-    expansion.setAttribute("xml:id", "expansion-default");
-    expansion.setAttribute("plist", expansionPlist.join(" "));
+    // Step 3: Build expansion plan
+    const expansionPlan = [];
+    let repeatableSections = null; // The section(s) that should repeat
+    let lastWasEnding = false;
 
-    // Step 4: Insert expansion before first inner section
-    const firstInnerSection = originalSection.querySelector("section");
-    if (firstInnerSection) {
-        originalSection.insertBefore(expansion, firstInnerSection);
-    } else {
-        // Fallback: append at the end
-        originalSection.appendChild(expansion);
+    for (let i = 0; i < groups.length; i++) {
+        const group = groups[i];
+        
+        if (group.type === 'section') {
+            expansionPlan.push(group);
+            
+            // If this section is repeatable (has rptstart/rptend), remember it
+            if (group.isRepeatable) {
+                repeatableSections = group;
+            }
+            
+            lastWasEnding = false;
+            
+        } else if (group.type === 'ending') {
+            // If the previous item was an ending and we have a repeatable section, insert repeat
+            if (lastWasEnding && repeatableSections) {
+                expansionPlan.push({ type: 'repeat-section', sourceGroup: repeatableSections });
+            }
+            
+            expansionPlan.push(group);
+            lastWasEnding = true;
+            
+        } else {
+            expansionPlan.push(group);
+            lastWasEnding = false;
+        }
+    }
+
+    // Step 4: Clear original section safely
+    while (originalSection.firstChild) {
+        originalSection.removeChild(originalSection.firstChild);
+    }
+
+    // Step 5: Build actual DOM structure
+    const sectionIdMap = new Map(); // Track section IDs by content
+    const sectionElements = new Map(); // Track actual section DOM elements
+    const expansionPlist = [];
+
+    expansionPlan.forEach(item => {
+        if (item.type === 'section' || item.type === 'repeat-section') {
+            const sourceNodes = item.type === 'repeat-section' ? item.sourceGroup.nodes : item.nodes;
+            
+            // Create identifier for this section based on measure numbers
+            const measureNumbers = sourceNodes
+                .filter(n => (n.localName || n.tagName.toLowerCase()) === "measure")
+                .map(n => n.getAttribute('n'))
+                .filter(n => n !== null);
+            
+            const measureKey = measureNumbers.join(',');
+
+            // Get or create section ID
+            let sectionId;
+            if (sectionIdMap.has(measureKey)) {
+                // Reuse existing section ID for repeats
+                sectionId = sectionIdMap.get(measureKey);
+                expansionPlist.push(`#${sectionId}`);
+            } else {
+                // Create new section
+                sectionId = `section-${sectionCounter++}`;
+                sectionIdMap.set(measureKey, sectionId);
+                
+                // Create section element only once
+                const section = meiTree.createElementNS(NS_MEI, "section");
+                section.setAttribute("xml:id", sectionId);
+                
+                // Append nodes (only for original sections, not repeats)
+                sourceNodes.forEach(node => {
+                    section.appendChild(node);
+                });
+                
+                sectionElements.set(sectionId, section);
+                originalSection.appendChild(section);
+                expansionPlist.push(`#${sectionId}`);
+            }
+
+        } else if (item.type === 'ending') {
+            const node = item.node;
+            
+            // Handle ending IDs
+            if (renameEndings) {
+                node.setAttribute("xml:id", `ending-${endingCounter}`);
+            } else if (!node.hasAttribute("xml:id")) {
+                node.setAttribute("xml:id", `ending-${endingCounter}`);
+            }
+            endingCounter++;
+
+            originalSection.appendChild(node);
+            expansionPlist.push(`#${node.getAttribute("xml:id")}`);
+
+        } else if (item.type === 'other') {
+            originalSection.appendChild(item.node);
+        }
+    });
+
+    // Step 6: Create expansion element
+    if (expansionPlist.length > 0) {
+        const expansion = meiTree.createElementNS(NS_MEI, "expansion");
+        expansion.setAttribute("xml:id", "expansion-default");
+        expansion.setAttribute("plist", expansionPlist.join(" "));
+
+        // Insert expansion before first child
+        const firstChild = originalSection.firstChild;
+        if (firstChild) {
+            originalSection.insertBefore(expansion, firstChild);
+        }
     }
 
     return meiTree;
