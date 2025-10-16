@@ -37,7 +37,7 @@ const calculateBoundaryScores = (midiData) => {
     return boundaries;
 };
 
-const getClosestNoteId = (time, notes) =>  {
+const getClosestNoteId = (time, notes) => {
     // Find the note whose onset is closest to the given time
     return notes.reduce((prev, curr) =>
         Math.abs(curr.time - time) < Math.abs(prev.time - time) ? curr : prev
@@ -65,11 +65,73 @@ const createPhraseStructure = (boundaryTimes, notes) => {
     return phrases;
 };
 
-export const getAutomaticSegmentation = (vT) => {
+/**
+ * Get MIDI data per playback order, according to the <expansion> plist
+ * @param {Object} vT - Verovio Toolkit instance
+ * @param {Document} meiDoc - MEI DOM
+ * @returns {Object} MIDI data keyed by expansion order (section/ending IDs)
+ */
+/**
+ * Get MIDI data per expansion order using the <expansion> plist,
+ * safely handling xml:id and MEI namespaces.
+ *
+ * @param {Object} vT - Verovio Toolkit instance
+ * @param {Document} meiDoc - MEI DOM
+ * @returns {Object} MIDI data keyed by expansion order (section/ending IDs)
+ */
+function getMidiDataByExpansionAllSections(vT, meiDoc) {
+    const NS_XML = "http://www.w3.org/XML/1998/namespace";
+    const expansion = meiDoc.querySelector("expansion");
+    console.log(expansion);
+    if (!expansion) return {};
 
-    let newMEI = (new DOMParser()).parseFromString(vT.getMEI(), "text/xml");
-    console.log(newMEI.querySelector("body").querySelector("score"));
-    console.log(vT.renderToExpansionMap())
+    const plist = expansion.getAttribute("plist").split(" ");
+    const midiDataBySection = {};
+
+    plist.forEach(idRef => {
+        const sectionId = idRef.replace("#", "");
+
+        // Find element by xml:id
+        const allElements = meiDoc.querySelectorAll("*");
+        let sectionEl = null;
+        for (let el of allElements) {
+            if (el.getAttributeNS(NS_XML, "id") === sectionId) {
+                sectionEl = el;
+                break;
+            }
+        }
+        if (!sectionEl) return;
+
+        // Collect all notes recursively using querySelectorAll
+        const notes = sectionEl.querySelectorAll("note");
+        midiDataBySection[sectionId] = [];
+
+        for (let noteEl of notes) {
+            const noteId = noteEl.getAttributeNS(NS_XML, "id");
+            if (!noteId) continue;
+
+            const midiVals = vT.getMIDIValuesForElement(noteId);
+            if (midiVals) {
+                midiDataBySection[sectionId].push({
+                    index: noteId,
+                    pitch: midiVals.pitch,
+                    time: midiVals.time,
+                    duration: midiVals.duration
+                });
+            }
+        }
+    });
+
+    return midiDataBySection;
+};
+
+
+
+
+export const getAutomaticSegmentation = (vT, meiTree) => {
+
+    console.log('HERE')
+    console.log(getMidiDataByExpansionAllSections(vT, meiTree));
 
     /*let midiDataC = vT.getDescriptiveFeatures()['pitchesIds'].map((element, _) => {
         let midiVals = vT.getMIDIValuesForElement(element[0]);

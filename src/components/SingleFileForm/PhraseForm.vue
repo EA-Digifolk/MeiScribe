@@ -124,7 +124,7 @@ export default {
             }
         },
         getAutomaticPhrases() {
-            this.getAutomaticSegmentation(this.vT);
+            this.getAutomaticSegmentation(this.vT, this.MEIData);
         },
         getInfoFromMEI() {
             this.noteIDS = this.vT.getDescriptiveFeatures()['pitchesIds'].flat().flat();
