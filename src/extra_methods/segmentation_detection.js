@@ -67,6 +67,8 @@ const createPhraseStructure = (boundaryTimes, notes) => {
 
 export const getAutomaticSegmentation = (vT) => {
 
+    let newMEI = (new DOMParser()).parseFromString(vT.getMEI(), "text/xml");
+    console.log(newMEI.querySelector("body").querySelector("score"));
     console.log(vT.renderToExpansionMap())
 
     /*let midiDataC = vT.getDescriptiveFeatures()['pitchesIds'].map((element, _) => {

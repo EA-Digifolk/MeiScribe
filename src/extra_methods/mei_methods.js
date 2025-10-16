@@ -557,79 +557,87 @@ export const updateNodesMethods = (meiTree, data, info = 'titleStmt') => {
 };
 
 /**
- * Update MEI with sections and endings expansions to be used with Verovio
- * 
- * @param {*} meiString
+ * Split an existing top-level <section> so it closes before the first <measure>,
+ * then wrap measures outside <ending> into deterministic <section> blocks
+ * for Verovio expansion maps. Keeps <ending> elements untouched but can optionally
+ * rename them deterministically as ending-1, ending-2, ….
+ *
+ * @param {Document} meiTree - MEI XML DOM document (not a string)
+ * @param {boolean} [renameEndings=false] - If true, rename <ending> xml:id attributes deterministically
  */
-export const createExpansionsInMEI = (meiTree) => {
+export const createExpansionsInMEI = (meiTree, renameEndings=false) => {
+    const NS_MEI = "http://www.music-encoding.org/ns/mei";
+    const score = meiTree.querySelector("score");
+    if (!score) return;
 
-    const meiNS = "http://www.music-encoding.org/ns/mei";
+    const originalSection = score.querySelector("section");
+    if (!originalSection) return;
 
-    const body = meiTree.querySelector("body");
-    if (!body) {
-        console.warn("No <body> element found in MEI");
-        return meiTree;
-    }
+    // Rename original section
+    originalSection.setAttribute("xml:id", "all");
 
-    const children = Array.from(body.children);
-    const newBodyChildren = [];
-    let buffer = [];
-    let lastEndingN = null;
     let sectionCounter = 1;
     let endingCounter = 1;
+    const expansionPlist = [];
 
-    children.forEach((child) => {
-        if (child.localName === "ending") {
-            // Ensure xml:id
-            if (!child.hasAttribute("xml:id")) {
-                child.setAttributeNS(null, "xml:id", `ending-${endingCounter}`);
+    // Step 1: Collect all children and clear original section
+    const children = Array.from(originalSection.childNodes).filter(n => n.nodeType === 1);
+    originalSection.innerHTML = "";
+
+    let currentInnerSection = null;
+
+    const appendInnerSection = () => {
+        if (currentInnerSection && currentInnerSection.childNodes.length > 0) {
+            originalSection.appendChild(currentInnerSection);
+            expansionPlist.push(`#${currentInnerSection.getAttribute("xml:id")}`);
+            currentInnerSection = null;
+        }
+    };
+
+    // Step 2: Process children
+    children.forEach(node => {
+        if (node.tagName === "ending") {
+            appendInnerSection();
+
+            // Optionally rename endings
+            if (renameEndings) {
+                node.setAttribute("xml:id", `ending-${endingCounter++}`);
+            } else {
+                if (!node.hasAttribute("xml:id")) {
+                    node.setAttribute("xml:id", `ending-${endingCounter++}`);
+                }
             }
 
-            // If we have buffered measures before this ending, wrap them in a section
-            if (buffer.length > 0) {
-                const section = meiTree.createElementNS(meiNS, "section");
-                const label =
-                    lastEndingN !== null
-                        ? `between-ending-${lastEndingN}-and-${child.getAttribute("n") || sectionCounter}`
-                        : `before-ending-${child.getAttribute("n") || sectionCounter}`;
-                section.setAttribute("label", label);
-                buffer.forEach((m) => section.appendChild(m));
-                newBodyChildren.push(section);
-                buffer = [];
-                sectionCounter++;
+            originalSection.appendChild(node);
+            expansionPlist.push(`#${node.getAttribute("xml:id")}`);
+        } else if (node.tagName === "measure" || node.tagName === "pb" || node.tagName === "sb" || node.tagName === "repeat") {
+            if (!currentInnerSection) {
+                currentInnerSection = meiTree.createElementNS(NS_MEI, "section");
+                currentInnerSection.setAttribute("xml:id", `section-${sectionCounter++}`);
             }
-
-            // Keep the ending as-is
-            newBodyChildren.push(child);
-            lastEndingN = child.getAttribute("n") || lastEndingN || sectionCounter;
-            endingCounter++;
-        } else if (child.localName === "measure") {
-            buffer.push(child);
+            currentInnerSection.appendChild(node);
         } else {
-            // Pass through non-measure, non-ending elements
-            newBodyChildren.push(child);
+            // Other elements: append directly
+            appendInnerSection();
+            originalSection.appendChild(node);
         }
     });
 
-    // Wrap any leftover measures after the last ending
-    if (buffer.length > 0) {
-        const section = meiTree.createElementNS(meiNS, "section");
-        const label =
-            lastEndingN !== null
-                ? `after-ending-${lastEndingN}`
-                : `final-section`;
-        section.setAttribute("label", label);
-        buffer.forEach((m) => section.appendChild(m));
-        newBodyChildren.push(section);
-    }
+    appendInnerSection();
 
-    // Replace existing body children
-    while (body.firstChild) {
-        body.removeChild(body.firstChild);
+    // Step 3: Create expansion element
+    const expansion = meiTree.createElementNS(NS_MEI, "expansion");
+    expansion.setAttribute("xml:id", "expansion-default");
+    expansion.setAttribute("plist", expansionPlist.join(" "));
+
+    // Step 4: Insert expansion before first inner section
+    const firstInnerSection = originalSection.querySelector("section");
+    if (firstInnerSection) {
+        originalSection.insertBefore(expansion, firstInnerSection);
+    } else {
+        // Fallback: append at the end
+        originalSection.appendChild(expansion);
     }
-    newBodyChildren.forEach((el) => body.appendChild(el));
-    
-    console.log(meiTree);
 
     return meiTree;
 };

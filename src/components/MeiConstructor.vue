@@ -73,8 +73,7 @@
         </div>
 
         <SingleFilesForm :xmlDoc="xmlDoc" :verovioToolkit="verovioToolkit" :exportData="exportData"
-          v-if="openSingleForms === true"
-          @download-finished="resetWindow()" />
+          v-if="openSingleForms === true" @download-finished="resetWindow()" />
         <MultipleFilesForm :MEIfiles="files" :exportData="exportData" v-else-if="openMultiplesForm === true"
           @download-finished="resetWindow()" />
 
@@ -139,8 +138,8 @@ export default {
   },
   methods: {
     resetWindow() {
-        Object.assign(this.$data, initialState());
-        this.startVerovio();
+      Object.assign(this.$data, initialState());
+      this.startVerovio();
     },
     startVerovio() {
       createVerovioModule().then(VerovioModule => {
@@ -188,8 +187,7 @@ export default {
       this.createNodesMethods(meiTree, 'ambitus');
       this.createNodesMethods(meiTree, 'rhythmPattern');
       this.createNodesMethods(meiTree, 'segmentation');
-      meiTree = this.createExpansionsInMEI(meiTree);
-
+      this.createExpansionsInMEI(meiTree, true);
       return meiTree;
     },
     importSingleFile(file) {
@@ -237,13 +235,17 @@ export default {
         [this.MEIData, this.verovioToolkit] = this.importSingleFile(this.files[0]);
         this.xmlDoc = (new DOMParser()).parseFromString(this.MEIData, "text/xml"); // Parse String to XML DOC to EDIT
         this.xmlDoc = this.createALLMEICamps(this.xmlDoc); // Create All Camps
+        this.verovioToolkit.loadData(this.prettifyXml(new XMLSerializer().serializeToString(this.xmlDoc)));
         this.openSingleForms = true;
         this.openMultiplesForm = false;
+      } else if (this.files.length == 0) {
+        alert("Can't start process because no files were uploaded!")
       } else {
         this.files.forEach(file => {
           [file['meiData'], file['vT']] = this.importSingleFile(file);
           file['xmlDoc'] = (new DOMParser()).parseFromString(file['meiData'], "text/xml"); // Parse String to XML DOC to EDIT
           file['xmlDoc'] = this.createALLMEICamps(file['xmlDoc']); // Create All Camps
+          file['vT'].loadData(this.prettifyXml(new XMLSerializer().serializeToString(file['xmlDoc'])));
           this.openMultiplesForm = true;
           this.openSingleForms = false;
         });
