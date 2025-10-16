@@ -16,10 +16,9 @@
 <script type="module">
 
 import * as music21 from 'music21j';
-import * as MidiWriter from 'midi-writer-js';
 
 export default {
-    inject: ['getNotesExpanded'],
+    inject: ['getNotesExpanded', 'renderMidiToBase64'],
     components: {
         // MidiPlayer
     },
@@ -54,64 +53,7 @@ export default {
                 this.pageToRender += 1;
             }
         },
-        /**
-         * Convert Uint8Array or ArrayBuffer to base64
-        */
-        arrayBufferToBase64(buffer) {
-            let binary = '';
-            const bytes = new Uint8Array(buffer);
-            const chunkSize = 0x8000; // for large files
-
-            for (let i = 0; i < bytes.length; i += chunkSize) {
-                const chunk = bytes.subarray(i, i + chunkSize);
-                binary += String.fromCharCode.apply(null, chunk);
-            }
-
-            return btoa(binary);
-        },
-        /**
-         * Convert MIDI number to note name, e.g., 60 -> "C4"
-         */
-        midiToNoteName(midi) {
-            const octave = Math.floor(midi / 12) - 1;
-            const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-            return noteNames[midi % 12] + octave;
-        },
-        /**
-         * Render flat MIDI notes to a base64-encoded string
-         * @param {Array} flatMidi - [{pitch, time, duration, index}, ...] with time/duration in ms
-         * @returns {string} base64-encoded MIDI file
-         */
-        renderMidiToBase64(flatMidi) {
-            const track = new MidiWriter.Track();
-            track.setTempo(120); // optional tempo
-
-            const TICKS_PER_BEAT = 480;
-
-            // Sort notes by start time
-            flatMidi.sort((a, b) => a.time - b.time);
-
-            let lastTime = 0;
-
-            flatMidi.forEach((note) => {
-                const waitTicks = Math.round(((note.time - lastTime) / 500) * TICKS_PER_BEAT); // 500ms = quarter note at 120 BPM
-                const durationTicks = Math.round((note.duration / 500) * TICKS_PER_BEAT);
-
-                track.addEvent(
-                    new MidiWriter.NoteEvent({
-                        pitch: [this.midiToNoteName(note.pitch)],
-                        duration: "T" + durationTicks,
-                        wait: "T" + waitTicks,
-                    })
-                );
-
-                lastTime = note.time;
-            });
-
-            const writer = new MidiWriter.Writer(track);
-            const midiArrayBuffer = writer.buildFile(); // in browser this is Uint8Array
-            return this.arrayBufferToBase64(midiArrayBuffer);
-        },
+        
         getScore() {
             this.vT.setOptions({
                 'adjustPageHeight': true,
@@ -153,6 +95,7 @@ export default {
 
             if (this.midi === '') {
                 let notesExp = this.getNotesExpanded(this.vT, this.meiTree);
+                console.log(notesExp);
                 this.midi = this.renderMidiToBase64(notesExp);
             }
 
