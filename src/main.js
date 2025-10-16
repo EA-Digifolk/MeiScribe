@@ -10,7 +10,7 @@ import { getXpathNode, createNodesMethods, updateNodesMethods, createExpansionsI
 import { getAutomaticAmbitus, getAutomaticMeterTempo, getAutomaticStructuralPattern_P, getAutomaticStructuralPattern_I, getAutomaticStructuralPattern_R  } from './extra_methods/automatic_functions.js';
 import { getAutomaticModeKey } from './extra_methods/key_mode_detection.js'
 import { getAutomaticSegmentation } from './extra_methods/segmentation_detection.js'
-import { getNotesExpanded, renderMidiToBase64 } from './extra_methods/notes_methods.js'
+import { getNotesExpanded, renderMidiToBase64, getMIDI } from './extra_methods/notes_methods.js'
 
 const app = createApp(App)
 
@@ -59,8 +59,9 @@ app.provide('getAutomaticStructuralPattern_R', getAutomaticStructuralPattern_R);
 app.provide('getAutomaticModeKey', getAutomaticModeKey);
 app.provide('getAutomaticSegmentation', getAutomaticSegmentation);
 
-app.provide('renderMidiToBase64', renderMidiToBase64);
 app.provide('getNotesExpanded', getNotesExpanded);
+app.provide('renderMidiToBase64', renderMidiToBase64);
+app.provide('getMIDI', getMIDI);
 
 app.provide(/* key */ 'message', /* value */ 'hello!')
 

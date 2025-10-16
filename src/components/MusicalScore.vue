@@ -18,7 +18,7 @@
 import * as music21 from 'music21j';
 
 export default {
-    inject: ['getNotesExpanded', 'renderMidiToBase64'],
+    inject: ['getMIDI'],
     components: {
         // MidiPlayer
     },
@@ -53,7 +53,7 @@ export default {
                 this.pageToRender += 1;
             }
         },
-        
+
         getScore() {
             this.vT.setOptions({
                 'adjustPageHeight': true,
@@ -94,13 +94,7 @@ export default {
             music21.common.urls.soundfontUrl = 'https://raw.githubusercontent.com/gleitz/midi-js-soundfonts/gh-pages/FluidR3_GM/';
 
             if (this.midi === '') {
-                let notesExp = this.getNotesExpanded(this.vT, this.meiTree);
-                console.log(notesExp);
-                this.midi = this.renderMidiToBase64(notesExp);
-            }
-
-            if (this.midi === '') {
-                this.midi = this.vT.renderToMIDI();
+                this.midi = this.getMIDI(this.vT, this.meiTree);
             }
 
             let midiPlayer = new music21.miditools.MidiPlayer();
