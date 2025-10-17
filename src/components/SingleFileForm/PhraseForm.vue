@@ -124,7 +124,8 @@ export default {
             }
         },
         getAutomaticPhrases() {
-            this.getAutomaticSegmentation(this.vT, this.MEIData);
+            const segments = this.getAutomaticSegmentation(this.vT, this.MEIData);
+            console.table(segments);
         },
         getInfoFromMEI() {
             this.noteIDS = this.vT.getDescriptiveFeatures()['pitchesIds'].flat().flat();
@@ -206,7 +207,7 @@ export default {
 
 .btn-automatic {
     margin-left: 1em;
-    background-color: grey;
+    background-color: lightblue;
 }
 
 option:hover {
