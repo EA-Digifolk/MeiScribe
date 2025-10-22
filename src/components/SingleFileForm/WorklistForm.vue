@@ -161,7 +161,20 @@
                                     :placeholder="item.default"></textarea>
                             </div> <!--TODO: Check why text area leaving space under-->
                         </div>
-
+                        <div class="w-100 row" v-else-if="item.name == 'vocal topics'">
+                            <div class="col col-sm-2 card-text" style="text-align: right">
+                                <p class="card-text" :title="item.tooltip" data-bs-customClass="custom-tooltip"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">{{
+                item.on_display }}</p>
+                            </div>
+                            <div class="col col-sm-8 card-text">
+                                <input class="w-100 p-1" type="text" v-model="item.value" :placeholder="item.default" />
+                            </div>
+                            <button class="col col-sm-2 btn btn-primary p-0"
+                                title="Apply Automatic Function to get Vocal Topics"
+                                data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top"
+                                data-bs-html="true" @click="calculateVocalTopics">Auto Vocal Topics</button>
+                        </div>
                         <div class="w-100 row" v-else>
                             <div class="col col-sm-2 card-text" style="text-align: right">
                                 <p class="card-text" :title="item.tooltip" data-bs-customClass="custom-tooltip"
