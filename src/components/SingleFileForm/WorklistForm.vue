@@ -101,7 +101,6 @@
                                 </datalist>
                             </div>
                         </div>
-
                         <div class="w-100 row" v-else-if="item.name === 'country'">
                             <div class="col col-sm-2 card-text" style="text-align: right">
                                 <p class="card-text" :title="item.tooltip" data-bs-customClass="custom-tooltip"
@@ -110,7 +109,7 @@
                             </div>
                             <div class="col col-sm-4 card-text">
                                 <input class="w-100" type="text" list="countryList" v-model="item.value"
-                                    :placeholder="item.default" @change="setDefaultLanguage"/>
+                                    :placeholder="item.default" @change="setDefaultLanguage" />
                                 <datalist id="countryList">
                                     <option
                                         v-for="k in ['Brazil', 'Colombia', 'Ireland', 'Mexico', 'Portugal', 'Spain',]"
@@ -198,7 +197,9 @@ import Modal from '../Modal.vue';
 import MusicalScore from '../MusicalScore.vue';
 
 export default {
-    inject: ['getXpathNode', 'prettifyXml', 'capitalizeFirstLetter', 'createNodesMethods', 'updateNodesMethods', 'getAutomaticModeKey', 'getAutomaticMeterTempo'],
+    inject: ['getXpathNode', 'prettifyXml', 'capitalizeFirstLetter',
+        'createNodesMethods', 'updateNodesMethods',
+        'getAutomaticModeKey', 'getAutomaticMeterTempo', 'getAutomaticVocalTopics'],
     components: {
         MusicalScore,
         Tooltip,
@@ -223,6 +224,7 @@ export default {
                 { name: 'region', tag: './/mei:workList//mei:term[@type="region"]', value: '', on_display: 'Region', default: '', tooltip: 'region of the country from where the song came' },
                 { name: 'district', tag: './/mei:workList//mei:term[@type="district"]', value: '', on_display: 'District', default: '', tooltip: 'district of the region from where the song came' },
                 { name: 'city', tag: './/mei:workList//mei:term[@type="city"]', value: '', on_display: 'City', default: '', tooltip: 'city of the district from where the song came' },
+                { name: 'vocal topics', tag: './/mei:workList//mei:keywords', value: '', n_gram: '', bi_gram: '', on_display: 'Topics', default: '', automatic: false, tooltip: 'extracted topics for the song' },
             ],
             showScore: false,
             showModal: false,
@@ -250,7 +252,7 @@ export default {
     },
     methods: {
         setDefaultLanguage(event) {
-            switch(event.target.value){
+            switch (event.target.value) {
                 case 'Portugal':
                     this.worklistData[7].value = 'pt';
                     break;
@@ -270,8 +272,8 @@ export default {
         calculateModeKey() {
             let [key, mode, score] = this.getAutomaticModeKey(this.vT, this.MEIData);
 
-            this.worklistData[3].value = key; 
-            this.worklistData[3].default = key; 
+            this.worklistData[3].value = key;
+            this.worklistData[3].default = key;
             this.worklistData[3].automatic = true;
             this.worklistData[3].confidence = score;
 
@@ -290,6 +292,9 @@ export default {
             this.worklistData[6].value = "Lento";//tempo;
             this.worklistData[6].default = "Lento";//tempo;
             this.worklistData[6].automatic = true;
+        },
+        calculateVocalTopics() {
+            let [lyrics, topics] = this.getAutomaticVocalTopics(this.MEIData);
         },
         saveToMEI(openModal = true) {
             let workListNode = this.getXpathNode(this.MEIData, './/mei:work');
