@@ -307,7 +307,8 @@ export default {
             this.worklistData[6].automatic = true;
         },
         calculateVocalTopics() {
-            let [lyrics, topics] = this.getAutomaticVocalTopics(this.MEIData);
+            //let [lyrics, topics] = 
+            this.getAutomaticVocalTopics(this.MEIData);
         },
         saveToMEI(openModal = true) {
             let workListNode = this.getXpathNode(this.MEIData, './/mei:work');

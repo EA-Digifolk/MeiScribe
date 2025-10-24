@@ -1,6 +1,5 @@
 // segmentation_detection.js
 
-import { getXpathNode } from "./mei_methods";
 import { getNotesExpanded } from "./notes_methods";
 
 // Helper function to calculate interval (pitch difference)
