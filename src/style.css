@@ -107,3 +107,11 @@ button:focus-visible {
   text-align: left;
   max-width: 60em;
 }
+
+.ti-tag {
+  border-radius: var(--bs-border-radius) !important;
+}
+
+.ti-tag.ti-valid {
+  background-color:#629eff !important;
+}

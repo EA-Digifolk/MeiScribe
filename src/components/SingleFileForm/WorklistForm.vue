@@ -168,7 +168,8 @@
                 item.on_display }}</p>
                             </div>
                             <div class="col col-sm-8 card-text">
-                                <input class="w-100 p-1" type="text" v-model="item.value" :placeholder="item.default" />
+                                <vue-tags-input class="w-100 p-1 tags-topics " v-model="item.value" :tags="item.topics"
+                                    @tags-changed="newTags => tags = newTags" />
                             </div>
                             <button class="col col-sm-2 btn btn-primary p-0"
                                 title="Apply Automatic Function to get Vocal Topics"
@@ -201,11 +202,44 @@
                 </template>
             </modal>
         </Teleport>
+        <Teleport to="body">
+            <modal :show="showVocalResults" @close="showVocalResults = false">
+                <template #header>
+                    <h3>Vocal Topics</h3>
+                </template>
+                <template #body>
+
+                    <pre class="w-100"><p>Clean Lyrics</p>{{ worklistData[worklistData.length - 1].clean_lycs }}</pre>
+                    <pre class="w-100" id=""><p>Unigrams</p>
+                        <vue3-word-cloud style="height: 10em; width: 100%;"
+                            :words="worklistData[worklistData.length - 1].n_grams"
+                            :color="([, weight]) => weight > 10 ? 'DeepPink' : weight > 5 ? 'RoyalBlue' : 'Indigo'"
+                            font-family="Roboto"/>
+                    </pre>
+                    <pre class="w-100" id=""><p>Bigrams</p>
+                        <vue3-word-cloud style="height: 10em; width: 100%;"
+                            :words="worklistData[worklistData.length - 1].bi_grams"
+                            :color="([, weight]) => weight > 10 ? 'DeepPink' : weight > 5 ? 'RoyalBlue' : 'Indigo'"
+                            font-family="Roboto"/>
+                    </pre>
+                    <pre class="w-100" id=""><p>Keywords</p>
+                        <vue3-word-cloud style="height: 10em; width: 100%;"
+                            :words="worklistData[worklistData.length - 1].keywords"
+                            :color="([, weight]) => weight > 10 ? 'DeepPink' : weight > 5 ? 'RoyalBlue' : 'Indigo'"
+                            font-family="Roboto"/>
+                    </pre>
+                    <pre class="w-100" id=""><p>Topics</p>{{ worklistData[worklistData.length - 1].topics.join(', ') }}</pre>
+                </template>
+            </modal>
+        </Teleport>
     </div>
 </template>
 
 <script type="module">
 import { Tooltip } from 'bootstrap';
+import VueTagsInput from "@wslyhbb/vue3-tags-input";
+import Vue3WordCloud from 'vue3-word-cloud';
+
 import Modal from '../Modal.vue';
 import MusicalScore from '../MusicalScore.vue';
 
@@ -216,7 +250,9 @@ export default {
     components: {
         MusicalScore,
         Tooltip,
-        Modal
+        Modal,
+        VueTagsInput,
+        Vue3WordCloud
     },
     props: ['MEIData', 'vT', 'export'],
     emits: ["saveFinished"],
@@ -237,10 +273,11 @@ export default {
                 { name: 'region', tag: './/mei:workList//mei:term[@type="region"]', value: '', on_display: 'Region', default: '', tooltip: 'region of the country from where the song came' },
                 { name: 'district', tag: './/mei:workList//mei:term[@type="district"]', value: '', on_display: 'District', default: '', tooltip: 'district of the region from where the song came' },
                 { name: 'city', tag: './/mei:workList//mei:term[@type="city"]', value: '', on_display: 'City', default: '', tooltip: 'city of the district from where the song came' },
-                { name: 'vocal topics', tag: './/mei:workList//mei:keywords', value: '', n_gram: '', bi_gram: '', on_display: 'Topics', default: '', automatic: false, tooltip: 'extracted topics for the song' },
+                { name: 'vocal topics', tag: './/mei:workList//mei:keywords', value: '', topics: [], n_gram: [], bi_gram: [], n_grams: [], bi_grams: [], clean_lycs: '', on_display: 'Topics', default: '', automatic: false, tooltip: 'extracted topics for the song' },
             ],
             showScore: false,
             showModal: false,
+            showVocalResults: false,
             WorklistOntMEI: ''
         }
     },
@@ -307,8 +344,17 @@ export default {
             this.worklistData[6].automatic = true;
         },
         calculateVocalTopics() {
-            //let [lyrics, topics] = 
-            this.getAutomaticVocalTopics(this.MEIData);
+            let results = this.getAutomaticVocalTopics(this.MEIData);
+
+            this.worklistData[this.worklistData.length - 1].clean_lycs = results.clean;
+            this.worklistData[this.worklistData.length - 1].n_gram = results.mostRepeated.unigram;
+            this.worklistData[this.worklistData.length - 1].n_grams = Object.keys(results.weighted_unigrams).map((key) => [key, results.weighted_unigrams[key]])
+            this.worklistData[this.worklistData.length - 1].bi_gram = results.mostRepeated.bigram;
+            this.worklistData[this.worklistData.length - 1].bi_grams = Object.keys(results.weighted_bigrams).map((key) => [key, results.weighted_bigrams[key]])
+            this.worklistData[this.worklistData.length - 1].keywords = results.keywords;
+            this.worklistData[this.worklistData.length - 1].topics = results.topics;
+
+            this.showVocalResults = true;
         },
         saveToMEI(openModal = true) {
             let workListNode = this.getXpathNode(this.MEIData, './/mei:work');
@@ -357,5 +403,9 @@ export default {
 <style scoped>
 #MEI-Modal-Worklist {
     max-height: 80% !important;
+}
+
+.tags-topics {
+    max-width: 100% !important;
 }
 </style>

@@ -268,7 +268,9 @@ export const getAutomaticVocalTopics = (MEIData, Country='ES') => {
         original: lyrics,
         clean: lyricsCleaned,
         unigrams,
+        weighted_unigrams: unigramFreq,
         bigrams,
+        weighted_bigrams: bigramFreq,
         keywords,
         mostRepeated: {
             unigram: { word: mostRepeatedUnigram[0], count: mostRepeatedUnigram[1] },
@@ -277,10 +279,6 @@ export const getAutomaticVocalTopics = (MEIData, Country='ES') => {
         keyphrases,
         topics
     };
-
-    // Debug print
-    console.log('--- Automatic Vocal Topics ---');
-    console.log(result);
 
     return result;
 };
