@@ -231,6 +231,16 @@ const createNodesWorklist = (meiTree) => {
                 node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'term');
                 node.setAttribute('type', item.name)
                 termlistNode.append(node);
+            } else if (['clean-lyrics', 'ngram', 'bigram', 'textual-topics'].includes(item.name)) {
+                let keywordsNode = getXpathNode(meiTree, './/mei:workList//mei:keywords');
+                if (!keywordsNode) {
+                    keywordsNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'keywords');
+                    let lyricsNode = getXpathNode(meiTree, './/mei:workList//mei:incip[@type="lyrics"]');
+                    lyricsNode.insertAdjacentElement('afterend', keywordsNode);
+                }
+                node = document.createElementNS('http://www.music-encoding.org/ns/mei', 'term');
+                node.setAttribute('type', item.name)
+                keywordsNode.append(node);
             } else {
                 let node = document.createElementNS('http://www.music-encoding.org/ns/mei', item.name);
                 workListNode.append(node);
