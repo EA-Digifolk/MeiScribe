@@ -48,6 +48,10 @@ const MEICAMPS = {
         { name: 'region', tag: './/mei:workList//mei:term[@type="region"]' },
         { name: 'district', tag: './/mei:workList//mei:term[@type="district"]' },
         { name: 'city', tag: './/mei:workList//mei:term[@type="city"]' },
+        { name: 'clean-lyrics', tag: './/mei:workList//mei:term[@type="clean-lyrics"]' },
+        { name: 'ngram', tag: './/mei:workList//mei:term[@type="ngram"]' },
+        { name: 'bigram', tag: './/mei:workList//mei:term[@type="bigram"]' },
+        { name: 'textual-topics', tag: './/mei:workList//mei:term[@type="textual-topic"]' },
     ],
     'ambitus': [
         { name: 'lowest', tag: './/mei:ambNote[@type="lowest"]' },
