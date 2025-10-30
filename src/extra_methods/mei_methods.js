@@ -584,6 +584,7 @@ export const updateNodesMethods = (meiTree, data, info = 'titleStmt') => {
  * @param {boolean} [renameEndings=false] - If true, rename <ending> xml:id attributes deterministically
  */
 export const createExpansionsInMEI = (meiTree, renameEndings = false) => {
+
     const NS_MEI = "http://www.music-encoding.org/ns/mei";
     const score = meiTree.querySelector("score");
     if (!score) return meiTree;
@@ -591,6 +592,10 @@ export const createExpansionsInMEI = (meiTree, renameEndings = false) => {
     const originalSection = score.querySelector("section");
     if (!originalSection) return meiTree;
 
+    // Step 0: Check if Expansions Already exist
+    const expansionDefault = Array.from(originalSection.getElementsByTagName("expansion"));
+    if (expansionDefault.length > 0) return meiTree;
+    
     // Rename original section
     originalSection.setAttribute("xml:id", "all");
 
@@ -599,7 +604,7 @@ export const createExpansionsInMEI = (meiTree, renameEndings = false) => {
 
     // Step 1: Collect all element children
     const children = Array.from(originalSection.childNodes).filter(n => n.nodeType === 1);
-    
+
     // Early return if no children
     if (children.length === 0) return meiTree;
 
@@ -617,15 +622,15 @@ export const createExpansionsInMEI = (meiTree, renameEndings = false) => {
                 groups.push(currentGroup);
                 currentGroup = { type: 'section', nodes: [] };
             }
-            
+
             // Add ending as its own group
             groups.push({ type: 'ending', node: node });
-            
+
         } else if (tagName === "measure") {
             // Check for repeat markers
             const leftAttr = node.getAttribute("left");
             const rightAttr = node.getAttribute("right");
-            
+
             if (leftAttr === "rptstart") {
                 // Start of repeat section - close current group if it has content
                 if (currentGroup.nodes.length > 0) {
@@ -634,9 +639,9 @@ export const createExpansionsInMEI = (meiTree, renameEndings = false) => {
                 // Start new group for repeatable section
                 currentGroup = { type: 'section', nodes: [], isRepeatable: true };
             }
-            
+
             currentGroup.nodes.push(node);
-            
+
             if (rightAttr === "rptend") {
                 // End of repeat section - this group is complete
                 if (currentGroup.nodes.length > 0) {
@@ -644,7 +649,7 @@ export const createExpansionsInMEI = (meiTree, renameEndings = false) => {
                     currentGroup = { type: 'section', nodes: [] };
                 }
             }
-            
+
         } else if (["pb", "sb", "repeat"].includes(tagName)) {
             currentGroup.nodes.push(node);
         } else {
@@ -669,26 +674,26 @@ export const createExpansionsInMEI = (meiTree, renameEndings = false) => {
 
     for (let i = 0; i < groups.length; i++) {
         const group = groups[i];
-        
+
         if (group.type === 'section') {
             expansionPlan.push(group);
-            
+
             // If this section is repeatable (has rptstart/rptend), remember it
             if (group.isRepeatable) {
                 repeatableSections = group;
             }
-            
+
             lastWasEnding = false;
-            
+
         } else if (group.type === 'ending') {
             // If the previous item was an ending and we have a repeatable section, insert repeat
             if (lastWasEnding && repeatableSections) {
                 expansionPlan.push({ type: 'repeat-section', sourceGroup: repeatableSections });
             }
-            
+
             expansionPlan.push(group);
             lastWasEnding = true;
-            
+
         } else {
             expansionPlan.push(group);
             lastWasEnding = false;
@@ -708,13 +713,13 @@ export const createExpansionsInMEI = (meiTree, renameEndings = false) => {
     expansionPlan.forEach(item => {
         if (item.type === 'section' || item.type === 'repeat-section') {
             const sourceNodes = item.type === 'repeat-section' ? item.sourceGroup.nodes : item.nodes;
-            
+
             // Create identifier for this section based on measure numbers
             const measureNumbers = sourceNodes
                 .filter(n => (n.localName || n.tagName.toLowerCase()) === "measure")
                 .map(n => n.getAttribute('n'))
                 .filter(n => n !== null);
-            
+
             const measureKey = measureNumbers.join(',');
 
             // Get or create section ID
@@ -727,16 +732,16 @@ export const createExpansionsInMEI = (meiTree, renameEndings = false) => {
                 // Create new section
                 sectionId = `section-${sectionCounter++}`;
                 sectionIdMap.set(measureKey, sectionId);
-                
+
                 // Create section element only once
                 const section = meiTree.createElementNS(NS_MEI, "section");
                 section.setAttribute("xml:id", sectionId);
-                
+
                 // Append nodes (only for original sections, not repeats)
                 sourceNodes.forEach(node => {
                     section.appendChild(node);
                 });
-                
+
                 sectionElements.set(sectionId, section);
                 originalSection.appendChild(section);
                 expansionPlist.push(`#${sectionId}`);
@@ -744,7 +749,7 @@ export const createExpansionsInMEI = (meiTree, renameEndings = false) => {
 
         } else if (item.type === 'ending') {
             const node = item.node;
-            
+
             // Handle ending IDs
             if (renameEndings) {
                 node.setAttribute("xml:id", `ending-${endingCounter}`);

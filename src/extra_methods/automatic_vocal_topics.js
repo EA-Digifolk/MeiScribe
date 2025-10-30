@@ -42,7 +42,7 @@ let customStopWords = {
 };
 
 export const topicDict = {
-    PartExporter: {
+    PT: {
         "Performative & Descriptive": ["pantaleão", "vaitar"],
         "Narrative Symbolisms": ["narrative"], // placeholder if you want to match general narrative terms
         "Spatial & Maritime": ["barca", "serra"],
