@@ -51,7 +51,7 @@ const MEICAMPS = {
         { name: 'clean-lyrics', tag: './/mei:workList//mei:term[@type="clean-lyrics"]' },
         { name: 'ngram', tag: './/mei:workList//mei:term[@type="ngram"]' },
         { name: 'bigram', tag: './/mei:workList//mei:term[@type="bigram"]' },
-        { name: 'textual-topics', tag: './/mei:workList//mei:term[@type="textual-topic"]' },
+        { name: 'textual-topics', tag: './/mei:workList//mei:term[@type="textual-topics"]' },
     ],
     'ambitus': [
         { name: 'lowest', tag: './/mei:ambNote[@type="lowest"]' },
@@ -66,6 +66,11 @@ const MEICAMPS = {
         { name: 'phrases', tag: './/mei:music//mei:section//mei:supplied[@type="phrases"]' },
     ]
 };
+
+export const getTagByName = (name, field = "worklist") => {
+    const item = MEICAMPS[field].find(entry => entry.name === name);
+    return item ? item.tag : null;
+}
 
 export const getXpathNode = (nodeP, xpath, returnAll = false) => {
     const result = nodeP.evaluate(xpath, nodeP, prefix => prefix === 'mei' ? 'http://www.music-encoding.org/ns/mei' : null, XPathResult.ANY_TYPE, null);
@@ -422,7 +427,7 @@ const updateNodesSourceStmt = (meiTree, data) => {
  */
 const updateNodesWorklist = (meiTree, data) => {
     data.forEach(item => {
-        if (MEICAMPS['worklist'].map((e) => { return e.name }).includes(item.name)) {
+        if (MEICAMPS['worklist'].map((e) => { return e.name }).includes(item.name) || item.name === 'vocal topics') {
             let node = getXpathNode(meiTree, item.tag);
 
             if (!item.value && item.default) {
@@ -441,6 +446,11 @@ const updateNodesWorklist = (meiTree, data) => {
                 node.setAttribute('xml:lang', item.value.replace(/\s+/g, ' ').trim());
             } else if (item.name === 'lyrics' || item.name === 'notes' || item.name === 'key') {
                 node.textContent = item.value;
+            } else if (item.name === 'vocal topics') {                
+                getXpathNode(meiTree, getTagByName('ngram')).textContent = item.n_gram;
+                getXpathNode(meiTree, getTagByName('bigram')).textContent = item.bi_gram;
+                getXpathNode(meiTree, getTagByName('clean-lyrics')).textContent = item.clean_lycs;
+                getXpathNode(meiTree, getTagByName('textual-topics')).textContent = item.value; //.join('; ');
             } else {
                 node.textContent = item.value.replace(/\s+/g, ' ').trim();
             }

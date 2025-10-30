@@ -174,7 +174,7 @@
                             <button class="col col-sm-2 btn btn-primary p-0"
                                 title="Apply Automatic Function to get Vocal Topics"
                                 data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top"
-                                data-bs-html="true" @click="calculateVocalTopics">Auto Vocal Topics</button>
+                                data-bs-html="true" @click="calculateVocalTopics">Auto Textual Topics</button>
                         </div>
                         <div class="w-100 row" v-else>
                             <div class="col col-sm-2 card-text" style="text-align: right">
@@ -205,7 +205,7 @@
         <Teleport to="body">
             <modal :show="showVocalResults" @close="showVocalResults = false">
                 <template #header>
-                    <h3>Vocal Topics</h3>
+                    <h3>Textual Topics</h3>
                 </template>
                 <template #body>
 
@@ -228,7 +228,8 @@
                             :color="([, weight]) => weight > 10 ? 'DeepPink' : weight > 5 ? 'RoyalBlue' : 'Indigo'"
                             font-family="Roboto"/>
                     </pre>
-                    <pre class="w-100" id=""><p>Topics</p>{{ worklistData[worklistData.length - 1].topics.join(', ') }}</pre>
+                    <pre class="w-100"
+                        id=""><p>Topics</p>{{ worklistData[worklistData.length - 1].topics.join(', ') }}</pre>
                 </template>
             </modal>
         </Teleport>
@@ -273,7 +274,7 @@ export default {
                 { name: 'region', tag: './/mei:workList//mei:term[@type="region"]', value: '', on_display: 'Region', default: '', tooltip: 'region of the country from where the song came' },
                 { name: 'district', tag: './/mei:workList//mei:term[@type="district"]', value: '', on_display: 'District', default: '', tooltip: 'district of the region from where the song came' },
                 { name: 'city', tag: './/mei:workList//mei:term[@type="city"]', value: '', on_display: 'City', default: '', tooltip: 'city of the district from where the song came' },
-                { name: 'vocal topics', tag: './/mei:workList//mei:keywords', value: '', topics: [], n_gram: [], bi_gram: [], n_grams: [], bi_grams: [], clean_lycs: '', on_display: 'Topics', default: '', automatic: false, tooltip: 'extracted topics for the song' },
+                { name: 'vocal topics', tag: './/mei:workList//mei:keywords', value: '', topics: [], n_gram: [], bi_gram: [], n_grams: [], bi_grams: [], clean_lycs: '', on_display: 'Textual Topics', default: '', automatic: true, tooltip: 'extracted topics for the song' },
             ],
             showScore: false,
             showModal: false,
