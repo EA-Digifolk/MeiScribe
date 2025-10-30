@@ -70,8 +70,6 @@ import MusicalScore from '../MusicalScore.vue';
 
 import { Tooltip } from 'bootstrap';
 
-import * as music21 from 'music21j';
-
 export default {
     inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods', 'getAutomaticStructuralPattern_P', 'getAutomaticStructuralPattern_I', 'getAutomaticStructuralPattern_R',],
     components: {

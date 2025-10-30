@@ -188,7 +188,6 @@ export default {
         getAutomaticPhrases() {
             const segments = this.getAutomaticSegmentation(this.vT, this.MEIData);
             this.automaticSegmentationData = segments.map((item, i) => ({ 'n': i + 1, 'startid': item.startNoteID, 'endid': item.endNoteID, 'type': item.label }));
-            console.table(segments);
             this.showPhrasesModal = true;
         },
         getInfoFromMEI() {
@@ -266,7 +265,6 @@ export default {
 .del-btn {
     margin: .1em .5em .1em 1.5em;
     padding: .2em;
-    /*max-width: 5% !important;*/
 }
 
 .btn-automatic {
