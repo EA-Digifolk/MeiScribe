@@ -348,9 +348,9 @@ export default {
             let results = this.getAutomaticVocalTopics(this.MEIData);
 
             this.worklistData[this.worklistData.length - 1].clean_lycs = results.clean;
-            this.worklistData[this.worklistData.length - 1].n_gram = results.mostRepeated.unigram;
+            this.worklistData[this.worklistData.length - 1].n_gram = results.mostRepeated.unigram.word;
             this.worklistData[this.worklistData.length - 1].n_grams = Object.keys(results.weighted_unigrams).map((key) => [key, results.weighted_unigrams[key]])
-            this.worklistData[this.worklistData.length - 1].bi_gram = results.mostRepeated.bigram;
+            this.worklistData[this.worklistData.length - 1].bi_gram = results.mostRepeated.bigram.phrase;
             this.worklistData[this.worklistData.length - 1].bi_grams = Object.keys(results.weighted_bigrams).map((key) => [key, results.weighted_bigrams[key]])
             this.worklistData[this.worklistData.length - 1].keywords = results.keywords;
             this.worklistData[this.worklistData.length - 1].topics = results.topics;
@@ -391,6 +391,11 @@ export default {
                         }
                     } else if (item.name === 'lyrics' || item.name === 'notes' || item.name === 'key') {
                         item.value = node.textContent;
+                    } else if (item.name === 'vocal topics') {
+                        item.n_gram = this.getXpathNode(this.MEIData, '//mei:term[@type="ngram"]').textContent;
+                        item.bi_gram = this.getXpathNode(this.MEIData, '//mei:term[@type="ngram"]').textContent;
+                        item.clean_lycs = this.getXpathNode(this.MEIData, '//mei:term[@type="clean-lyrics"]').textContent;
+                        item.topics = this.getXpathNode(this.MEIData, '//mei:term[@type="textual-topics"]').textContent.split('; ');
                     } else {
                         item.value = this.capitalizeFirstLetter(node.textContent).replace(/\s+/g, ' ').trim();
                     }

@@ -450,7 +450,7 @@ const updateNodesWorklist = (meiTree, data) => {
                 getXpathNode(meiTree, getTagByName('ngram')).textContent = item.n_gram;
                 getXpathNode(meiTree, getTagByName('bigram')).textContent = item.bi_gram;
                 getXpathNode(meiTree, getTagByName('clean-lyrics')).textContent = item.clean_lycs;
-                getXpathNode(meiTree, getTagByName('textual-topics')).textContent = item.value; //.join('; ');
+                getXpathNode(meiTree, getTagByName('textual-topics')).textContent = item.topics.join('; ');
             } else {
                 node.textContent = item.value.replace(/\s+/g, ' ').trim();
             }
