@@ -47,7 +47,7 @@
                 </div>
             </div>
         </div>
-        <MusicalScore id="RhythmPatternForm" :vT="vT" :meiTree="MEIData"/>
+        <MusicalScore id="RhythmPatternForm" :vT="vT" :meiTree="MEIData" />
         <Teleport to="body">
             <modal :show="showModal" @close="showModal = false">
                 <template #header>
@@ -71,7 +71,8 @@ import MusicalScore from '../MusicalScore.vue';
 import { Tooltip } from 'bootstrap';
 
 export default {
-    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods', 'getAutomaticStructuralPattern_P', 'getAutomaticStructuralPattern_I', 'getAutomaticStructuralPattern_R',],
+    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods',
+        'getAutomaticStructuralPattern_P', 'getAutomaticStructuralPattern_I', 'getAutomaticStructuralPattern_R',],
     components: {
         Tooltip,
         Modal,
@@ -140,8 +141,8 @@ export default {
             });
         },
         calculateAutomatic(pattern) {
-            switch(pattern) {
-                case 'Pitch Pattern': 
+            switch (pattern) {
+                case 'Pitch Pattern':
                     this.structuralPatternsData[0].value = this.getAutomaticStructuralPattern_P(this.vT);
                     break;
                 case 'Intervallic Pattern':
@@ -152,7 +153,7 @@ export default {
                     this.structuralPatternsData[2].value = this.getAutomaticStructuralPattern_R(this.vT);
                     break;
             }
-            this.numberNotes = this.structuralPatternsData[0].value.reduce((partialSum, a) => partialSum + a, 0);      
+            this.numberNotes = this.structuralPatternsData[0].value.reduce((partialSum, a) => partialSum + a, 0);
         }
     },
 };

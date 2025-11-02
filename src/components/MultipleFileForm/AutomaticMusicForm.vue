@@ -2,9 +2,9 @@
     <div class="card w-100">
         <div class="card-header">
             <h4 class="w-100">Ambitus, Structural Patterns and Segmentation</h4>
-            <!--<button href="#" class="btn-save-mei btn btn-primary ml-1" @click="saveToMEI"
+            <button href="#" class="btn-save-mei btn btn-primary ml-1" @click="ViewMEIFiles"
                 title="Apply Information To MEI File" data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
-                data-bs-placement="bottom" data-bs-html="true">Apply To MEI</button>-->
+                data-bs-placement="bottom" data-bs-html="true">View MEI Files</button>
         </div>
         <div class="card-body container">
             <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
@@ -29,7 +29,24 @@
                     <h3>Saved Ambitus, Rhythm Pattern and Segmentation to MEI File</h3>
                 </template>
                 <template #body>
-                    <pre class="w-100" id="MEI-Modal-TitleStmt">{{ TitleStmtOntMEI }}</pre>
+                    <pre class="w-100" id="MEI-Modal-Automatic-Multiple">
+                        <div class="accordion accordion-flush" id="accordionAutomatic">
+                            <div v-for="(file, item) in MEIFiles" class="accordion-item" :id="'accordionItem-' + item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                    :data-bs-target="'#flush-collapse' + item" 
+                                    aria-expanded="false" :aria-controls="'flush-collapse' + item">
+                                        {{ item + ' ' + file.filename}}
+                                    </button>
+                                </h2>
+                                <div :id="'flush-collapse' + item" class="accordion-collapse collapse">
+                                    <div class="accordion-body">
+                                        {{ file.xmlDoc }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </pre>
                 </template>
             </modal>
         </Teleport>
@@ -41,7 +58,9 @@ import Modal from '../Modal.vue';
 import { Tooltip } from 'bootstrap';
 
 export default {
-    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods', 'getAutomaticAmbitus', 'getAutomaticStructuralPattern_R', 'getAutomaticSegmentation'],
+    inject: ['getXpathNode', 'prettifyXml', 'createNodesMethods', 'updateNodesMethods', 'getAutomaticAmbitus',
+        'getAutomaticStructuralPattern_P', 'getAutomaticStructuralPattern_I', 'getAutomaticStructuralPattern_R',
+        'getAutomaticSegmentation', 'getAutomaticVocalTopics'],
     components: {
         Tooltip,
         Modal
@@ -52,11 +71,13 @@ export default {
         return {
             automaticInfoData: [
                 { name: 'ambitus', on_display: 'Ambitus', function: this.calculateAmbitus, tooltip: 'Calculates Lowest and Highest Notes of Score in midi pitch' },
-                { name: 'pitch pattern', on_display: 'Pitch Pattern', function: this.calculateRhythmPattern, tooltip: `<pre>Calculates the Rhythm Pattern string.\n rhythm_pattern (str): Rhythm Pattern\n- the string should contain the number of each note of the rhythm, i.e., 8 for 8th notes, 4 for quarter notes, etc.\n- each number should be separated by a space\n- if the notes should be beamed, they should be surrounded by brackets with a b just next to the first bracket, i.e., [b 8 8]\n- Example of a rhythm_pattern: '[b 8 8] 4 [b 8 16 16]'</pre>` },
-                { name: 'interval pattern', on_display: 'Intervall Pattern', function: this.calculateRhythmPattern, tooltip: `<pre>Calculates the Rhythm Pattern string.\n rhythm_pattern (str): Rhythm Pattern\n- the string should contain the number of each note of the rhythm, i.e., 8 for 8th notes, 4 for quarter notes, etc.\n- each number should be separated by a space\n- if the notes should be beamed, they should be surrounded by brackets with a b just next to the first bracket, i.e., [b 8 8]\n- Example of a rhythm_pattern: '[b 8 8] 4 [b 8 16 16]'</pre>` },
+                { name: 'pitch pattern', on_display: 'Pitch Pattern', function: this.calculatePitchPattern, tooltip: `<pre>Calculates the Rhythm Pattern string.\n rhythm_pattern (str): Rhythm Pattern\n- the string should contain the number of each note of the rhythm, i.e., 8 for 8th notes, 4 for quarter notes, etc.\n- each number should be separated by a space\n- if the notes should be beamed, they should be surrounded by brackets with a b just next to the first bracket, i.e., [b 8 8]\n- Example of a rhythm_pattern: '[b 8 8] 4 [b 8 16 16]'</pre>` },
+                { name: 'interval pattern', on_display: 'Intervall Pattern', function: this.calculateIntervalPattern, tooltip: `<pre>Calculates the Rhythm Pattern string.\n rhythm_pattern (str): Rhythm Pattern\n- the string should contain the number of each note of the rhythm, i.e., 8 for 8th notes, 4 for quarter notes, etc.\n- each number should be separated by a space\n- if the notes should be beamed, they should be surrounded by brackets with a b just next to the first bracket, i.e., [b 8 8]\n- Example of a rhythm_pattern: '[b 8 8] 4 [b 8 16 16]'</pre>` },
                 { name: 'rhythm pattern', on_display: 'Rhythm Pattern', function: this.calculateRhythmPattern, tooltip: `<pre>Calculates the Rhythm Pattern string.\n rhythm_pattern (str): Rhythm Pattern\n- the string should contain the number of each note of the rhythm, i.e., 8 for 8th notes, 4 for quarter notes, etc.\n- each number should be separated by a space\n- if the notes should be beamed, they should be surrounded by brackets with a b just next to the first bracket, i.e., [b 8 8]\n- Example of a rhythm_pattern: '[b 8 8] 4 [b 8 16 16]'</pre>` },
                 { name: 'phrases', on_display: 'Phrases', function: this.calculateSegmentation, tooltip: 'Calculates Segmentation of song (i.e., beginnings and endings for each phrase in a song).' },
+                { name: 'vocal topics', on_display: 'Textual Topics', function: this.calculateVocalTopics, tooltip: 'extracted topics for the song' },
             ],
+            MeiFilesOntShow: [],
             showModal: false,
             AutomaticInfoOntMEI: ''
         };
@@ -81,6 +102,20 @@ export default {
         }
     },
     methods: {
+        ViewMEIFiles(openModal = true) {
+
+            this.MeiFilesOntShow = this.MEIFiles;
+            this.MeiFilesOntShow.forEach((file) => {
+                file['prettyXmlDoc'] = this.prettifyXml(new XMLSerializer().serializeToString(file.xmlDoc));
+                file['collapse'] = false;
+            })
+
+            if (openModal) {
+                this.showModal = !this.showModal;
+            } else {
+                this.$emit("saveFinished", "AutomaticForm");
+            }
+        },
         calculateAmbitus() {
             this.MEIFiles.forEach((file) => {
                 const lowAmb = this.getAutomaticAmbitus(file['vT'], true);
@@ -94,16 +129,45 @@ export default {
                 ], 'ambitus');
             });
         },
+        calculatePitchPattern() {
+            console.log('PITCH');
+            this.MEIFiles.forEach((file) => {
+                let result = this.getAutomaticStructuralPattern_P(file['vT']);
+                console.log(file.filename, result);
+            });
+        },
+        calculateIntervalPattern() {
+            console.log('INTERVAL');
+            this.MEIFiles.forEach((file) => {
+                this.getAutomaticStructuralPattern_I(file['vT'],);
+            });
+        },
         calculateRhythmPattern() {
             console.log('RHYTHM');
             this.MEIFiles.forEach((file) => {
-                this.getAutomaticStructuralPattern_R(file['vT'], file['xmlDoc']);
+                this.getAutomaticStructuralPattern_R(file['vT']);
             });
         },
         calculateSegmentation() {
             console.log('PHRASE');
             this.MEIFiles.forEach((file) => {
-                this.getAutomaticSegmentation(file['vT'], file['xmlDoc']);
+                const segments = this.getAutomaticSegmentation(file['vT'], file['xmlDoc']);
+                let phraseNode = this.getXpathNode(file['xmlDoc'], './/mei:music//mei:section//mei:supplied[@type="phrases"]');
+                if (!phraseNode) {
+                    this.createNodesMethods(file['xmlDoc'], 'segmentation');
+                }
+                this.updateNodesMethods(file['xmlDoc'], [
+                    {
+                        name: 'phrases', tag: './/mei:music//mei:section//mei:supplied[@type="phrases"]', on_display: 'Phrases', automatic: true,
+                        value: segments.map((item, i) => ({ 'n': i + 1, 'startid': item.startNoteID, 'endid': item.endNoteID, 'type': item.label }))
+                    },
+                ], 'segmentation');
+            });
+        },
+        calculateVocalTopics() {
+            console.log('VOCAL');
+            this.MEIFiles.forEach((file) => {
+                this.getAutomaticVocalTopics(file['vT'], file['xmlDoc']);
             });
         },
         saveToMEI(openModal = true) {

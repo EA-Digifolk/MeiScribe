@@ -203,7 +203,6 @@ export default {
                     };
                 } else {
                     this.addPhrase();
-                    getAutomaticSegmentation()
                 }
             });
         },
