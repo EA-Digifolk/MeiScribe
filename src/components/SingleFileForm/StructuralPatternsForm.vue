@@ -44,7 +44,17 @@
                         </div>
                     </div>
                     <div v-else class="row p-1 mb-1">
-                        TODO
+                        <span class="row w-100"><b class="col col-25">Optimal Resolution:</b><i class="col col-25">{{ item.optimal_resolution }}</i></span>
+                        <div class="row p-1 mb-1">
+                            <div v-for="[key, bin] in Object.entries(item.value)" class="col col-25 ">
+                                <vue3-slider class="row p-0" color="#FFBF65" track-color="#0065A2"
+                                    orientation="vertical" :name="'bin-' + key" v-model="item.value[key]" width="5em"
+                                    :max="numberNotes" aria-disabled="true" />
+                                <em class="row p-0 label-input-histogram"><small :for="'bin-' + key">{{ Number.parseFloat(bin).toFixed(2)
+                                        }}</small></em>
+                                <strong class="row p-0"><small :for="'bin-' + key">{{ key }}</small></strong>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -143,7 +153,11 @@ export default {
                 } else {
                     this.structuralPatternsData[0].value = this.getAutomaticStructuralPattern_P(this.vT);
                     this.structuralPatternsData[1].value = this.getAutomaticStructuralPattern_I(this.vT);
-                    this.structuralPatternsData[2].value = this.getAutomaticStructuralPattern_R(this.vT);
+
+                    const result = this.getAutomaticStructuralPattern_R(this.vT);
+                    this.structuralPatternsData[2].value = result.value;
+                    this.structuralPatternsData[2].optimal_resolution = result.optimal_resolution;
+
                     this.numberNotes = this.structuralPatternsData[0].value.reduce((partialSum, a) => partialSum + a, 0);
                 }
             });
@@ -158,7 +172,9 @@ export default {
                     break;
                 case 'Rhythm Pattern':
                 default:
-                    this.structuralPatternsData[2].value = this.getAutomaticStructuralPattern_R(this.vT);
+                    const result = this.getAutomaticStructuralPattern_R(this.vT);
+                    this.structuralPatternsData[2].value = result.value;
+                    this.structuralPatternsData[2].optimal_resolution = result.optimal_resolution;
                     break;
             }
             this.numberNotes = this.structuralPatternsData[0].value.reduce((partialSum, a) => partialSum + a, 0);

@@ -94,7 +94,7 @@ export const getAutomaticStructuralPattern_P = (vT) => {
     let histogram = Array(12).fill(0);
 
     // Count occurrences
-    midiPitches.forEach((element,_) => {
+    midiPitches.forEach((element, _) => {
         histogram[element % 12]++;
     });
 
@@ -118,7 +118,7 @@ export const getAutomaticStructuralPattern_I = (vT) => {
 
     let histogram = Array(25).fill(0);
 
-    intervals.forEach((element,_) => {
+    intervals.forEach((element, _) => {
         //console.log(element, element % 13 + 12)
         histogram[element % 13 + 12]++;
     });
@@ -126,13 +126,111 @@ export const getAutomaticStructuralPattern_I = (vT) => {
     return histogram;
 };
 
+
+const analyzeRhythm = (notes) => {
+
+    function estimateTactus(iois) {
+        const clusters = [];
+        for (const ioi of iois) {
+            const match = clusters.find(c => Math.abs(c.mean - ioi) < 0.2 * c.mean);
+            if (match) {
+                match.values.push(ioi);
+                match.mean = match.values.reduce((a, b) => a + b, 0) / match.values.length;
+            } else {
+                clusters.push({ mean: ioi, values: [ioi] });
+            }
+        }
+        // pick largest cluster by count
+        clusters.sort((a, b) => b.values.length - a.values.length);
+        return clusters[0]?.mean || iois[0];
+    }
+
+    function estimateCycleLength(onsets, tactus) {
+        const beats = onsets.map(t => Math.round(t / tactus));
+        const maxBeat = Math.max(...beats);
+        const sequence = new Array(maxBeat + 1).fill(0);
+        beats.forEach(b => sequence[b]++);
+
+        const acf = [];
+        for (let lag = 1; lag < Math.min(16, sequence.length / 2); lag++) {
+            let sum = 0;
+            for (let i = 0; i < sequence.length - lag; i++) {
+                sum += sequence[i] * sequence[i + lag];
+            }
+            acf.push(sum);
+        }
+
+        // Pick the lag (period) with the strongest correlation peak
+        const bestLag = acf.indexOf(Math.max(...acf)) + 1;
+        return bestLag;
+    }
+
+    function estimateOptimalResolution(iois, tactus) {
+        const fractions = [1, 1 / 2, 1 / 3, 1 / 4, 1 / 6, 1 / 8];
+        let best = { frac: 1, error: Infinity };
+
+        for (const f of fractions) {
+            const unit = tactus * f;
+            const error = iois.reduce((sum, ioi) => {
+                const q = Math.round(ioi / unit) * unit;
+                return sum + Math.abs(ioi - q);
+            }, 0);
+            if (error < best.error) best = { frac: f, error };
+        }
+        return best.frac;
+    }
+
+    function resolutionNameFromFraction(f) {
+        if (f === 1) return "quarter";
+        if (f === 0.5) return "8th";
+        if (f === 0.25) return "16th";
+        if (f === 0.125) return "32nd";
+        if (f === 1 / 3) return "triplet-quarter";
+        if (f === 1 / 6) return "triplet-8th";
+        return `${f * 4}-subdivision`;
+    }
+
+    const onsets = notes.map(n => n.time).sort((a, b) => a - b);
+    const iois = onsets.slice(1).map((t, i) => t - onsets[i]);
+    const tactus = estimateTactus(iois);
+    const cycleLength = estimateCycleLength(onsets, tactus);
+    const resolutionFrac = estimateOptimalResolution(iois, tactus);
+    const resolutionName = resolutionNameFromFraction(resolutionFrac);
+
+    return { tactus, cycleLength, resolutionName };
+}
+
 /**
  * Get Structural Patterns - Rhythm Pattern
  * @param {*} vT 
  * @param {*} meiTree 
  */
 export const getAutomaticStructuralPattern_R = (vT) => {
-    
+    let notes = vT.getDescriptiveFeatures()['pitchesIds'].map((element, _) => {
+        return vT.getMIDIValuesForElement(element[0]);
+    });
+
+    const { tactus, cycleLength, resolutionName } = analyzeRhythm(notes);
+
+    const bins = new Array(cycleLength).fill(0);
+
+    for (const note of notes) {
+        // Compute which beat (tactus index) the note belongs to
+        const startBeat = Math.floor(note.time / tactus) % cycleLength;
+        const endBeat = Math.floor((note.time + note.duration) / tactus) % cycleLength;
+
+        // Distribute note duration proportionally within affected beats
+        for (let i = startBeat; i <= endBeat; i++) {
+            const idx = i % cycleLength;
+            bins[idx] += note.duration / tactus;
+        }
+    }
+
+    // Normalize to 100%
+    const total = bins.reduce((a, b) => a + b, 0);
+    const normalized = bins.map(v => (v / total) * 100);
+
+    return { value: normalized, optimal_resolution: resolutionName };
 };
 
 
