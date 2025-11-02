@@ -2,9 +2,6 @@
     <div class="card w-100">
         <div class="card-header">
             <h4 class="w-100">Ambitus, Structural Patterns and Segmentation</h4>
-            <button href="#" class="btn-save-mei btn btn-primary ml-1" @click="ViewMEIFiles"
-                title="Apply Information To MEI File" data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip"
-                data-bs-placement="bottom" data-bs-html="true">View MEI Files</button>
         </div>
         <div class="card-body container">
             <div id="form" class="mt-1 mb-3 pt-0 pb-0 p-5">
@@ -20,36 +17,33 @@
                             data-bs-customClass="custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="bottom"
                             data-bs-html="true">Calculate and Apply To MEI Files</button>
                     </div>
+                    <Teleport to="body">
+                        <modal :show="item.show_modal_on_end" @close="item.show_modal_on_end = false">
+                            <template #header>{{ item.name }}</template>
+                            <template #body>
+                                <div class="accordion accordion-flush" :id="'accordion-' + item.name.replace(' ', '-')">
+                                    <div v-for="(file, itemN) in MEIFiles" class="accordion-item"
+                                        :id="'accordionItem-' + itemN">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button"
+                                                data-bs-toggle="collapse" :data-bs-target="'#flushM-collapse' + itemN"
+                                                aria-expanded="false" :aria-controls="'flushM-collapse' + itemN">
+                                                {{ itemN + ' ' + file.filename }}
+                                            </button>
+                                        </h2>
+                                        <div :id="'flushM-collapse' + itemN" class="accordion-collapse collapse">
+                                            <div class="accordion-body p-4 bg-gray-900 text-white rounded font-mono">
+                                                <code>{{ getPrettified(file.xmlDoc, item.tag) }}</code>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </modal>
+                    </Teleport>
                 </li>
             </div>
         </div>
-        <Teleport to="body">
-            <modal :show="showModal" @close="showModal = false">
-                <template #header>
-                    <h3>Saved Ambitus, Rhythm Pattern and Segmentation to MEI File</h3>
-                </template>
-                <template #body>
-                    <pre class="w-100" id="MEI-Modal-Automatic-Multiple">
-                        <div class="accordion accordion-flush" id="accordionAutomatic">
-                            <div v-for="(file, item) in MEIFiles" class="accordion-item" :id="'accordionItem-' + item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
-                                    :data-bs-target="'#flush-collapse' + item" 
-                                    aria-expanded="false" :aria-controls="'flush-collapse' + item">
-                                        {{ item + ' ' + file.filename}}
-                                    </button>
-                                </h2>
-                                <div :id="'flush-collapse' + item" class="accordion-collapse collapse">
-                                    <div class="accordion-body">
-                                        {{ file.xmlDoc }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </pre>
-                </template>
-            </modal>
-        </Teleport>
     </div>
 </template>
 
@@ -70,14 +64,13 @@ export default {
     data() {
         return {
             automaticInfoData: [
-                { name: 'ambitus', on_display: 'Ambitus', function: this.calculateAmbitus, tooltip: 'Calculates Lowest and Highest Notes of Score in midi pitch' },
-                { name: 'pitch pattern', on_display: 'Pitch Pattern', function: this.calculatePitchPattern, tooltip: `<pre>Calculates the Rhythm Pattern string.\n rhythm_pattern (str): Rhythm Pattern\n- the string should contain the number of each note of the rhythm, i.e., 8 for 8th notes, 4 for quarter notes, etc.\n- each number should be separated by a space\n- if the notes should be beamed, they should be surrounded by brackets with a b just next to the first bracket, i.e., [b 8 8]\n- Example of a rhythm_pattern: '[b 8 8] 4 [b 8 16 16]'</pre>` },
-                { name: 'interval pattern', on_display: 'Intervall Pattern', function: this.calculateIntervalPattern, tooltip: `<pre>Calculates the Rhythm Pattern string.\n rhythm_pattern (str): Rhythm Pattern\n- the string should contain the number of each note of the rhythm, i.e., 8 for 8th notes, 4 for quarter notes, etc.\n- each number should be separated by a space\n- if the notes should be beamed, they should be surrounded by brackets with a b just next to the first bracket, i.e., [b 8 8]\n- Example of a rhythm_pattern: '[b 8 8] 4 [b 8 16 16]'</pre>` },
-                { name: 'rhythm pattern', on_display: 'Rhythm Pattern', function: this.calculateRhythmPattern, tooltip: `<pre>Calculates the Rhythm Pattern string.\n rhythm_pattern (str): Rhythm Pattern\n- the string should contain the number of each note of the rhythm, i.e., 8 for 8th notes, 4 for quarter notes, etc.\n- each number should be separated by a space\n- if the notes should be beamed, they should be surrounded by brackets with a b just next to the first bracket, i.e., [b 8 8]\n- Example of a rhythm_pattern: '[b 8 8] 4 [b 8 16 16]'</pre>` },
-                { name: 'phrases', on_display: 'Phrases', function: this.calculateSegmentation, tooltip: 'Calculates Segmentation of song (i.e., beginnings and endings for each phrase in a song).' },
-                { name: 'vocal topics', on_display: 'Textual Topics', function: this.calculateVocalTopics, tooltip: 'extracted topics for the song' },
+                { name: 'ambitus', show_modal_on_end: false, tag: './/mei:ambitus', on_display: 'Ambitus', function: this.calculateAmbitus, tooltip: 'Calculates Lowest and Highest Notes of Score in midi pitch' },
+                { name: 'pitch pattern', show_modal_on_end: false, tag: './/mei:supplied[@type="pitch pattern"]', on_display: 'Pitch Pattern', function: this.calculatePitchPattern, tooltip: `<pre>Calculates the Rhythm Pattern string.\n rhythm_pattern (str): Rhythm Pattern\n- the string should contain the number of each note of the rhythm, i.e., 8 for 8th notes, 4 for quarter notes, etc.\n- each number should be separated by a space\n- if the notes should be beamed, they should be surrounded by brackets with a b just next to the first bracket, i.e., [b 8 8]\n- Example of a rhythm_pattern: '[b 8 8] 4 [b 8 16 16]'</pre>` },
+                { name: 'interval pattern', show_modal_on_end: false, tag: './/mei:supplied[@type="interval pattern"]', on_display: 'Intervall Pattern', function: this.calculateIntervalPattern, tooltip: `<pre>Calculates the Rhythm Pattern string.\n rhythm_pattern (str): Rhythm Pattern\n- the string should contain the number of each note of the rhythm, i.e., 8 for 8th notes, 4 for quarter notes, etc.\n- each number should be separated by a space\n- if the notes should be beamed, they should be surrounded by brackets with a b just next to the first bracket, i.e., [b 8 8]\n- Example of a rhythm_pattern: '[b 8 8] 4 [b 8 16 16]'</pre>` },
+                { name: 'rhythm pattern', show_modal_on_end: false, tag: './/mei:supplied[@type="rhythm pattern"]', on_display: 'Rhythm Pattern', function: this.calculateRhythmPattern, tooltip: `<pre>Calculates the Rhythm Pattern string.\n rhythm_pattern (str): Rhythm Pattern\n- the string should contain the number of each note of the rhythm, i.e., 8 for 8th notes, 4 for quarter notes, etc.\n- each number should be separated by a space\n- if the notes should be beamed, they should be surrounded by brackets with a b just next to the first bracket, i.e., [b 8 8]\n- Example of a rhythm_pattern: '[b 8 8] 4 [b 8 16 16]'</pre>` },
+                { name: 'phrases', show_modal_on_end: false, tag: './/mei:music//mei:section//mei:supplied[@type="phrases"]', on_display: 'Phrases', function: this.calculateSegmentation, tooltip: 'Calculates Segmentation of song (i.e., beginnings and endings for each phrase in a song).' },
+                { name: 'vocal topics', show_modal_on_end: false, tag: './/mei:workList//mei:keywords', on_display: 'Textual Topics', function: this.calculateVocalTopics, tooltip: 'extracted topics for the song' },
             ],
-            MeiFilesOntShow: [],
             showModal: false,
             AutomaticInfoOntMEI: ''
         };
@@ -102,14 +95,10 @@ export default {
         }
     },
     methods: {
+        getPrettified(xmlDoc, tag) {
+            return this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(xmlDoc, tag)));
+        },
         ViewMEIFiles(openModal = true) {
-
-            this.MeiFilesOntShow = this.MEIFiles;
-            this.MeiFilesOntShow.forEach((file) => {
-                file['prettyXmlDoc'] = this.prettifyXml(new XMLSerializer().serializeToString(file.xmlDoc));
-                file['collapse'] = false;
-            })
-
             if (openModal) {
                 this.showModal = !this.showModal;
             } else {
@@ -128,6 +117,7 @@ export default {
                     { name: 'highest', tag: './/mei:ambNote[@type="highest"]', value: highAmb, default: highAmb },
                 ], 'ambitus');
             });
+            this.automaticInfoData[0].show_modal_on_end = true;
         },
         calculatePitchPattern() {
             console.log('PITCH');

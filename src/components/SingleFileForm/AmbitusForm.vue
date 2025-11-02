@@ -25,7 +25,7 @@
                     <h3>Saved Ambitus to MEI File</h3>
                 </template>
                 <template #body>
-                    <pre class="w-100" id="MEI-Modal-TitleStmt">{{ AmbitusOntMEI }}</pre>
+                    <pre class="w-100" id="MEI-Modal-Ambitus">{{ AmbitusOntMEI }}</pre>
                 </template>
             </modal>
         </Teleport>
