@@ -226,7 +226,22 @@
                     <h3>Saved Worklist to MEI File</h3>
                 </template>
                 <template #body>
-                    <pre class="w-100" id="MEI-Modal-Worklist">{{ WorklistOntMEI }}</pre>
+                    <div class="accordion accordion-flush" id="accordionWorklist">
+                        <div v-for="(file, item) in MEIFiles" class="accordion-item" :id="'accordionItem-' + item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    :data-bs-target="'#flushM-collapse' + item" aria-expanded="false"
+                                    :aria-controls="'flushM-collapse' + item">
+                                    {{ file.filename }}
+                                </button>
+                            </h2>
+                            <div :id="'flushM-collapse' + item" class="accordion-collapse collapse">
+                                <div class="accordion-body p-4 bg-gray-900 text-black rounded font-mono">
+                                    <pre><code>{{ getPrettified(file.xmlDoc) }}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </template>
             </modal>
         </Teleport>
@@ -261,7 +276,6 @@ export default {
                 { name: 'city', tag: './/mei:workList//mei:term[@type="city"]', value: '', select: false, on_display: 'City', default: '', tooltip: 'city of the district from where the song came' },
             ],
             showModal: false,
-            WorklistOntMEI: ''
         }
     },
     watch: {
@@ -272,7 +286,6 @@ export default {
         }
     },
     mounted() {
-        this.getInfoFromMEI();
         const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.forEach(tooltipTriggerEl => {
             new Tooltip(tooltipTriggerEl, {
@@ -284,6 +297,9 @@ export default {
         });
     },
     methods: {
+        getPrettified(xmlDoc) {
+            return this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(xmlDoc, './/mei:work')));
+        },
         calculateModeKey() {
 
             this.worklistData[1]['select'] = false;
@@ -327,16 +343,12 @@ export default {
                 this.updateNodesMethods(file['xmlDoc'], this.worklistData.filter((item) => item.select === true), 'worklist');
             });
 
-            this.WorklistOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIFiles[0]['xmlDoc'], './/mei:work')));
-
             if (openModal) {
                 this.showModal = !this.showModal;
             } else {
                 this.$emit("saveFinished", "WorklistForm");
             }
         },
-        getInfoFromMEI() {
-        }
     }
 };
 </script>

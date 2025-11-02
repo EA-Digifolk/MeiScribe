@@ -31,7 +31,22 @@
                     <h3>Saved Source Statement to MEI File</h3>
                 </template>
                 <template #body>
-                    <pre class="w-100" id="MEI-Modal-SourceStmt">{{ SourceStmtOntMEI }}</pre>
+                    <div class="accordion accordion-flush" id="accordionSource">
+                        <div v-for="(file, item) in MEIFiles" class="accordion-item" :id="'accordionItem-' + item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    :data-bs-target="'#flushM-collapse' + item" aria-expanded="false"
+                                    :aria-controls="'flushM-collapse' + item">
+                                    {{ file.filename }}
+                                </button>
+                            </h2>
+                            <div :id="'flushM-collapse' + item" class="accordion-collapse collapse">
+                                <div class="accordion-body p-4 bg-gray-900 text-black rounded font-mono">
+                                    <pre><code>{{ getPrettified(file.xmlDoc) }}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </template>
             </modal>
         </Teleport>
@@ -67,11 +82,9 @@ export default {
                 { name: 'pages', tag: './/mei:source//mei:extent[@type="pages"]', value: '', select: false, on_display: 'Number of Pages', default: 0, type: 'number', tooltip: `number of pages of source (Book Pages)` },
             ],
             showModal: false,
-            SourceStmtOntMEI: ''
         };
     },
     mounted() {
-        this.getInfoFromMEI();
         const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.forEach(tooltipTriggerEl => {
             new Tooltip(tooltipTriggerEl, {
@@ -90,6 +103,9 @@ export default {
         }
     },
     methods: {
+        getPrettified(xmlDoc) {
+            return this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(xmlDoc, './/mei:sourceDesc')));
+        },
         saveToMEI(openModal = true) {
 
             this.MEIFiles.forEach((file) => {
@@ -99,15 +115,11 @@ export default {
                 this.updateNodesMethods(file['xmlDoc'], this.sourceStmtData.filter((item) => item.select === true), 'sourceStmt');
             });
 
-            this.SourceStmtOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIFiles[0]['xmlDoc'], './/mei:sourceDesc')));
-
             if (openModal) {
                 this.showModal = !this.showModal;
             } else {
                 this.$emit("saveFinished", "SourceForm");
             }
-        },
-        getInfoFromMEI() {
         },
     },
 };

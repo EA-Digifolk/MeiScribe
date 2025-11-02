@@ -32,7 +32,22 @@
                     <h3>Saved Publisher Statement to MEI File</h3>
                 </template>
                 <template #body>
-                    <pre class="w-100" id="MEI-Modal-PublisherStmt">{{ PublisherStmtOntMEI }}</pre>
+                    <div class="accordion accordion-flush" id="accordionPublisher">
+                        <div v-for="(file, item) in MEIFiles" class="accordion-item" :id="'accordionItem-' + item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    :data-bs-target="'#flushM-collapse' + item" aria-expanded="false"
+                                    :aria-controls="'flushM-collapse' + item">
+                                    {{ file.filename }}
+                                </button>
+                            </h2>
+                            <div :id="'flushM-collapse' + item" class="accordion-collapse collapse">
+                                <div class="accordion-body p-4 bg-gray-900 text-black rounded font-mono">
+                                    <pre><code>{{ getPrettified(file.xmlDoc) }}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </template>
             </modal>
         </Teleport>
@@ -61,11 +76,9 @@ export default {
                 { name: 'availability', tag: './/mei:pubStmt//mei:availability', select: false, value: '', on_display: 'Availability', tooltip: `<pre>Availability Notes</pre>`, default: `To the best of our knowledge, the full compositions on this site are in the public domain, the excerpts are in the public domain or are allowable under fair-use, and the few compositions that are still under copyright are used by permission. These scores, are provided for educational use only and are not to be used commercially.` },
             ],
             showModal: false,
-            PublisherStmtOntMEI: ''
         };
     },
     mounted() {
-        this.getInfoFromMEI();
         let tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new Tooltip(tooltipTriggerEl, {
@@ -84,6 +97,9 @@ export default {
         }
     },
     methods: {
+        getPrettified(xmlDoc) {
+            return this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(xmlDoc, './/mei:pubStmt')));
+        },
         saveToMEI(openModal = true) {
             this.MEIFiles.forEach((file) => {
                 if (!this.getXpathNode(file['xmlDoc'], './/mei:pubStmt')) {
@@ -92,16 +108,12 @@ export default {
                 this.updateNodesMethods(file['xmlDoc'], this.pubData.filter((item) => item.select === true), 'pubStmt');
             });
 
-            this.PublisherStmtOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIFiles[0]['xmlDoc'], './/mei:pubStmt')));
-
             if (openModal) {
                 this.showModal = !this.showModal;
             } else {
                 this.$emit("saveFinished", "PublisherForm");
             }
         },
-        getInfoFromMEI() {
-        }
     },
 };
 </script>

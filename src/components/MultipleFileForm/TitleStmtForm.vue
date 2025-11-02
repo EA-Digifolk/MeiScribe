@@ -31,7 +31,22 @@
                     <h3>Saved Title Statement to MEI File</h3>
                 </template>
                 <template #body>
-                    <pre class="w-100" id="MEI-Modal-TitleStmt">{{ TitleStmtOntMEI }}</pre>
+                    <div class="accordion accordion-flush" id="accordionTitleStmt">
+                        <div v-for="(file, item) in MEIFiles" class="accordion-item" :id="'accordionItem-' + item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    :data-bs-target="'#flushM-collapse' + item" aria-expanded="false"
+                                    :aria-controls="'flushM-collapse' + item">
+                                    {{ file.filename }}
+                                </button>
+                            </h2>
+                            <div :id="'flushM-collapse' + item" class="accordion-collapse collapse">
+                                <div class="accordion-body p-4 bg-gray-900 text-black rounded font-mono">
+                                    <pre><code>{{ getPrettified(file.xmlDoc) }}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </template>
             </modal>
         </Teleport>
@@ -61,11 +76,9 @@ export default {
                 { name: 'geogName', tag: './/mei:titleStmt//mei:respStmt//mei:persName[@role="informer"]//mei:geogName', value: '', select: false, on_display: 'Geography', default: '', tooltip: "<pre>Geography (optional) information if the song is traditional from a specific region</pre>" },
             ],
             showModal: false,
-            TitleStmtOntMEI: ''
         };
     },
     mounted() {
-        this.getInfoFromMEI();
         const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.forEach(tooltipTriggerEl => {
             new Tooltip(tooltipTriggerEl, {
@@ -84,6 +97,9 @@ export default {
         }
     },
     methods: {
+        getPrettified(xmlDoc) {
+            return this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(xmlDoc, './/mei:titleStmt')));
+        },
         saveToMEI(openModal = true) {
             this.MEIFiles.forEach((file) => {
                 if (!this.getXpathNode(file['xmlDoc'], './/mei:titleStmt')) {
@@ -92,16 +108,11 @@ export default {
                 this.updateNodesMethods(file['xmlDoc'], this.titleStmtData.filter((item) => item.select === true), 'titleStmt');
             });
 
-            this.TitleStmtOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIFiles[0]['xmlDoc'], './/mei:titleStmt')));
-
             if (openModal) {
                 this.showModal = !this.showModal;
             } else {
                 this.$emit("saveFinished", "TitleForm");
             }
-        },
-        getInfoFromMEI() {
-
         },
     }
 };

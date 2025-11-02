@@ -28,12 +28,12 @@
                                             <button class="accordion-button collapsed" type="button"
                                                 data-bs-toggle="collapse" :data-bs-target="'#flushM-collapse' + itemN"
                                                 aria-expanded="false" :aria-controls="'flushM-collapse' + itemN">
-                                                {{ itemN + ' ' + file.filename }}
+                                                {{  file.filename }}
                                             </button>
                                         </h2>
                                         <div :id="'flushM-collapse' + itemN" class="accordion-collapse collapse">
-                                            <div class="accordion-body p-4 bg-gray-900 text-white rounded font-mono">
-                                                <code>{{ getPrettified(file.xmlDoc, item.tag) }}</code>
+                                            <div class="accordion-body p-4 bg-gray-900 text-black rounded font-mono">
+                                                <pre><code>{{ getPrettified(file.xmlDoc, item.tag) }}</code></pre>
                                             </div>
                                         </div>
                                     </div>
@@ -48,6 +48,7 @@
 </template>
 
 <script type="module">
+
 import Modal from '../Modal.vue';
 import { Tooltip } from 'bootstrap';
 
@@ -57,7 +58,7 @@ export default {
         'getAutomaticSegmentation', 'getAutomaticVocalTopics'],
     components: {
         Tooltip,
-        Modal
+        Modal,
     },
     props: ['MEIFiles', 'vT', 'export'],
     emits: ["saveFinished"],
@@ -153,12 +154,27 @@ export default {
                     },
                 ], 'segmentation');
             });
+            this.automaticInfoData[4].show_modal_on_end = true;
         },
         calculateVocalTopics() {
             console.log('VOCAL');
             this.MEIFiles.forEach((file) => {
-                this.getAutomaticVocalTopics(file['vT'], file['xmlDoc']);
+                const results = this.getAutomaticVocalTopics(file['xmlDoc']);
+                let keywordsNode = this.getXpathNode(file['xmlDoc'], './/mei:workList//mei:keywords');
+                if (!keywordsNode) {
+                    this.createNodesMethods(file['xmlDoc'], 'worklist');
+                }
+                this.updateNodesMethods(file['xmlDoc'], [
+                    {
+                        name: 'vocal topics', tag: './/mei:workList//mei:keywords', on_display: 'Textual Topics', default: '', automatic: true, tooltip: 'extracted topics for the song',
+                        value: '', topics: results.topics, n_gram: results.mostRepeated.unigram.word, bi_gram: results.mostRepeated.bigram.phrase,
+                        n_grams: Object.keys(results.weighted_unigrams).map((key) => [key, results.weighted_unigrams[key]]),
+                        bi_grams: Object.keys(results.weighted_bigrams).map((key) => [key, results.weighted_bigrams[key]]),
+                        clean_lycs: results.clean, keywords: results.keywords,
+                    },
+                ], 'worklist');
             });
+            this.automaticInfoData[5].show_modal_on_end = true;
         },
         saveToMEI(openModal = true) {
 

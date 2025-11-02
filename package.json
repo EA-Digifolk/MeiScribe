@@ -16,6 +16,7 @@
     "@wslyhbb/vue3-tags-input": "^3.0.7",
     "bootstrap": "^5.3.3",
     "google-drive-vue": "^0.0.2",
+    "highlight.js": "^11.11.1",
     "jszip": "^3.10.1",
     "midi-writer-js": "^3.1.1",
     "music21j": "^0.16.5",
