@@ -313,8 +313,8 @@ const createNodesPatterns = (meiTree) => {
         if (!patternNode) {
             patternNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'supplied');
             patternNode.setAttribute('type', item.name);
-            getXpathNode(meiTree, './/mei:music//mei:section').insertAdjacentElement("afterbegin", patternNode);
-        }
+            getXpathNode(meiTree, './/mei:music//mei:expansion').insertAdjacentElement("afterend", patternNode);
+        };
     });
     return meiTree;
 };

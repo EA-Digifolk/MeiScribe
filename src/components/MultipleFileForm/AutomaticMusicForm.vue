@@ -107,11 +107,11 @@ export default {
         },
         calculateAmbitus() {
             this.MEIFiles.forEach((file) => {
-                const lowAmb = this.getAutomaticAmbitus(file['vT'], true);
-                const highAmb = this.getAutomaticAmbitus(file['vT'], false);
                 if (!this.getXpathNode(file['xmlDoc'], './/mei:ambitus')) {
                     this.createNodesMethods(file['xmlDoc'], 'ambitus');
                 }
+                const lowAmb = this.getAutomaticAmbitus(file['vT'], true);
+                const highAmb = this.getAutomaticAmbitus(file['vT'], false);
                 this.updateNodesMethods(file['xmlDoc'], [
                     { name: 'lowest', tag: './/mei:ambNote[@type="lowest"]', value: lowAmb, default: lowAmb },
                     { name: 'highest', tag: './/mei:ambNote[@type="highest"]', value: highAmb, default: highAmb },
@@ -157,11 +157,10 @@ export default {
         },
         calculateSegmentation() {
             this.MEIFiles.forEach((file) => {
-                const segments = this.getAutomaticSegmentation(file['vT'], file['xmlDoc']);
-                let phraseNode = this.getXpathNode(file['xmlDoc'], './/mei:music//mei:section//mei:supplied[@type="phrases"]');
-                if (!phraseNode) {
+                if (!this.getXpathNode(file['xmlDoc'], './/mei:music//mei:section//mei:supplied[@type="phrases"]')) {
                     this.createNodesMethods(file['xmlDoc'], 'segmentation');
                 }
+                const segments = this.getAutomaticSegmentation(file['vT'], file['xmlDoc']);
                 this.updateNodesMethods(file['xmlDoc'], [
                     {
                         name: 'phrases', tag: './/mei:music//mei:section//mei:supplied[@type="phrases"]', on_display: 'Phrases', automatic: true,
@@ -173,11 +172,10 @@ export default {
         },
         calculateVocalTopics() {
             this.MEIFiles.forEach((file) => {
-                const results = this.getAutomaticVocalTopics(file['xmlDoc']);
-                let keywordsNode = this.getXpathNode(file['xmlDoc'], './/mei:workList//mei:keywords');
-                if (!keywordsNode) {
+                if (!this.getXpathNode(file['xmlDoc'], './/mei:workList//mei:keywords')) {
                     this.createNodesMethods(file['xmlDoc'], 'worklist');
                 }
+                const results = this.getAutomaticVocalTopics(file['xmlDoc']);
                 this.updateNodesMethods(file['xmlDoc'], [
                     {
                         name: 'vocal topics', tag: './/mei:workList//mei:keywords', on_display: 'Textual Topics', default: '', automatic: true, tooltip: 'extracted topics for the song',
@@ -190,6 +188,22 @@ export default {
             });
             this.automaticInfoData[5].show_modal_on_end = true;
         },
+        saveToMEI() {
+            this.MEIFiles.forEach((file) => {
+                if (!this.getXpathNode(file['xmlDoc'], './/mei:ambitus')) {
+                    this.createNodesMethods(file['xmlDoc'], 'ambitus');
+                }
+                if (!this.getXpathNode(file['xmlDoc'], this.automaticInfoData[1].tag)) {
+                    this.createNodesMethods(file['xmlDoc'], 'structuralPattern');
+                }
+                if (!this.getXpathNode(file['xmlDoc'], './/mei:music//mei:section//mei:supplied[@type="phrases"]')) {
+                    this.createNodesMethods(file['xmlDoc'], 'segmentation');
+                }
+                if (!this.getXpathNode(file['xmlDoc'], './/mei:workList//mei:keywords')) {
+                    this.createNodesMethods(file['xmlDoc'], 'worklist');
+                }
+            });
+        }
     }
 };
 </script>
