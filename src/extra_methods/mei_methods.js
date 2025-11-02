@@ -58,7 +58,7 @@ const MEICAMPS = {
         { name: 'highest', tag: './/mei:ambNote[@type="highest"]' },
     ],
     'structuralPatterns': [
-        { name: 'melodic pattern', tag: './/mei:supplied[@type="melodic pattern"]' },
+        { name: 'pitch pattern', tag: './/mei:supplied[@type="pitch pattern"]' },
         { name: 'interval pattern', tag: './/mei:supplied[@type="interval pattern"]' },
         { name: 'rhythm pattern', tag: './/mei:supplied[@type="rhythm pattern"]' },
     ],
@@ -308,12 +308,14 @@ const createNodesAmbitus = (meiTree) => {
  * @returns 
  */
 const createNodesPatterns = (meiTree) => {
-    let rhythmPNode = getXpathNode(meiTree, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]');
-    if (!rhythmPNode) {
-        rhythmPNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'supplied');
-        rhythmPNode.setAttribute('type', 'rhythm pattern');
-        getXpathNode(meiTree, './/mei:music//mei:section').insertAdjacentElement("afterbegin", rhythmPNode);
-    };
+    MEICAMPS['structuralPatterns'].reverse().forEach((item) => {
+        let patternNode = getXpathNode(meiTree, item.tag);
+        if (!patternNode) {
+            patternNode = document.createElementNS('http://www.music-encoding.org/ns/mei', 'supplied');
+            patternNode.setAttribute('type', item.name);
+            getXpathNode(meiTree, './/mei:music//mei:section').insertAdjacentElement("afterbegin", patternNode);
+        }
+    });
     return meiTree;
 };
 
@@ -446,7 +448,7 @@ const updateNodesWorklist = (meiTree, data) => {
                 node.setAttribute('xml:lang', item.value.replace(/\s+/g, ' ').trim());
             } else if (item.name === 'lyrics' || item.name === 'notes' || item.name === 'key') {
                 node.textContent = item.value;
-            } else if (item.name === 'vocal topics') {                
+            } else if (item.name === 'vocal topics') {
                 getXpathNode(meiTree, getTagByName('ngram')).textContent = item.n_gram;
                 getXpathNode(meiTree, getTagByName('bigram')).textContent = item.bi_gram;
                 getXpathNode(meiTree, getTagByName('clean-lyrics')).textContent = item.clean_lycs;
@@ -487,53 +489,51 @@ const updateNodesAmbitus = (meiTree, data) => {
 /**
  * Update Structural Patterns with data
  * @param {*} meiTree 
- * @param {*} data 
+ * @param {*} item.value 
  * @returns 
  */
 const updateNodesPatterns = (meiTree, data) => {
 
-    let rhythmPNode = getXpathNode(meiTree, data[0].tag);
-    if (!rhythmPNode) {
-        return meiTree;
-    }
+    data.forEach((item) => {
 
-    if (rhythmPNode && rhythmPNode.children.length > 0) {
-        rhythmPNode.replaceChildren();
-    }
+        let patternNode = getXpathNode(meiTree, item.tag);
+        if (patternNode.children.length > 0) {
+            patternNode.replaceChildren();
+        };
 
-    let pattern = data[0].value.split(']');
-    for (let i in pattern) {
-        let pt = pattern[i].split('[');
-        for (let j in pt) {
-            if (/\d/.test(pt[j])) {
-                let pt_s = pt[j].toString().split(" ");
-                if (pt_s[0] == " ") {
-                    pt_s = pt_s.slice(1);
-                };
+        let tag = document.createElementNS('http://www.music-encoding.org/ns/mei', 'histogram');
 
-                let bT = rhythmPNode;
-                if (pt[j][0] == 'b') {
-                    bT = document.createElementNS('http://www.music-encoding.org/ns/mei', 'beam');
-                    if (pt[j][1] != ' ') { bT.setAttribute('tuplet', pt[j][1]); }
-                    rhythmPNode.append(bT);
-                };
-
-                for (let n in pt_s) {
-                    if (/\d/.test(pt_s[n])) {
-                        let note = document.createElementNS('http://www.music-encoding.org/ns/mei', 'note');
-                        if (pt_s[n].includes('.')) {
-                            let dots = pt_s[n].toString().split(".");
-                            note.setAttribute('dur', parseInt(dots[0]));
-                            note.setAttribute('dots', dots.length - 1);
-                        } else {
-                            note.setAttribute('dur', parseInt(pt_s[n]));
-                        }
-                        bT.append(note);
-                    }
-                };
+        switch (item.name) {
+            case 'pitch pattern': {
+                tag.setAttribute('total', Object.values(item.value).reduce((sum, v) => sum + v, 0));
+                tag.setAttribute('unit', 'count');
+                tag.setAttribute('normalized', false);
+                Object.keys(item.value).sort((a, b) => a - b).forEach(k => {
+                    tag.setAttribute("pc_" + k, item.value[k]);
+                });
+                break;
             }
-        }
-    };
+            case 'interval pattern': {
+                Object.keys(item.value).sort((a, b) => a - b).forEach(k => {
+                    tag.setAttribute("intm_" + (k - 12), item.value[k]);
+                });
+                break;
+            }
+            case 'rhythm pattern': {
+                //tag.setAttribute('optimal_resolution', item.optimal_resolution);
+                // Add each pc_k="value" line
+                /*Object.keys(data).sort((a, b) => a - b).forEach(k => {
+                    tag.setAttribute("bin_" + k, data[k]);
+                });*/
+                break;
+            }
+            default:
+                break;
+        };
+
+        patternNode.setAttribute('automatic', true);
+        patternNode.append(tag);
+    });
 
     return meiTree;
 };
@@ -605,7 +605,7 @@ export const createExpansionsInMEI = (meiTree, renameEndings = false) => {
     // Step 0: Check if Expansions Already exist
     const expansionDefault = Array.from(originalSection.getElementsByTagName("expansion"));
     if (expansionDefault.length > 0) return meiTree;
-    
+
     // Rename original section
     originalSection.setAttribute("xml:id", "all");
 

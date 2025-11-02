@@ -10,10 +10,11 @@
                 <div class="col col-sm-3 card-text card card-body m-1" v-for="item in structuralPatternsData">
                     <div class="row align-items-center p-1">
                         <p class="col col-sm-7 mb-0" :title="item.tooltip" data-bs-customClass="custom-tooltip"
-                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">{{ item.on_display
-                            }}
+                            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-html="true">{{ item.on_display }}
                         </p>
-                        <button class="col col-sm-5" @click="item.show_colapsible = !item.show_colapsible">OPEN</button>
+                        <button class="col col-sm-5" @click="item.show_colapsible = !item.show_colapsible">
+                            {{ item.show_colapsible ? 'CLOSE' : 'OPEN' }}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -28,7 +29,7 @@
                         <div v-for="[key, pc] in Object.entries(item.value)" class="col col-sm-1">
                             <vue3-slider class="row p-0" color="#FFBF65" track-color="#0065A2" orientation="vertical"
                                 :name="'pc-' + key" v-model="item.value[key]" width="5em" height="2em"
-                                :max="numberNotes" />
+                                :max="numberNotes" aria-disabled="true" />
                             <em class="row p-0 label-input-histogram"><small :for="'pc-' + key">{{ pc }}</small></em>
                             <strong class="row p-0"><small :for="'pc-' + key">{{ key }}</small></strong>
                         </div>
@@ -36,7 +37,8 @@
                     <div v-else-if="item.name == 'interval pattern'" class="row p-1 mb-1">
                         <div v-for="[key, pc] in Object.entries(item.value)" class="col col-25 ">
                             <vue3-slider class="row p-0" color="#FFBF65" track-color="#0065A2" orientation="vertical"
-                                :name="'pc-' + key" v-model="item.value[key]" width="5em" :max="numberNotes" />
+                                :name="'pc-' + key" v-model="item.value[key]" width="5em" :max="numberNotes"
+                                aria-disabled="true" />
                             <em class="row p-0 label-input-histogram"><small :for="'pc-' + key">{{ pc }}</small></em>
                             <strong class="row p-0"><small :for="'pc-' + key">{{ key - 12 }}</small></strong>
                         </div>
@@ -47,14 +49,14 @@
                 </div>
             </div>
         </div>
-        <MusicalScore id="RhythmPatternForm" :vT="vT" :meiTree="MEIData" />
+        <MusicalScore id="StructuralPatternForm" :vT="vT" :meiTree="MEIData" />
         <Teleport to="body">
             <modal :show="showModal" @close="showModal = false">
                 <template #header>
                     <h3>Saved Rhythm Pattern to MEI File</h3>
                 </template>
                 <template #body>
-                    <pre class="w-100" id="MEI-Modal-TitleStmt">{{ StructuralPatternsOntMEI }}</pre>
+                    <pre class="w-100" id="MEI-Modal-StructuralPatterns">{{ StructuralPatternsOntMEI }}</pre>
                 </template>
             </modal>
         </Teleport>
@@ -114,18 +116,24 @@ export default {
     },
     methods: {
         saveToMEI(openModal = true) {
-            let rhythmPNode = this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]');
-            if (!rhythmPNode) {
-                this.createNodesMethods(this.MEIData, 'rhythmPattern');
-            }
-            this.updateNodesMethods(this.MEIData, this.structuralPatternsData, 'rhythmPattern');
 
-            this.StructuralPatternsOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIData, './/mei:music//mei:section//mei:supplied[@type="rhythm pattern"]')));
+            const patternNodes_P = this.getXpathNode(this.MEIData, this.structuralPatternsData[0].tag);
+            if (!patternNodes_P) {
+                this.createNodesMethods(this.MEIData, 'structuralPattern');
+            }
+            this.updateNodesMethods(this.MEIData, this.structuralPatternsData, 'structuralPattern');
+
+            let serializers = this.structuralPatternsData.map((item) => {
+                const node = this.getXpathNode(this.MEIData, item.tag);
+                return this.prettifyXml(new XMLSerializer().serializeToString(node));
+            });
+
+            this.StructuralPatternsOntMEI = serializers.join('\n');
 
             if (openModal) {
                 this.showModal = !this.showModal;
             } else {
-                this.$emit("saveFinished", "RhythmPatternForm");
+                this.$emit("saveFinished", "StructuralPatternForm");
             }
         },
         getInfoFromMEI() {
@@ -166,5 +174,9 @@ export default {
 
 .label-input-histogram {
     background-color: lightgray;
+}
+
+div.vue3-slider {
+    pointer-events: none !important;
 }
 </style>

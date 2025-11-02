@@ -19,7 +19,7 @@
                 <div class="row" id="pattern-canvas"></div>
             </div>
         </div>
-        <MusicalScore id="RhythmPatternForm" :vT="vT" :meiTree="MEIData"/>
+        <MusicalScore id="StructuralPatternForm" :vT="vT" :meiTree="MEIData"/>
         <Teleport to="body">
             <modal :show="showModal" @close="showModal = false">
                 <template #header>
@@ -92,7 +92,7 @@ export default {
             if (openModal) {
                 this.showModal = !this.showModal;
             } else {
-                this.$emit("saveFinished", "RhythmPatternForm");
+                this.$emit("saveFinished", "StructuralPatternForm");
             }
         },
         getMusicalRhythm(event) {

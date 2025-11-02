@@ -28,7 +28,7 @@
                                             <button class="accordion-button collapsed" type="button"
                                                 data-bs-toggle="collapse" :data-bs-target="'#flushM-collapse' + itemN"
                                                 aria-expanded="false" :aria-controls="'flushM-collapse' + itemN">
-                                                {{  file.filename }}
+                                                {{ file.filename }}
                                             </button>
                                         </h2>
                                         <div :id="'flushM-collapse' + itemN" class="accordion-collapse collapse">
@@ -77,7 +77,6 @@ export default {
         };
     },
     mounted() {
-        this.getInfoFromMEI();
         const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.forEach(tooltipTriggerEl => {
             new Tooltip(tooltipTriggerEl, {
@@ -121,26 +120,42 @@ export default {
             this.automaticInfoData[0].show_modal_on_end = true;
         },
         calculatePitchPattern() {
-            console.log('PITCH');
             this.MEIFiles.forEach((file) => {
+                if (!this.getXpathNode(file['xmlDoc'], this.automaticInfoData[1].tag)) {
+                    this.createNodesMethods(file['xmlDoc'], 'structuralPattern');
+                }
                 let result = this.getAutomaticStructuralPattern_P(file['vT']);
-                console.log(file.filename, result);
+                this.updateNodesMethods(file['xmlDoc'], [
+                    { name: 'pitch pattern', tag: './/mei:supplied[@type="pitch pattern"]', value: result }
+                ], 'structuralPattern');
             });
+            this.automaticInfoData[1].show_modal_on_end = true;
         },
         calculateIntervalPattern() {
-            console.log('INTERVAL');
             this.MEIFiles.forEach((file) => {
-                this.getAutomaticStructuralPattern_I(file['vT'],);
+                if (!this.getXpathNode(file['xmlDoc'], this.automaticInfoData[2].tag)) {
+                    this.createNodesMethods(file['xmlDoc'], 'structuralPattern');
+                }
+                let result = this.getAutomaticStructuralPattern_I(file['vT']);
+                this.updateNodesMethods(file['xmlDoc'], [
+                    { name: 'interval pattern', tag: './/mei:supplied[@type="interval pattern"]', value: result }
+                ], 'structuralPattern');
             });
+            this.automaticInfoData[2].show_modal_on_end = true;
         },
         calculateRhythmPattern() {
-            console.log('RHYTHM');
             this.MEIFiles.forEach((file) => {
-                this.getAutomaticStructuralPattern_R(file['vT']);
+                if (!this.getXpathNode(file['xmlDoc'], this.automaticInfoData[3].tag)) {
+                    this.createNodesMethods(file['xmlDoc'], 'structuralPattern');
+                }
+                let result = this.getAutomaticStructuralPattern_R(file['vT']);
+                this.updateNodesMethods(file['xmlDoc'], [
+                    { name: 'rhythm pattern', tag: './/mei:supplied[@type="rhythm pattern"]', value: result.value, optimal_value: result.optimal_value }
+                ], 'structuralPattern');
             });
+            this.automaticInfoData[2].show_modal_on_end = true;
         },
         calculateSegmentation() {
-            console.log('PHRASE');
             this.MEIFiles.forEach((file) => {
                 const segments = this.getAutomaticSegmentation(file['vT'], file['xmlDoc']);
                 let phraseNode = this.getXpathNode(file['xmlDoc'], './/mei:music//mei:section//mei:supplied[@type="phrases"]');
@@ -157,7 +172,6 @@ export default {
             this.automaticInfoData[4].show_modal_on_end = true;
         },
         calculateVocalTopics() {
-            console.log('VOCAL');
             this.MEIFiles.forEach((file) => {
                 const results = this.getAutomaticVocalTopics(file['xmlDoc']);
                 let keywordsNode = this.getXpathNode(file['xmlDoc'], './/mei:workList//mei:keywords');
@@ -175,28 +189,6 @@ export default {
                 ], 'worklist');
             });
             this.automaticInfoData[5].show_modal_on_end = true;
-        },
-        saveToMEI(openModal = true) {
-
-            /*
-            this.MEIFiles.forEach((file) => {
-                if (!this.getXpathNode(file['xmlDoc'], './/mei:titleStmt')) {
-                    this.createNodesMethods(file['xmlDoc'], 'titleStmt');
-                };
-                this.updateNodesMethods(file['xmlDoc'], this.automaticInfoData.filter((item) => item.select === true), 'titleStmt');
-            });
-            */
-
-            //this.AutomaticInfoOntMEI = this.prettifyXml(new XMLSerializer().serializeToString(this.getXpathNode(this.MEIFiles[0]['xmlDoc'], './/mei:titleStmt')));
-
-            if (openModal) {
-                this.showModal = !this.showModal;
-            } else {
-                this.$emit("saveFinished", "TitleForm");
-            }
-        },
-        getInfoFromMEI() {
-
         },
     }
 };
