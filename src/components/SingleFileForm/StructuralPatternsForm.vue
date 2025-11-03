@@ -26,7 +26,7 @@
                         <button class="col col-sm-1" @click="calculateAutomatic(item.on_display)">AUTO</button>
                     </div>
                     <div v-if="item.name == 'pitch pattern'" class="row row-cols-12 p-1 mb-1">
-                        <div v-for="[key, pc] in Object.entries(item.value)" class="col col-sm-1">
+                        <div v-for="[key, pc] in Object.entries(item.value)" class="col col-25 col-int">
                             <vue3-slider class="row p-0" color="#FFBF65" track-color="#0065A2" orientation="vertical"
                                 :name="'pc-' + key" v-model="item.value[key]" width="5em" height="2em"
                                 :max="numberNotes" aria-disabled="true" />
@@ -40,17 +40,19 @@
                                 :name="'pc-' + key" v-model="item.value[key]" width="5em" :max="numberNotes"
                                 aria-disabled="true" />
                             <em class="row p-0 label-input-histogram"><small :for="'pc-' + key">{{ pc }}</small></em>
-                            <strong class="row p-0"><small :for="'pc-' + key">{{ key - 12 }}</small></strong>
+                            <strong class="row p-0"><small :for="'pc-' + key" class="label-key">{{ key - 12
+                                    }}</small></strong>
                         </div>
                     </div>
                     <div v-else class="row p-1 mb-1">
-                        <span class="row w-100"><b class="col col-25">Optimal Resolution:</b><i class="col col-25">{{ item.optimal_resolution }}</i></span>
+                        <span class="col col-sm-4"><span class="row pb-1"><b style="width: 80%;">Optimal Resolution:</b><i style="width: 20%;">{{ item.optimal_resolution }}</i></span></span>
                         <div class="row p-1 mb-1">
                             <div v-for="[key, bin] in Object.entries(item.value)" class="col col-25 ">
                                 <vue3-slider class="row p-0" color="#FFBF65" track-color="#0065A2"
                                     orientation="vertical" :name="'bin-' + key" v-model="item.value[key]" width="5em"
                                     :max="numberNotes" aria-disabled="true" />
-                                <em class="row p-0 label-input-histogram"><small :for="'bin-' + key">{{ bin }}</small></em>
+                                <em class="row p-0 label-input-histogram"><small :for="'bin-' + key">{{ bin
+                                        }}</small></em>
                                 <strong class="row p-0"><small :for="'bin-' + key">{{ key }}</small></strong>
                             </div>
                         </div>
