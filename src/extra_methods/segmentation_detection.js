@@ -19,7 +19,6 @@ const calculateRestBetweenNotes = (note1, note2) => {
 
 const calculateBoundaryScores = (midiData, weights = { pitch: .25, ioi: .25, rest: .5 }) => {
     const boundaryScores = [];
-    const threshold = 0.5; // Boundary detection threshold (tune based on your needs)
 
     // Iterate through the MIDI data and calculate boundary scores
     for (let i = 1; i < midiData.length; i++) {
@@ -34,13 +33,13 @@ const calculateBoundaryScores = (midiData, weights = { pitch: .25, ioi: .25, res
         const boundaryScore = pitchInterval * weights.pitch + ioi * weights.ioi + restDuration * weights.rest;
 
         // Store the boundary score for the current note
-        boundaryScores.push({ index: currentNote.index, time: currentNote.time, score: boundaryScore });
+        boundaryScores.push({
+            index: currentNote.index, time: currentNote.time, pitch: currentNote.pitch, duration: currentNote.duration,
+            ioi: ioi, pitchInt: pitchInterval, rest: restDuration, score: boundaryScore
+        });
     };
 
-    // Flag points as boundaries where the score exceeds the threshold
-    const boundaries = boundaryScores.filter((entry) => entry.score > threshold);
-
-    return boundaries;
+    return boundaryScores;
 };
 
 function getBoundariesAndSegments(notes) {
@@ -61,7 +60,7 @@ function getBoundariesAndSegments(notes) {
     const boundaryIndices = notes
         .map((n, i) => ({ i, score: n.score }))
         .filter(n => n.score > threshold)
-        .map(n => n.i);
+        .map(n => n.i - 1);
 
     // --- 5. Build non-overlapping segments ---
     const startIndex = 0;
@@ -195,7 +194,7 @@ const siamScoreVectors = (arrA, arrB) => {
 
 function buildSegmentSimilarityTable(segments, notes, algorithm = 'Euclidean') {
     const n = segments.length;
-    const table = Array.from({ length: n }, () => Array(n).fill(0));
+    let table = Array.from({ length: n }, () => Array(n).fill(0));
 
     // Helper: get array of [pitch, duration] vectors for a segment
     function getVectors(segment) {
@@ -204,13 +203,39 @@ function buildSegmentSimilarityTable(segments, notes, algorithm = 'Euclidean') {
             .map(n => [n.pitch, n.duration]); // assuming notes have pitch & duration
     }
 
+    function distanceToSimilarityMinMax(dist) {
+        const n = dist.length;
+        let min = Infinity, max = -Infinity;
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) {
+                const v = dist[i][j];
+                if (v < min) min = v;
+                if (v > max) max = v;
+            }
+        }
+
+        // If all distances equal, fallback: distances==0 -> similarity 1, else 0
+        if (max === min) {
+            return dist.map(row => row.map(v => (v === min ? 1 : 0)));
+        }
+
+        const sim = Array.from({ length: n }, () => Array(n).fill(0));
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) {
+                const v = dist[i][j];
+                const normalized = (v - min) / (max - min); // in [0,1]
+                sim[i][j] = 1 - normalized; // invert -> 1 for smallest distance
+            }
+        }
+        return sim;
+    };
 
     // Build the similarity table
     for (let i = 0; i < n; i++) {
         const vectorsA = getVectors(segments[i]);
         for (let j = 0; j < n; j++) {
             if (i === j) {
-                table[i][j] = 0; // distance to itself
+                table[i][j] = algorithm === 'Euclidean' ? 0 : 1; // distance to itself
             } else {
                 const vectorsB = getVectors(segments[j]);
                 switch (algorithm) {
@@ -225,12 +250,15 @@ function buildSegmentSimilarityTable(segments, notes, algorithm = 'Euclidean') {
 
             }
         }
-    }
+    };
 
+    if (algorithm === 'Euclidean') {
+        table = distanceToSimilarityMinMax(table);
+    };
     return table;
 };
 
-function labelSegmentsBySimilarity(segments, similarityTable, threshold = 50) {
+function labelSegmentsBySimilarity(segments, similarityTable, threshold = .7) {
     const labels = [];
     let nextLabelCharCode = 'A'.charCodeAt(0);
 
@@ -242,7 +270,7 @@ function labelSegmentsBySimilarity(segments, similarityTable, threshold = 50) {
 
         let assigned = false;
         for (let j = 0; j < i; j++) {
-            if (similarityTable[i][j] <= threshold) {
+            if (similarityTable[i][j] >= threshold) {
                 // similar to a previous segment → use the same label
                 labels.push(labels[j]);
                 assigned = true;
@@ -283,9 +311,15 @@ export const getAutomaticSegmentation = (vT, meiTree) => {
 
     // Get boundaries based on the MIDI data
     const lbdmScores = calculateBoundaryScores(midiDataC, weights);
+
     const fnote = midiDataC[0];
     fnote.score = 0;
+    fnote.ioi = fnote.time;
+    fnote.pitchInt = 0; 
+    fnote.rest = 0;
     lbdmScores.unshift(fnote);
+
+    console.table(lbdmScores);
 
     // Get Segments from threshold
     const result = getBoundariesAndSegments(lbdmScores);
