@@ -50,8 +50,7 @@
                                 <vue3-slider class="row p-0" color="#FFBF65" track-color="#0065A2"
                                     orientation="vertical" :name="'bin-' + key" v-model="item.value[key]" width="5em"
                                     :max="numberNotes" aria-disabled="true" />
-                                <em class="row p-0 label-input-histogram"><small :for="'bin-' + key">{{ Number.parseFloat(bin).toFixed(2)
-                                        }}</small></em>
+                                <em class="row p-0 label-input-histogram"><small :for="'bin-' + key">{{ bin }}</small></em>
                                 <strong class="row p-0"><small :for="'bin-' + key">{{ key }}</small></strong>
                             </div>
                         </div>
@@ -98,7 +97,7 @@ export default {
             structuralPatternsData: [
                 { name: 'pitch pattern', tag: './/mei:supplied[@type="pitch pattern"]', value: Array(12).fill(0), on_display: 'Pitch Pattern', show_colapsible: false, default: Array(12).fill(0), tooltip: `<pre></pre>` },
                 { name: 'interval pattern', tag: './/mei:supplied[@type="interval pattern"]', value: '', on_display: 'Intervallic Pattern', show_colapsible: false, default: '', tooltip: `<pre></pre>` },
-                { name: 'rhythm pattern', tag: './/mei:supplied[@type="rhythm pattern"]', value: '', on_display: 'Rhythm Pattern', show_colapsible: false, default: '', tooltip: `<pre></pre>` },
+                { name: 'rhythm pattern', tag: './/mei:supplied[@type="rhythm pattern"]', value: '', optimal_resolution: '16th', on_display: 'Rhythm Pattern', show_colapsible: false, default: '', tooltip: `<pre></pre>` },
             ],
             numberNotes: 100,
             showModal: false,
@@ -194,5 +193,7 @@ export default {
 
 div.vue3-slider {
     pointer-events: none !important;
+    justify-self: center !important;
+    width: 50% !important;
 }
 </style>

@@ -520,11 +520,11 @@ const updateNodesPatterns = (meiTree, data) => {
                 break;
             }
             case 'rhythm pattern': {
-                //tag.setAttribute('optimal_resolution', item.optimal_resolution);
+                tag.setAttribute('optimal_resolution', item.optimal_resolution);
                 // Add each pc_k="value" line
-                /*Object.keys(data).sort((a, b) => a - b).forEach(k => {
-                    tag.setAttribute("bin_" + k, data[k]);
-                });*/
+                Object.keys(item.value).sort((a, b) => a - b).forEach(k => {
+                    tag.setAttribute("bin_" + k, item.value[k]);
+                });
                 break;
             }
             default:

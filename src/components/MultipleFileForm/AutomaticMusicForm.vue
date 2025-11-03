@@ -22,8 +22,18 @@
                             <template #header>{{ item.name }}</template>
                             <template #body>
                                 <div class="accordion accordion-flush" :id="'accordion-' + item.name.replace(' ', '-')">
-                                    <div v-for="(file, itemN) in MEIFiles" class="accordion-item"
-                                        :id="'accordionItem-' + itemN">
+                                    <div v-for="(file, itemN) in MEIFiles.sort((a, b) => {
+                                        const nameA = a.filename.toUpperCase(); // ignore upper and lowercase
+                                        const nameB = b.filename.toUpperCase(); // ignore upper and lowercase
+                                        if (nameA < nameB) {
+                                            return -1;
+                                        }
+                                        if (nameA > nameB) {
+                                            return 1;
+                                        }
+                                        // names must be equal
+                                        return 0;
+                                    })" class="accordion-item" :id="'accordionItem-' + itemN">
                                         <h2 class="accordion-header">
                                             <button class="accordion-button collapsed" type="button"
                                                 data-bs-toggle="collapse" :data-bs-target="'#flushM-collapse' + itemN"
@@ -126,7 +136,7 @@ export default {
                 }
                 let result = this.getAutomaticStructuralPattern_P(file['vT']);
                 this.updateNodesMethods(file['xmlDoc'], [
-                    { name: 'pitch pattern', tag: './/mei:supplied[@type="pitch pattern"]', value: result }
+                    { name: 'pitch pattern', tag: this.automaticInfoData[1].tag, value: result }
                 ], 'structuralPattern');
             });
             this.automaticInfoData[1].show_modal_on_end = true;
@@ -138,7 +148,7 @@ export default {
                 }
                 let result = this.getAutomaticStructuralPattern_I(file['vT']);
                 this.updateNodesMethods(file['xmlDoc'], [
-                    { name: 'interval pattern', tag: './/mei:supplied[@type="interval pattern"]', value: result }
+                    { name: 'interval pattern', tag: this.automaticInfoData[2].tag, value: result }
                 ], 'structuralPattern');
             });
             this.automaticInfoData[2].show_modal_on_end = true;
@@ -148,12 +158,12 @@ export default {
                 if (!this.getXpathNode(file['xmlDoc'], this.automaticInfoData[3].tag)) {
                     this.createNodesMethods(file['xmlDoc'], 'structuralPattern');
                 }
-                let result = this.getAutomaticStructuralPattern_R(file['vT']);
+                const result = this.getAutomaticStructuralPattern_R(file['vT']);
                 this.updateNodesMethods(file['xmlDoc'], [
-                    { name: 'rhythm pattern', tag: './/mei:supplied[@type="rhythm pattern"]', value: result.value, optimal_value: result.optimal_value }
+                    { name: 'rhythm pattern', tag: this.automaticInfoData[3].tag, value: result.value, optimal_resolution: result.optimal_resolution }
                 ], 'structuralPattern');
             });
-            this.automaticInfoData[2].show_modal_on_end = true;
+            this.automaticInfoData[3].show_modal_on_end = true;
         },
         calculateSegmentation() {
             this.MEIFiles.forEach((file) => {

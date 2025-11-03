@@ -228,7 +228,7 @@ export const getAutomaticStructuralPattern_R = (vT) => {
 
     // Normalize to 100%
     const total = bins.reduce((a, b) => a + b, 0);
-    const normalized = bins.map(v => (v / total) * 100);
+    const normalized = bins.map(v => Number.parseFloat((v / total) * 100).toFixed(2));
 
     return { value: normalized, optimal_resolution: resolutionName };
 };
