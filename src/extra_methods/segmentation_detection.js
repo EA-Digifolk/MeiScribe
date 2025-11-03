@@ -1,6 +1,7 @@
 // segmentation_detection.js
 
 import { getNotesExpanded } from "./notes_methods";
+import { getXpathNode } from "./mei_methods";
 
 // Helper function to calculate interval (pitch difference)
 const calculatePitchInterval = (note1, note2) => {
@@ -12,7 +13,11 @@ const calculateIOI = (time1, time2) => {
     return Math.abs(time1 - time2);
 };
 
-const calculateBoundaryScores = (midiData) => {
+const calculateRestBetweenNotes = (note1, note2) => {
+    return Math.max(0, note2.time - (note1.time + note1.duration));
+};
+
+const calculateBoundaryScores = (midiData, weights = { pitch: .25, ioi: .25, rest: .5 }) => {
     const boundaryScores = [];
     const threshold = 0.5; // Boundary detection threshold (tune based on your needs)
 
@@ -23,9 +28,10 @@ const calculateBoundaryScores = (midiData) => {
 
         const pitchInterval = calculatePitchInterval(previousNote.pitch, currentNote.pitch);
         const ioi = calculateIOI(previousNote.time, currentNote.time);
+        const restDuration = calculateRestBetweenNotes(previousNote, currentNote);
 
         // Combine features to calculate a simple boundary score
-        const boundaryScore = pitchInterval * 0.5 + ioi * 0.5;
+        const boundaryScore = pitchInterval * weights.pitch + ioi * weights.ioi + restDuration * weights.rest;
 
         // Store the boundary score for the current note
         boundaryScores.push({ index: currentNote.index, time: currentNote.time, score: boundaryScore });
@@ -82,7 +88,112 @@ function getBoundariesAndSegments(notes) {
     return { mean, std, threshold, boundaryIndices, segments };
 };
 
-function buildSegmentSimilarityTable(segments, notes) {
+// Compute Euclidean distance between two sequences of vectors
+const euclideanDistanceVectors = (arrA, arrB) => {
+    const length = Math.min(arrA.length, arrB.length);
+    let sum = 0;
+    for (let i = 0; i < length; i++) {
+        const dx = arrA[i][0] - arrB[i][0]; // pitch difference
+        const dy = arrA[i][1] - arrB[i][1]; // duration difference
+        sum += dx * dx + dy * dy;
+    }
+    return Math.sqrt(sum);
+}
+
+// Compute SIAM score between two sequences of vectors
+const siamScoreVectors = (arrA, arrB) => {
+
+    // Helper: subtract two arrays element-wise
+    function subtractArrays(a, b) {
+        return a.map((val, i) => val - b[i]);
+    }
+
+    // Create table of vectors
+    function createVectorTable(datapoints1, datapoints2) {
+        const rows = datapoints1.length;
+        const cols = datapoints2.length;
+        const dim = datapoints1[0].length;
+        const vectorTable = Array.from({ length: rows }, () =>
+            Array.from({ length: cols }, () => Array(dim).fill(0))
+        );
+
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                vectorTable[i][j] = subtractArrays(datapoints1[i], datapoints2[j]);
+            }
+        }
+        return vectorTable;
+    }
+
+    // Flatten nested arrays (like itertools.chain)
+    function flatten(arr) {
+        return arr.reduce((acc, val) => acc.concat(val), []);
+    }
+
+    // Count occurrences of each translation vector (MTPnew)
+    function MTPnew(vectorTable) {
+        const flat = flatten(vectorTable).map(v => JSON.stringify(v));
+        const counts = {};
+        flat.forEach(v => counts[v] = (counts[v] || 0) + 1);
+        return Object.values(counts);
+    }
+
+    // Count occurrences of a specific translation vector
+    function MTP(vectorTable, transVector) {
+        let count = 0;
+        const transStr = JSON.stringify(transVector);
+        for (const row of vectorTable) {
+            for (const vec of row) {
+                if (JSON.stringify(vec) === transStr) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    // Print vector table in a human-readable form
+    function printVectorTable(vectorTable, seq1, seq2) {
+        console.log("Vector Table:");
+        const header = [" "].concat(seq2.map(s => JSON.stringify(s)));
+        console.log(header.join("\t"));
+        for (let i = 0; i < seq1.length; i++) {
+            const row = [JSON.stringify(seq1[i])];
+            for (let j = 0; j < seq2.length; j++) {
+                row.push(JSON.stringify(vectorTable[i][j]));
+            }
+            console.log(row.join("\t"));
+        }
+    }
+
+    // Print lexicographical table
+    function printLexicographicalTable(vectorTable, seq2) {
+        const flat = flatten(vectorTable);
+        const uniqueVecs = Array.from(new Set(flat.map(v => JSON.stringify(v))))
+            .map(s => JSON.parse(s))
+            .sort((a, b) => a[0] - b[0]);
+
+        for (const st of uniqueVecs) {
+            const stStr = JSON.stringify(st);
+            const indices = [];
+            for (let i = 0; i < vectorTable.length; i++) {
+                for (let j = 0; j < vectorTable[i].length; j++) {
+                    if (JSON.stringify(vectorTable[i][j]) === stStr) {
+                        indices.push(j);
+                    }
+                }
+            }
+            const seqs = indices.map(i => JSON.stringify(seq2[i]));
+            console.log(`${stStr} -> ${seqs.join(", ")}`);
+        }
+    }
+
+    const vectorTable = createVectorTable(arrA, arrB);
+    const mtps1 = MTPnew(vectorTable);
+    return Math.max(...mtps1) / Math.max(arrA.length, arrB.length);
+};
+
+function buildSegmentSimilarityTable(segments, notes, algorithm = 'Euclidean') {
     const n = segments.length;
     const table = Array.from({ length: n }, () => Array(n).fill(0));
 
@@ -93,17 +204,6 @@ function buildSegmentSimilarityTable(segments, notes) {
             .map(n => [n.pitch, n.duration]); // assuming notes have pitch & duration
     }
 
-    // Compute Euclidean distance between two sequences of vectors
-    function euclideanDistanceVectors(arrA, arrB) {
-        const length = Math.min(arrA.length, arrB.length);
-        let sum = 0;
-        for (let i = 0; i < length; i++) {
-            const dx = arrA[i][0] - arrB[i][0]; // pitch difference
-            const dy = arrA[i][1] - arrB[i][1]; // duration difference
-            sum += dx * dx + dy * dy;
-        }
-        return Math.sqrt(sum);
-    }
 
     // Build the similarity table
     for (let i = 0; i < n; i++) {
@@ -113,7 +213,16 @@ function buildSegmentSimilarityTable(segments, notes) {
                 table[i][j] = 0; // distance to itself
             } else {
                 const vectorsB = getVectors(segments[j]);
-                table[i][j] = euclideanDistanceVectors(vectorsA, vectorsB);
+                switch (algorithm) {
+                    case 'Euclidean':
+                        table[i][j] = euclideanDistanceVectors(vectorsA, vectorsB);
+                        break;
+                    case 'SIAM':
+                    default:
+                        table[i][j] = siamScoreVectors(vectorsA, vectorsB);
+                        break;
+                }
+
             }
         }
     }
@@ -158,8 +267,22 @@ export const getAutomaticSegmentation = (vT, meiTree) => {
 
     let midiDataC = getNotesExpanded(vT, meiTree);
 
+    const country = getXpathNode(meiTree, './/mei:workList//mei:term[@type="country"]').textContent;
+
+    let weights = { pitch: .25, ioi: .25, rest: .5 };
+    switch (country) {
+        case 'Portugal':
+            weights = { pitch: .21, ioi: .34, rest: .42 };
+            break;
+        case 'Spain':
+            weights = { pitch: .22, ioi: .28, rest: .49 };
+            break;
+        default:
+            break;
+    };
+
     // Get boundaries based on the MIDI data
-    const lbdmScores = calculateBoundaryScores(midiDataC);
+    const lbdmScores = calculateBoundaryScores(midiDataC, weights);
     const fnote = midiDataC[0];
     fnote.score = 0;
     lbdmScores.unshift(fnote);
@@ -168,7 +291,7 @@ export const getAutomaticSegmentation = (vT, meiTree) => {
     const result = getBoundariesAndSegments(lbdmScores);
 
     // Get Labels from Similarity
-    const similarityTable = buildSegmentSimilarityTable(result.segments, midiDataC);
+    const similarityTable = buildSegmentSimilarityTable(result.segments, midiDataC, 'SIAM');
     labelSegmentsBySimilarity(result.segments, similarityTable);
 
     return result.segments;
