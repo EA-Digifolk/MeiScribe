@@ -58,14 +58,14 @@ export const topicDict = {
         "Natural Imagery": ["sol", "yerba", "lloviendo"],
         "Ritual & Morality": ["ritual", "morality"], // optional
         "Honorific": ["don", "señor"],
-        "Religious": ["alma", "virgen"],
+        "Religious": ["alma", "virgen", "jesús", "jesú"],
         "Care & Emotion": ["care", "emotion"], // optional
         "Affect & Desire": ["querer", "niñito"],
         "Family": ["madre", "niño"],
         "Lullaby": ["duermet", "niño", "ya", "acostar"],
         "Fantasy": ["coco", "monstruo", "fantasma"],
         "Nature": ["sol", "luna", "estrella"],
-        "Animals": ["gato", "gata", "cabra", "caballo"]
+        "Animals": ["gato", "gata", "cabra", "caballo", "puça", "poi"]
     },
     EN: {
 

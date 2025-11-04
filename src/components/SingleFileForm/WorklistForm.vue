@@ -213,19 +213,19 @@
                     <pre class="w-100" id=""><p>Unigrams</p>
                         <vue3-word-cloud style="height: 10em; width: 100%;"
                             :words="worklistData[worklistData.length - 1].n_grams"
-                            :color="([, weight]) => weight > 10 ? 'DeepPink' : weight > 5 ? 'RoyalBlue' : 'Indigo'"
+                            :color="([, weight]) => weight > 1 ? 'DeepPink' : weight > 3 ? 'RoyalBlue' : 'Indigo'"
                             font-family="Roboto"/>
                     </pre>
                     <pre class="w-100" id=""><p>Bigrams</p>
                         <vue3-word-cloud style="height: 10em; width: 100%;"
                             :words="worklistData[worklistData.length - 1].bi_grams"
-                            :color="([, weight]) => weight > 10 ? 'DeepPink' : weight > 5 ? 'RoyalBlue' : 'Indigo'"
+                            :color="([, weight]) => weight > 3 ? 'DeepPink' : weight > 1 ? 'RoyalBlue' : 'Indigo'"
                             font-family="Roboto"/>
                     </pre>
                     <pre class="w-100" id=""><p>Keywords</p>
                         <vue3-word-cloud style="height: 10em; width: 100%;"
                             :words="worklistData[worklistData.length - 1].keywords"
-                            :color="([, weight]) => weight > 1 ? 'DeepPink' : weight > 3 ? 'RoyalBlue' : 'Indigo'"
+                            :color="([, weight]) => weight > 3 ? 'DeepPink' : weight > 1 ? 'RoyalBlue' : 'Indigo'"
                             font-family="Roboto"/>
                     </pre>
                     <pre class="w-100"
