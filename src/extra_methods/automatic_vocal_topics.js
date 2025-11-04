@@ -55,7 +55,7 @@ export const topicDict = {
     ES: {
         "Nature & Symbolism": ["nature", "symbolism"], // optional general terms
         "Symbolic & Traditional": ["oro", "flor"],
-        "Natural Imagery": ["sol", "yerba"],
+        "Natural Imagery": ["sol", "yerba", "lloviendo"],
         "Ritual & Morality": ["ritual", "morality"], // optional
         "Honorific": ["don", "señor"],
         "Religious": ["alma", "virgen"],
@@ -65,7 +65,7 @@ export const topicDict = {
         "Lullaby": ["duermet", "niño", "ya", "acostar"],
         "Fantasy": ["coco", "monstruo", "fantasma"],
         "Nature": ["sol", "luna", "estrella"],
-        "Animals": ["gato", "cabra",]
+        "Animals": ["gato", "gata", "cabra", "caballo"]
     },
     EN: {
 
@@ -80,7 +80,7 @@ export const topicDict = {
  * @param {string} MEIData - The MEI XML content 
  * @returns {string} - The compiled lyrics text
  */
-function extractSegmentedLyricsFromMEI(MEIData) {
+export const extractSegmentedLyricsFromMEI = (MEIData) => {
 
     // 1️⃣ Try to get lyrics from <workList> → <incip type="lyrics"> → <incipText>
     const incipText = MEIData.querySelector('workList work incip[type="lyrics"] incipText');

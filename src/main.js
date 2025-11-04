@@ -14,7 +14,7 @@ import {
 import { getAutomaticModeKey } from './extra_methods/key_mode_detection.js';
 import { getAutomaticSegmentation } from './extra_methods/segmentation_detection.js';
 import { getNotesExpanded, renderMidiToBase64, getMIDI } from './extra_methods/notes_methods.js';
-import { getAutomaticVocalTopics } from './extra_methods/automatic_vocal_topics.js';
+import { getAutomaticVocalTopics, extractSegmentedLyricsFromMEI } from './extra_methods/automatic_vocal_topics.js';
 
 const app = createApp(App)
 
@@ -63,6 +63,7 @@ app.provide('getAutomaticStructuralPattern_R', getAutomaticStructuralPattern_R);
 app.provide('getAutomaticModeKey', getAutomaticModeKey);
 app.provide('getAutomaticSegmentation', getAutomaticSegmentation);
 app.provide('getAutomaticVocalTopics', getAutomaticVocalTopics);
+app.provide('extractSegmentedLyricsFromMEI', extractSegmentedLyricsFromMEI);
 
 app.provide('getNotesExpanded', getNotesExpanded);
 app.provide('renderMidiToBase64', renderMidiToBase64);

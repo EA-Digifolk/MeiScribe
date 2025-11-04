@@ -225,7 +225,7 @@
                     <pre class="w-100" id=""><p>Keywords</p>
                         <vue3-word-cloud style="height: 10em; width: 100%;"
                             :words="worklistData[worklistData.length - 1].keywords"
-                            :color="([, weight]) => weight > 10 ? 'DeepPink' : weight > 5 ? 'RoyalBlue' : 'Indigo'"
+                            :color="([, weight]) => weight > 1 ? 'DeepPink' : weight > 3 ? 'RoyalBlue' : 'Indigo'"
                             font-family="Roboto"/>
                     </pre>
                     <pre class="w-100"
@@ -247,7 +247,8 @@ import MusicalScore from '../MusicalScore.vue';
 export default {
     inject: ['getXpathNode', 'prettifyXml', 'capitalizeFirstLetter',
         'createNodesMethods', 'updateNodesMethods',
-        'getAutomaticModeKey', 'getAutomaticMeterTempo', 'getAutomaticVocalTopics'],
+        'getAutomaticModeKey', 'getAutomaticMeterTempo', 
+        'getAutomaticVocalTopics', 'extractSegmentedLyricsFromMEI'],
     components: {
         MusicalScore,
         Tooltip,
@@ -391,6 +392,9 @@ export default {
                         }
                     } else if (item.name === 'lyrics' || item.name === 'notes' || item.name === 'key') {
                         item.value = node.textContent;
+                        if ((item.name === "lyrics") && (node.textContent === "")) {
+                            item.value = this.extractSegmentedLyricsFromMEI(this.MEIData);
+                        }
                     } else if (item.name === 'vocal topics') {
                         item.n_gram = this.getXpathNode(this.MEIData, '//mei:term[@type="ngram"]').textContent;
                         item.bi_gram = this.getXpathNode(this.MEIData, '//mei:term[@type="ngram"]').textContent;
