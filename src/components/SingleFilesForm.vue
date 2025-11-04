@@ -1,6 +1,6 @@
 <template>
     <div class="carousel-inner">
-        <TitleStmtForm class="carousel-item active" :MEIData="xmlDoc" :export="exportData"
+        <TitleStmtForm class="carousel-item active" :MEIData="xmlDoc" :export="exportData" :filename="this.filename"
             @save-finished="allFormsReadyToExport['TitleForm'] = true; afterTrigger();" />
         <PublisherForm class="carousel-item" :MEIData="xmlDoc" :export="exportData"
             @save-finished="allFormsReadyToExport['PublisherForm'] = true; afterTrigger();" />
@@ -40,7 +40,7 @@ export default {
         PhraseForm,
         Tooltip,
     },
-    props: ['xmlDoc', 'verovioToolkit', 'exportData'],
+    props: ['xmlDoc', 'verovioToolkit', 'exportData', 'filename'],
     emits: ["downloadFinished"],
     data() {
         return {

@@ -44,7 +44,7 @@ export default {
         Tooltip,
         Modal
     },
-    props: ['MEIData', 'export'],
+    props: ['MEIData', 'export', 'filename'],
     emits: ["saveFinished"],
     data() {
         return {
@@ -102,7 +102,7 @@ export default {
             };
 
             if (!this.getXpathNode(this.MEIData, './/mei:titleStmt')) {
-                this.createNodesMethods(this.MEIData,'titleStmt');
+                this.createNodesMethods(this.MEIData, 'titleStmt');
             };
             this.updateNodesMethods(this.MEIData, this.titleStmtData, 'titleStmt');
 
@@ -120,7 +120,9 @@ export default {
                 const node = this.getXpathNode(this.MEIData, item.tag);
                 if (node) {
                     if (item.name === 'id') {
-                        item.value = node.getAttribute('xml:id')?.trim() || '';
+                        let possName = this.filename.split('.');
+                        possName = possName.splice(0,possName.length - 1).join('.');
+                        item.value = node.getAttribute('xml:id')?.trim() || possName;
                     } else if (item.name === 'title') {
                         item.value = node.textContent;
                     } else if (item.name === 'informer') {

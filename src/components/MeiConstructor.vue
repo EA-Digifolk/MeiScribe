@@ -72,7 +72,7 @@
             :data-bs-slide-to="item + 1" aria-label="Slide {{item+2}}"></button>
         </div>
 
-        <SingleFilesForm :xmlDoc="xmlDoc" :verovioToolkit="verovioToolkit" :exportData="exportData"
+        <SingleFilesForm :xmlDoc="xmlDoc" :verovioToolkit="verovioToolkit" :exportData="exportData" :filename="this.files[0].filename"
           v-if="openSingleForms === true" @download-finished="resetWindow()" />
         <MultipleFilesForm :MEIfiles="files" :exportData="exportData" v-else-if="openMultiplesForm === true"
           @download-finished="resetWindow()" />
