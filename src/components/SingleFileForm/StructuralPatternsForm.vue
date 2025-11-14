@@ -50,7 +50,7 @@
                             <div v-for="[key, bin] in Object.entries(item.value)" class="col col-25 ">
                                 <vue3-slider class="row p-0" color="#FFBF65" track-color="#0065A2"
                                     orientation="vertical" :name="'bin-' + key" v-model="item.value[key]" width="5em"
-                                    :max="numberNotes" aria-disabled="true" />
+                                    :max="100" aria-disabled="true" />
                                 <em class="row p-0 label-input-histogram"><small :for="'bin-' + key">{{ bin
                                         }}</small></em>
                                 <strong class="row p-0"><small :for="'bin-' + key">{{ key }}</small></strong>
